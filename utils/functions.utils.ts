@@ -224,7 +224,7 @@ export const generateTimeOptions = () => {
         }
     }
     options.push('24:00'); // Add the final option
-    return Dropdown(options);
+    // return Dropdown(options);
 };
 
 export const formatTime = (time) => {

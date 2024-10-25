@@ -36,6 +36,7 @@ import IconSettings from '../Icon/IconSettings';
 import IconReport from '../Icon/IconReport';
 import IconOpportunity from '../Icon/IconOpportunity';
 import IconLeads from '../Icon/IconLead';
+import IconTask from '../Icon/IconTask';
 
 const Sidebar = () => {
     const router = useRouter();
@@ -164,7 +165,7 @@ const Sidebar = () => {
                                     <li className="nav-item">
                                         <Link href="/todos" className="group">
                                             <div className="flex items-center">
-                                                <IconMenuTodo className="shrink-0 group-hover:!text-primary" />
+                                                <IconTask className="shrink-0 group-hover:!text-primary" />
                                                 <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('Todos')}</span>
                                             </div>
                                         </Link>

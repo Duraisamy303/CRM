@@ -24,7 +24,7 @@ export default function Test() {
                         <IconMenu className="h-5 w-5" />
                     </button>
                 </div>
-                <SideMenu open={open} close={() => setOpen(false)} />
+                {/* <SideMenu open={open} close={() => setOpen(false)} /> */}
             </div>
         </div>
     );

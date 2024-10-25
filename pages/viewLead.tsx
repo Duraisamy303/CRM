@@ -153,7 +153,6 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.opportunity.listByLeadId(id);
-            console.log('res: ', res);
             tableData(res);
         } catch (error) {
             setState({ loading: false });
@@ -253,12 +252,23 @@ export default function ViewLead() {
 
     const createContact = async () => {
         try {
-            setState({ createContactLoad: true });
+            setState({ createContactLoad: true, errors: {} });
+
+            const validateField = {
+                contact_status: state.contact_status?.value,
+                lead_source: state.lead_source?.value,
+                department: state.department,
+                designation: state.designation,
+                phoneNumber: state.phoneNumber,
+                email: state.email,
+                contact_name: state.contact_name,
+            };
+
             const body = {
                 lead: id,
                 status: state.contact_status?.value,
                 lead_source: state.lead_source?.value,
-                created_by: state.createdby?.value,
+                created_by: 1,
                 department: state.department,
                 designation: state.designation,
                 phone_number: state.phoneNumber,
@@ -267,11 +277,23 @@ export default function ViewLead() {
                 name: state.contact_name,
             };
 
-            const res = await Models.contact.create(body);
+            await Validation.createContact.validate(validateField, { abortEarly: false });
+
+            await Models.contact.create(body);
             Success('Contact created successfully');
             clearContactData();
             getContactList();
         } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = error.inner.reduce((acc, err) => {
+                    acc[err.path] = err.message;
+                    return acc;
+                }, {});
+                setState({ errors: validationErrors });
+            } else {
+                console.log('Error: ', error?.message);
+            }
+        } finally {
             setState({ createContactLoad: false });
         }
     };
@@ -279,6 +301,15 @@ export default function ViewLead() {
     const updateContact = async () => {
         try {
             setState({ createContactLoad: true });
+            const validateField = {
+                contact_status: state.contact_status?.value,
+                lead_source: state.lead_source?.value,
+                department: state.department,
+                designation: state.designation,
+                phoneNumber: state.phoneNumber,
+                email: state.email,
+                contact_name: state.contact_name,
+            };
             const body = {
                 lead: id,
                 status: state.contact_status?.value,
@@ -291,19 +322,41 @@ export default function ViewLead() {
                 is_active: state.is_active,
                 name: state.contact_name,
             };
+            await Validation.createContact.validate(validateField, { abortEarly: false });
 
             const res = await Models.contact.update(body, state.contactId);
             Success('Contact updated successfully');
             clearContactData();
             getContactList();
         } catch (error) {
-            setState({ createContactLoad: false });
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = error.inner.reduce((acc, err) => {
+                    acc[err.path] = err.message;
+                    return acc;
+                }, {});
+                setState({ errors: validationErrors });
+            } else {
+                console.log('Error: ', error?.message);
+            }
         }
     };
 
     const createAndUpdateOpportunity = async () => {
         try {
             setState({ oppLoading: true });
+
+            const validateField = {
+                opp_name: state.opp_name,
+                owner: state.owner?.value,
+                opp_stage: state.opp_stage?.value,
+                opportunity_value: state.opportunity_value,
+                recurring_value_per_year: state.recurring_value_per_year,
+                currency_type: state.currency_type?.value,
+                closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
+                probability_in_percentage: state.probability_in_percentage,
+            };
+
+
             const body = {
                 lead: id,
                 name: state.opp_name,
@@ -316,13 +369,11 @@ export default function ViewLead() {
                 closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
                 probability_in_percentage: state.probability_in_percentage,
                 file: null,
-                created_by: state.opp_created_by?.value,
+                created_by: 1,
                 is_active: true,
             };
-            console.log('body: ', body);
 
-            let val = await Validation.createOppValidation.validate(body, { abortEarly: false });
-            console.log('val: ', val);
+            await Validation.createOppValidation.validate(validateField, { abortEarly: false });
             let res;
             if (state.oppId) {
                 res = await Models.opportunity.update(body, state.oppId);
@@ -334,7 +385,6 @@ export default function ViewLead() {
             Success(res?.message);
             clearOppData();
         } catch (error) {
-            console.log('error: ', error);
             if (error instanceof Yup.ValidationError) {
                 const validationErrors = {};
                 error.inner.forEach((err) => {
@@ -343,7 +393,6 @@ export default function ViewLead() {
                 setState({ errors: validationErrors });
                 setState({ oppLoading: false });
             } else {
-                console.log('Error: ', error?.message);
                 setState({ oppLoading: false });
             }
             setState({ oppLoading: false });
@@ -361,7 +410,7 @@ export default function ViewLead() {
             is_active: item.is_active,
             lead_source: { value: item?.lead_source?.id, label: item?.lead_source?.source },
             createdby: { value: item?.created_by?.id, label: item?.created_by?.username },
-            contact_status: { value: item?.statusx?.id, label: item?.status?.status },
+            contact_status: { value: item?.status?.id, label: item?.status?.status },
             phoneNumber: item.phone_number,
         });
     };
@@ -379,6 +428,8 @@ export default function ViewLead() {
             is_active: false,
             contactId: '',
             isOpenCreateContact: false,
+            errors: '',
+            createContactLoad: false,
         });
     };
 
@@ -401,7 +452,6 @@ export default function ViewLead() {
     };
 
     const editOppData = (row) => {
-        console.log('row: ', row);
         setState({
             oppId: row.id,
             isOpenOpp: true,
@@ -757,10 +807,24 @@ export default function ViewLead() {
                 close={() => clearContactData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 ">
-                        <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.name} required />
-                        <TextInput title="Designation" value={state.designation} onChange={(e) => setState({ designation: e })} placeholder={'Designation'} error={state.errors?.name} required />
+                        <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.contact_name} required />
+                        <TextInput
+                            title="Designation"
+                            value={state.designation}
+                            onChange={(e) => setState({ designation: e })}
+                            placeholder={'Designation'}
+                            error={state.errors?.designation}
+                            required
+                        />
                         <TextInput title="Department" value={state.department} onChange={(e) => setState({ department: e })} placeholder={'Department'} error={state.errors?.department} required />
-                        <NumberInput title="Phone Number" value={state.phoneNumber} onChange={(e) => setState({ phoneNumber: e })} placeholder={'Phone Number'} required />
+                        <NumberInput
+                            title="Phone Number"
+                            value={state.phoneNumber}
+                            onChange={(e) => setState({ phoneNumber: e })}
+                            placeholder={'Phone Number'}
+                            error={state.errors?.phoneNumber}
+                            required
+                        />
                         <TextInput title="Email" value={state.email} onChange={(e) => setState({ email: e })} placeholder={'Email'} error={state.errors?.email} required />
                         <CustomSelect
                             title="Lead Source"
@@ -772,21 +836,12 @@ export default function ViewLead() {
                             required
                         />{' '}
                         <CustomSelect
-                            title="Created By"
-                            value={state.createdby}
-                            onChange={(e) => setState({ createdby: e })}
-                            placeholder={'Created By'}
-                            options={state.createdByList}
-                            error={state.errors?.createdby}
-                            required
-                        />
-                        <CustomSelect
                             title="Contact Status"
                             value={state.contact_status}
                             onChange={(e) => setState({ contact_status: e })}
                             placeholder={'Contact Status'}
                             options={state.statusList}
-                            error={state.errors?.lead_status}
+                            error={state.errors?.contact_status}
                             required
                         />
                         <div className="mt-3 flex items-center justify-end gap-3">
@@ -794,7 +849,7 @@ export default function ViewLead() {
                                 Cancel
                             </button>
                             <button type="button" className="btn btn-primary" onClick={() => (state.contactId ? updateContact() : createContact())}>
-                                {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
+                                {state.createContactLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
                         </div>
                     </div>
@@ -807,7 +862,7 @@ export default function ViewLead() {
                 close={() => clearOppData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-4">
-                        <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.name} required />
+                        <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />
                         <CustomSelect
                             title="Lead Owner"
                             value={state.owner}
@@ -823,6 +878,8 @@ export default function ViewLead() {
                             value={state.opportunity_value}
                             onChange={(e) => setState({ opportunity_value: e })}
                             placeholder={'Opportunity Value'}
+                            required
+
                         />
                         <CustomSelect
                             title="Stage"
@@ -831,7 +888,7 @@ export default function ViewLead() {
                             placeholder={'Stage'}
                             options={state.stageList}
                             required
-                            error={state.errors?.stage}
+                            error={state.errors?.opp_stage}
                         />
                         <NumberInput
                             title="Recurring Value Per Year"
@@ -839,6 +896,8 @@ export default function ViewLead() {
                             onChange={(e) => setState({ recurring_value_per_year: e })}
                             placeholder={'Recurring Value Per Year'}
                             error={state.errors?.recurring_value_per_year}
+                            required
+
                         />
                         <CustomSelect
                             title="Currency Type"
@@ -856,6 +915,8 @@ export default function ViewLead() {
                             placeholder={'Probability In Percentage'}
                             error={state.errors?.probability_in_percentage}
                             max={100}
+                            required
+
                         />
                         {/* <CustomSelect
                             title="Created By"
@@ -872,6 +933,8 @@ export default function ViewLead() {
                             placeholder="Closing Date"
                             title="Closing Date"
                             onChange={(e) => setState({ opp_closing_date: e })}
+                            required
+
                         />
 
                         <div className="mt-3 flex items-center justify-end gap-3">

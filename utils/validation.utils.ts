@@ -15,20 +15,28 @@ export const createLeadValidation = Yup.object().shape({
 });
 
 export const createOppValidation = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
+    opp_name: Yup.string().required('Name is required'),
     owner: Yup.string().required('Owner is required'),
-    created_by: Yup.string().required('Created By is required'),
-    stage: Yup.string().required('Stage is required'),
+    opp_stage: Yup.string().required('Stage is required'),
     opportunity_value: Yup.string().required('Opportunity Value is required'),
     recurring_value_per_year: Yup.string().required('Recurring Value Per Year is required'),
     currency_type: Yup.string().required('Currency Type is required'),
     closing_date: Yup.string().required('Closing Date is required'),
     probability_in_percentage: Yup.string().required('Probability In Percentage is required'),
-
 });
 
 export const createNote = Yup.object().shape({
     note: Yup.string().required('Notes is required'),
-    
+});
 
+export const createContact = Yup.object().shape({
+    contact_status: Yup.string().required('Contact status is required'),
+    lead_source: Yup.string().required('Lead source is required'),
+    department: Yup.string().required('Department is required'),
+    designation: Yup.string().required('Designation is required'),
+    phoneNumber: Yup.string()
+        .required('Phone number is required')
+        .matches(/^[0-9]{10}$/, 'Phone number must be exactly 10 digits'),
+    email: Yup.string().required('Email is required').email('Must be a valid email'),
+    contact_name: Yup.string().required('Contact name is required'),
 });

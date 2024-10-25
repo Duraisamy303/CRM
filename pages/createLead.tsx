@@ -174,7 +174,6 @@ const CreateLead = () => {
                 market_segment: state.market_segment?.value,
                 is_active: state.is_active,
             };
-            console.log('body: ', body);
 
             await Validation.createLeadValidation.validate(body, { abortEarly: false });
             const res: any = await Models.lead.create(body);
@@ -206,7 +205,7 @@ const CreateLead = () => {
                     <img src="/assets/images/profile-1.jpeg" height={'100%'} width={'100%'} />
                 </div>
                 <div>
-                    <div className=" mt-5 " style={{ fontSize: '30px',  }}>
+                    <div className=" mt-5 " style={{ fontSize: '30px' }}>
                         Create Lead
                     </div>
                     <div className=" mt-3 " style={{ fontSize: '18px', color: 'grey' }}>
@@ -221,7 +220,7 @@ const CreateLead = () => {
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
                                 <IconUser className="text-[#82de69]" />
                             </div>
-                            <div className=" " style={{ fontSize: '20px',  }}>
+                            <div className=" " style={{ fontSize: '20px' }}>
                                 Basic Information
                             </div>
                         </div>
@@ -241,7 +240,7 @@ const CreateLead = () => {
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffeeee]">
                                 <IconUser className="text-[#fe70f2]" />
                             </div>
-                            <div className=" " style={{ fontSize: '20px',  }}>
+                            <div className=" " style={{ fontSize: '20px' }}>
                                 Company Information
                             </div>
                         </div>
@@ -257,7 +256,7 @@ const CreateLead = () => {
                         <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffefe4]">
                             <IconUser className="text-[#ffbb55]" />
                         </div>
-                        <div className=" " style={{ fontSize: '20px',  }}>
+                        <div className=" " style={{ fontSize: '20px' }}>
                             More Information
                         </div>
                     </div>
@@ -358,12 +357,12 @@ const CreateLead = () => {
                         </div>
                     </div>
 
-                    <div className="  w-full">
+                    {/* <div className="  w-full">
                         <div className="">
                             <label className="block text-sm font-medium text-gray-700">Status</label>
                             <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
                         </div>
-                    </div>
+                    </div> */}
                     <div className="mt-3 flex items-center justify-end gap-3">
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel

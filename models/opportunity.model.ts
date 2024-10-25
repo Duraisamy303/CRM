@@ -20,6 +20,25 @@ const opportunity = {
         return promise;
     },
 
+    allList: (page) => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `opportunity/?page=${page}`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
     listByLeadId: (id) => {
         let promise = new Promise((resolve, reject) => {
             let url = `opportunity/lead_id/${id}`;
