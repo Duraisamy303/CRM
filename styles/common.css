@@ -1,0 +1,3 @@
+.react-datepicker-wrapper {
+    @apply w-full; /* Apply full width using Tailwind */
+}

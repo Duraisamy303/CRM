@@ -1,9 +1,9 @@
 import instance from '@/utils/axios.utils';
 
-const test = {
-    list: () => {
+const log = {
+    list: (page) => {
         let promise = new Promise((resolve, reject) => {
-            let url = 'filter/leads';
+            let url = `contactdetails/?page=${page}`;
             instance()
                 .get(url)
                 .then((res) => {
@@ -20,9 +20,47 @@ const test = {
         return promise;
     },
 
-    create: (data: any) => {
+    listByContactId: (id) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `lead/create/`;
+            let url = `contactlog/${id}`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    logStage: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `log_stages/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    create: (data: any, id: any) => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `log/${id}/`;
             instance()
                 .post(url, data)
                 .then((res) => {
@@ -41,10 +79,10 @@ const test = {
 
     update: (data: any, id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `lead/update/${id}`;
+            let url = `/log/${id}/`;
 
             instance()
-                .post(url, data)
+                .put(url, data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -61,10 +99,10 @@ const test = {
 
     delete: (id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `lead/delete/${id}`;
+            let url = `lead/delete/${id}/`;
 
             instance()
-                .post(url)
+                .put(url)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -81,9 +119,9 @@ const test = {
 
     details: (id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `auth/view_user/${id}`;
+            let url = `contactdetails/${id}/`;
             instance()
-                .post(url)
+                .get(url)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -98,18 +136,11 @@ const test = {
         return promise;
     },
 
-    uploadFile: (file: any) => {
+    dropdowns: (type) => {
         let promise = new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', file);
-            let url = '/hdd/upload_file';
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data; charset=utf-8;',
-                },
-            };
+            let url = `contact-dropdown/?type=${type}`;
             instance()
-                .post(url, formData, config)
+                .get(url)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -125,4 +156,4 @@ const test = {
     },
 };
 
-export default test;
+export default log;

@@ -140,8 +140,8 @@ export const generateRandomCode = () => {
     return result;
 };
 
-export const Dropdown = (arr: any[]) => {
-    const array = arr?.map((item) => ({ value: item, label: item }));
+export const Dropdown = (arr: any, label: string) => {
+    const array = arr?.map((item) => ({ value: item?.id, label: item[label] }));
     return array;
 };
 
@@ -237,3 +237,48 @@ export const isValidUrl = (url) => {
     const regex = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s]*)?$/i;
     return regex.test(url);
 };
+
+export const addCommasToNumber = (value) => {
+    let values = null;
+    if (typeof value === 'number') {
+        values = value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    } else {
+        values = value;
+    }
+    return values;
+};
+
+
+export const showDeleteAlert = (onConfirm, onCancel, title) => {
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: "btn confirm-btn", // Add a custom class for the confirm button
+        cancelButton: "btn cancel-btn", // Add a custom class for the cancel button
+        popup: "sweet-alerts",
+      },
+      buttonsStyling: false,
+    });
+  
+    swalWithBootstrapButtons
+      .fire({
+        title: title ? title : "Are you sure to cancel order?",
+        // text: "You won't be able to Delete this!",
+        icon: "warning",
+        showCancelButton: true,
+        // confirmButtonText: 'Yes, delete it!',
+        // cancelButtonText: 'No, cancel!',
+        reverseButtons: true,
+        padding: "2em",
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          onConfirm(); // Call the onConfirm function if the user confirms the deletion
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          onCancel(); // Call the onCancel function if the user cancels the deletion
+        }
+      });
+  };
+  

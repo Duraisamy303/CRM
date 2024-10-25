@@ -14,7 +14,7 @@ import axios from 'axios';
 export const instance = () => {
   const data = axios.create({
     // baseURL: Functions.getBaseURL() + '/api/v1/',
-    baseURL: 'http://192.168.0.113:8001/api/v1',
+    baseURL: 'http://121.200.52.133:8000/lead/',
     // baseURL: 'https://hdd.augmo.io/api/v1'
 
 
