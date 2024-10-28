@@ -25,7 +25,6 @@ import { notifyError, notifySuccess } from '@/components/toast';
 export default function Opportunity() {
     const router = useRouter();
     const id = router?.query?.id;
-    console.log('id: ', id);
 
     const [state, setState] = useSetState({
         loading: false,

@@ -4,7 +4,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 const CustomeDatePicker = (props: any) => {
     const { value, onChange, title, name, required, className, error, placeholder, ...rest } = props;
-    console.log("error: ", error);
 
     const CustomInput = ({ value, onClick }: any) => (
         <input
@@ -31,7 +30,6 @@ const CustomeDatePicker = (props: any) => {
                     showTimeSelect
                     dateFormat="Pp"
                     name={name}
-                    minDate={new Date()}
                     customInput={<CustomInput />} // Custom input used for styling
                     required={required}
                     {...rest}

@@ -3,9 +3,10 @@ import IconCalendar from './Icon/IconCalendar';
 import IconGlobe from './Icon/IconGlobe';
 import IconEdit from './Icon/IconEdit';
 import IconTrash from './Icon/IconTrash';
+import IconEye from './Icon/IconEye';
 
 export default function NoteComponent(props:any) {
-  const {data,onEdit}=props
+  const {data,onEdit,onView}=props
     const DummyUserIcon = () => (
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2" fill="none" />
@@ -42,6 +43,9 @@ export default function NoteComponent(props:any) {
         
         {/* Edit and Delete Icons - positioned to the bottom-right */}
         <div className="flex justify-end space-x-3 text-gray-400">
+        <button className="hover:text-blue-500" onClick={onView}>
+            <IconEye  />
+          </button>
           <button className="hover:text-blue-500" onClick={onEdit}>
             <IconEdit  />
           </button>

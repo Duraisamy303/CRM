@@ -17,10 +17,12 @@ interface SelectProps {
     error?: string;
     isMulti?: boolean;
     required?: boolean;
+    loadMore?: any;
+    borderRadius?: number;
 }
 
 const CustomSelect = (props: SelectProps) => {
-    const { options, value, onChange, placeholder = 'Select...', title, isSearchable = true, className, error, isMulti, required } = props;
+    const { borderRadius, options, value, onChange, placeholder = 'Select...', title, isSearchable = true, className, error, isMulti, required, loadMore } = props;
     const customStyles = {
         control: (provided: any) => ({
             ...provided,
@@ -29,6 +31,7 @@ const CustomSelect = (props: SelectProps) => {
             '&:hover': {
                 borderColor: error ? 'red' : provided.borderColor, // Maintain red border on hover if there's an error
             },
+            borderRadius: borderRadius ? borderRadius : '0px', // Add rounded corners
         }),
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
         menu: (base: any) => ({ ...base, zIndex: 9999 }),
@@ -50,12 +53,13 @@ const CustomSelect = (props: SelectProps) => {
                     isMulti={isMulti}
                     isClearable={true}
                     styles={customStyles}
-                    className={`react-select ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
+                    className={`react-select  ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
                     // classNamePrefix="react-select" // Adds a prefix for custom styles
                     // styles={{
                     //     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                     //     menu: (base) => ({ ...base, zIndex: 9999 }),
                     // }}
+                    onMenuScrollToBottom={loadMore}
                 />
                 {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
             </div>

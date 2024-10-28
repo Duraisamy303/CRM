@@ -49,10 +49,12 @@ const CreateLead = () => {
         submitLoad: false,
         errors: null,
         created_by: null,
+        verticalList: [],
+        vertical: '',
     });
 
     useEffect(() => {
-        getFocusSegmentList();
+        verticalList();
         getMarketSegmentList();
         countryList();
         tagList();
@@ -60,19 +62,19 @@ const CreateLead = () => {
         createdByList();
     }, []);
 
-    const getFocusSegmentList = async () => {
+    const getFocusSegmentList = async (verticalData: any) => {
         try {
-            setState({ loading: true });
-            const res: any = await Models.lead.dropdowns('focus_segment');
-            const dropdownList = Dropdown(res, 'focus_segment');
-            setState({ focusSegmentList: dropdownList, loading: false });
+            const res: any = await Models.lead.focusIdBasedVericalList(verticalData?.value);
+            let focusList: [];
+            if (res?.length > 0) {
+                focusList = res?.map((item) => ({ value: item?.id, label: item?.focus_segment }));
+            }
+
+            setState({ focusSegmentList: focusList });
         } catch (error) {
             setState({ loading: false });
-
-            console.log('error: ', error);
         }
     };
-
     const getMarketSegmentList = async () => {
         try {
             setState({ loading: true });
@@ -173,6 +175,7 @@ const CreateLead = () => {
                 tags: tags,
                 market_segment: state.market_segment?.value,
                 is_active: state.is_active,
+                vertical: state.vertical?.value,
             };
 
             await Validation.createLeadValidation.validate(body, { abortEarly: false });
@@ -193,6 +196,17 @@ const CreateLead = () => {
                 setState({ submitLoad: false });
             }
             setState({ submitLoad: false });
+        }
+    };
+
+    const verticalList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('vertical');
+            const dropdownList = Dropdown(res, 'vertical');
+            setState({ verticalList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
         }
     };
 
@@ -247,7 +261,7 @@ const CreateLead = () => {
 
                         <TextInput title="Company Email" value={state.company_email} onChange={(e) => setState({ company_email: e })} placeholder={'Company Email'} />
                         <TextInput title="Company Website" value={state.company_website} onChange={(e) => setState({ company_website: e })} placeholder={'Company Website'} />
-                        <NumberInput title="Company Number" value={state.company_number} onChange={(e) => setState({ company_number: e })} placeholder={'Company Number'} />
+                        <TextInput title="Company Number" value={state.company_number} onChange={(e) => setState({ company_number: e })} placeholder={'Company Number'} />
                     </div>
                 </div>
 
@@ -305,26 +319,49 @@ const CreateLead = () => {
                     <div className=" flex w-full gap-3">
                         <div className="flex w-[50%]">
                             <CustomSelect
+                                title="Vertical"
+                                value={state.vertical}
+                                onChange={(e) => {
+                                    if (e) {
+                                        setState({ focus_segment: '', vertical: e });
+                                        getFocusSegmentList(e);
+                                    } else {
+                                        setState({ focus_segment: '', vertical: '' });
+                                    }
+                                }}
+                                placeholder={'Vertical'}
+                                options={state.verticalList}
+                                required
+                                error={state.errors?.vertical}
+                            />
+                        </div>
+
+                        <div className="flex w-[50%]">
+
+                            <CustomSelect
                                 title="Focus Segment"
                                 value={state.focus_segment}
-                                onChange={(e) => setState({ focus_segment: e })}
+                                onChange={(e) => {
+                                    setState({ focus_segment: e });
+                                }}
                                 placeholder={'Focus Segment'}
                                 options={state.focusSegmentList}
                                 required
                                 error={state.errors?.focus_segment}
                             />
                         </div>
-                        <div className=" flex  w-[50%]">
-                            <CustomSelect
-                                title="Market Segment"
-                                value={state.market_segment}
-                                onChange={(e) => setState({ market_segment: e })}
-                                placeholder={'Market Segment'}
-                                options={state.marketSegmentList}
-                                required
-                                error={state.errors?.market_segment}
-                            />
-                        </div>
+                    </div>
+
+                    <div className=" flex w-full gap-3">
+                        <CustomSelect
+                            title="Market Segment"
+                            value={state.market_segment}
+                            onChange={(e) => setState({ market_segment: e })}
+                            placeholder={'Market Segment'}
+                            options={state.marketSegmentList}
+                            required
+                            error={state.errors?.market_segment}
+                        />
                     </div>
 
                     <div className=" flex w-full gap-3">

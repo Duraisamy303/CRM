@@ -1,56 +1,61 @@
 import React from 'react';
-import IconEdit from './Icon/IconEdit';
-import IconTrash from './Icon/IconTrash';
 import moment from 'moment';
+import ReadMore from '@/common_component/readMore';
+import IconEdit from './Icon/IconEdit';
 
-const LogCard = (props) => {
-    const { data, onEdit, onDelete, editIcon } = props;
-    const PyramidLogo = () => (
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 20H22L12 2Z" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    );
-
+const Timeline = (props: any) => {
+    const { data, onEdit, onDelete, editIcon} = props;
     return (
-        <div className="relative flex w-full rounded-lg border border-gray-300 bg-white p-4 shadow-md transition-transform hover:scale-105">
-            {/* Left-side logo */}
-            <div className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-400 p-2">
-                <PyramidLogo />
-            </div>
+        <div className="w-full p-4">
+            <div className="mb-5">
+                <div className="mx-auto max-w-[900px]">
+                    {data?.map((item) => (
+                        <div className="flex">
+                            <p className="mr-5 min-w-[100px] max-w-[100px] py-2.5 text-base font-semibold text-[#3b3f5c] dark:text-white-light">{item?.created_on}</p>
+                            <div className="relative before:absolute before:left-1/2 before:top-[15px] before:h-2.5 before:w-2.5 before:-translate-x-1/2 before:rounded-full before:border-2 before:border-primary after:absolute after:-bottom-[15px] after:left-1/2 after:top-[25px] after:h-auto after:w-0 after:-translate-x-1/2 after:rounded-full after:border-l-2 after:border-primary"></div>
+                            <div className="self-center p-2.5 ltr:ml-2.5 rtl:ml-2.5 rtl:ltr:mr-2.5">
+                                <div className="mt-4 w-full rounded-lg border border-gray-200 bg-white p-4  shadow-lg" >
+                                    <h3 className="text-lg font-semibold text-blue-700">{item.log_stage.stage}</h3>
+                                    <p className="text-sm">
+                                        <strong>Contact:</strong> {item.contact.name}
+                                    </p>
+                                    <p className="text-sm">
+                                        <strong>Focus Segment:</strong> {item.focus_segment.name}
+                                    </p>
 
-            {/* Content */}
-            <div className="flex flex-grow flex-col gap-2 pl-14">
-                {' '}
-                {/* Adjust padding to make space for the logo */}
-                <div>
-                    <h3 className="text-lg font-semibold text-gray-800">{`${data?.created_by?.username} (Contact: ${data?.contact?.name})`}</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                    <p className="rounded-full bg-blue-500 px-3 py-1 text-sm text-white">{moment(data.created_on).format('YYYY-MM-DD HH:mm')}</p>
-                    <p className="font-bold">Follow Up:</p>
-                    <p className="rounded-full bg-yellow-500 px-3 py-1 text-sm text-white">{moment(data.follow_up_date_time).format('YYYY-MM-DD HH:mm')}</p>
-                </div>
-                {/* Comments/Details Section */}
-                <div className="border-t border-gray-200 pt-2">
-                    <p className="text-gray-600">{data?.details || 'No comments available.'}</p>
+                                    <p className="text-sm">
+                                        <strong>Follow-up Date:</strong> {moment(item.follow_up_date_time).format('MMMM DD, YYYY')}
+                                    </p>
+                                    {item?.details && (
+                                        <p className=" flex text-sm">
+                                            <strong>Details:</strong>
+                                            <ReadMore
+                                               
+                                                children={item?.details}
+                                            />
+                                        </p>
+                                    )}
+                                    {editIcon && (
+                                        <div className="mt-2 flex justify-end">
+                                            <button className="flex items-center text-blue-500 hover:text-blue-700" onClick={()=>onEdit(item)}>
+                                                <IconEdit className="mr-1 h-5 w-5" />
+                                            </button>
+                                            {/* <button
+                                                className="flex items-center text-red-500 hover:text-red-700"
+                                                onClick={onDelete}
+                                            >
+                                                <IconTrash className="h-5 w-5" />
+                                            </button> */}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
-
-            {/* Icons */}
-            {editIcon && (
-                <div className="ml-4 flex flex-col justify-center">
-                    <button className="flex items-center text-blue-500 hover:text-blue-700" onClick={onEdit}>
-                        <IconEdit className="mr-1 h-5 w-5" />
-                    </button>
-                    {/* <button
-                        className="flex items-center text-red-500 hover:text-red-700"
-                        onClick={onDelete}
-                    >
-                        <IconTrash className="h-5 w-5" />
-                    </button> */}
-                </div>
-            )}
         </div>
     );
 };
-export default LogCard;
+
+export default Timeline;

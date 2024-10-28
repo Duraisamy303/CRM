@@ -58,9 +58,9 @@ const opportunity = {
         return promise;
     },
 
-    filter: (data: any) => {
+    filter: (data: any,page:any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `filter_lead/`;
+            let url = `opportunities/?page=${page}`;
             instance()
                 .post(url, data)
                 .then((res) => {

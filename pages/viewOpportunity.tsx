@@ -30,6 +30,7 @@ import { leadId } from '@/store/crmConfigSlice';
 import OppLabel from '@/components/oppLabel';
 import NoteComponent from '@/components/noteComponent';
 import { DataTable } from 'mantine-datatable';
+import ReadMore from '@/common_component/readMore';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -64,6 +65,9 @@ export default function ViewLead() {
         notesList: [],
         stageHistoryList: [],
         noteLoad: false,
+        isOpenViewNote: false,
+        noteViewId: '',
+        noteDetails: '',
     });
 
     useEffect(() => {
@@ -227,7 +231,7 @@ export default function ViewLead() {
                         <TextArea height="150px" value={state.notes} onChange={(e) => setState({ notes: e })} placeholder={'Notes'} />
                     </div> */}
                 {state.notesList?.length > 0 && (
-                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-12 ">
+                    <div className="panel col-span-12 flex max-h-[400px] flex-col gap-5 overflow-scroll rounded-2xl md:col-span-12">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -260,6 +264,7 @@ export default function ViewLead() {
                                         onEdit={() => {
                                             setState({ noteId: item.id, isOpenAddNote: true, note: item.note });
                                         }}
+                                        onView={() => setState({ isOpenViewNote: true, noteDetails: item })}
                                     />
                                 </div>
                             ))}
@@ -268,7 +273,7 @@ export default function ViewLead() {
                 )}
             </div>
             {state.stageHistoryList?.length > 0 && (
-                <div className="panel col-span-12 mt-4 flex flex-col gap-5 rounded-2xl md:col-span-12 ">
+                <div className="panel col-span-12 mt-4 flex max-h-[400px] flex-col gap-5 overflow-scroll rounded-2xl md:col-span-12">
                     <div className="flex justify-between">
                         <div className="flex w-full justify-between">
                             <div className="flex items-center gap-3">
@@ -276,7 +281,7 @@ export default function ViewLead() {
                                     <IconUser className="text-[#82de69]" />
                                 </div>
                                 <div className=" " style={{ fontSize: '20px' }}>
-                                    State History {`(${state.stageHistoryList?.length})`}
+                                    Stage History {`(${state.stageHistoryList?.length})`}
                                 </div>
                             </div>
                         </div>
@@ -318,6 +323,53 @@ export default function ViewLead() {
                             <button type="button" className="btn btn-primary" onClick={() => createAndUpdateNote()}>
                                 {state.noteLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
+                        </div>
+                    </div>
+                )}
+            />
+
+            <Modal
+                open={state.isOpenViewNote}
+                addHeader={'Note Details'}
+                close={() => setState({ isOpenViewNote: false, noteViewId: '', noteDetails: '' })}
+                renderComponent={() => (
+                    <div className="flex flex-col gap-5 p-5">
+                        {/* Display Note Details */}
+                        <div className="mb-4 space-y-3">
+                            <div className="flex">
+                                <div className="w-[30%]">
+                                    <span className="w-1/3 font-semibold">Opportunity:</span>
+                                </div>
+                                <div className="w-[70%]">
+                                    <span className="w-2/3 text-right">{state.noteDetails?.opportunity?.name || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div className="flex">
+                                <div className="w-[30%]">
+                                    <span className="w-1/3 font-semibold">Note By:</span>
+                                </div>
+                                <div className="w-[70%]">
+                                    <span className="w-2/3 text-right">{state.noteDetails?.note_by?.username || 'N/A'}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex">
+                                <div className="w-[30%]">
+                                    <span className="w-1/3 font-semibold">Note Date:</span>
+                                </div>
+                                <div className="w-[70%]">
+                                    <span className="w-2/3 text-right">{moment(state.noteDetails?.note_on).format('MMMM DD, YYYY')}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex">
+                                <div className="w-[30%]">
+                                    <span className="w-1/3 font-semibold">Details:</span>
+                                </div>
+                                <div className="w-[70%]">
+                                    <ReadMore children={state.noteDetails?.note || 'No details available'} />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

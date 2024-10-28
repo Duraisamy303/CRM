@@ -62,7 +62,6 @@ const UpdateLead = () => {
         try {
             setState({ loading: true });
             const res: any = await Models.opportunity.details(id);
-            console.log('res: ', res);
             setState({ data: res, name: res.name, loading: false });
         } catch (error) {
             setState({ loading: false });
@@ -146,7 +145,6 @@ const UpdateLead = () => {
                 created_by: state.created_by?.value,
                 is_active: true,
             };
-            console.log('body: ', body);
 
             await Validation.createOppValidation.validate(body, { abortEarly: false });
             const res: any = await Models.opportunity.create(body);

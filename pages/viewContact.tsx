@@ -27,6 +27,8 @@ import TextArea from '@/components/TextArea';
 import CustomeDatePicker from '@/common_component/datePicker';
 import moment from 'moment';
 import IconEdit from '@/components/Icon/IconEdit';
+import Tippy from '@tippyjs/react';
+import TooltipButton from '@/common_component/tooltipButton';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -56,6 +58,7 @@ export default function ViewLead() {
         createdby: null,
         logCreatedBy: null,
         isOpenLog: false,
+        logLoad: false,
     });
 
     useEffect(() => {
@@ -188,43 +191,51 @@ export default function ViewLead() {
         );
     };
 
-    const createLog = async () => {
+    const createAndLog = async () => {
         try {
-            setState({ createContactLoad: true });
+            setState({ logLoad: true });
+            if (state.logId) {
+                let validateField = {
+                    logStage: state.logStage?.value,
+                };
+                await Validation.updateLog.validate(validateField, { abortEarly: false });
+            } else {
+                let validateField = {
+                    logStage: state.logStage?.value,
+                    focus_segment: state.focus_segment?.value,
+                };
+                await Validation.createLog.validate(validateField, { abortEarly: false });
+            }
+
             const body = {
-                follow_up_date_time: moment(state.follow_up_date_time).format('YYYY-MM-DD'),
+                follow_up_date_time: state.follow_up_date_time ? moment(state.follow_up_date_time).format('YYYY-MM-DD') : '',
                 details: state.details,
                 log_stage: state.logStage?.value,
                 focus_segment: state.focus_segment?.value,
-                createdBy: state.logCreatedBy?.value,
+                createdBy: 1,
             };
-
-            const res = await Models.log.create(body, id);
-            Success('Log created successfully');
+            if (state.logId) {
+                await Models.log.update(body, state.logId);
+                Success('Log Updated successfully');
+            } else {
+                await Models.log.create(body, id);
+                Success('Log created successfully');
+            }
             clearLogData();
             getLogList();
         } catch (error) {
-            setState({ createContactLoad: false });
-        }
-    };
-
-    const updateLog = async () => {
-        try {
-            setState({ createContactLoad: true });
-            const body = {
-                follow_up_date_time: moment(state.follow_up_date_time).format('YYYY-MM-DD'),
-                details: state.details,
-                log_stage: state.logStage?.value,
-                focus_segment: state.focus_segment?.value,
-                createdBy: state.logCreatedBy?.value,
-            };
-
-            const res = await Models.log.update(body, state.logId);
-            Success('Log Updated successfully');
-            clearLogData();
-            getLogList();
-        } catch (error) {
-            setState({ createContactLoad: false });
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = {};
+                error.inner.forEach((err) => {
+                    validationErrors[err.path] = err?.message; // Set the error message for each field
+                });
+                setState({ errors: validationErrors });
+                setState({ logLoad: false });
+            } else {
+                console.log('Error: ', error?.message);
+                setState({ logLoad: false });
+            }
+            setState({ logLoad: false });
         }
     };
 
@@ -281,6 +292,8 @@ export default function ViewLead() {
             focus_segment: '',
             follow_up_date_time: '',
             details: '',
+            errors: '',
+            logLoad: false,
         });
     };
 
@@ -292,6 +305,14 @@ export default function ViewLead() {
                 <div className="flex items-center gap-5">
                     <h5 className="text-lg font-semibold dark:text-white-light">{`${state.data?.name} (Contact)`}</h5>
                 </div>
+                {state.logList?.length == 0 && (
+                    <TooltipButton onClick={() => setState({ isOpenLog: true })} icon={<IconPlus />} tipTitle="Add Log" />
+                    // <Tippy content="Add Log" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
+                    //     <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenLog: true })}>
+                    //         <IconPlus />
+                    //     </button>
+                    // </Tippy>
+                )}
             </div>
             <div className=" mt-4 grid grid-cols-12  gap-4">
                 <div className=" col-span-12 flex flex-col   md:col-span-5">
@@ -305,9 +326,8 @@ export default function ViewLead() {
                                     Basic Information
                                 </div>
                             </div>
-                            <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenEdit: true })}>
-                                <IconEdit />
-                            </button>
+
+                            <TooltipButton onClick={() => setState({ isOpenEdit: true })} icon={<IconEdit />} tipTitle="Edit Contact" />
                         </div>
                         <ViewLabel label={'Name'} value={state.data?.name} />
                         <ViewLabel label={'Email'} value={state.data?.email_id} />
@@ -319,29 +339,25 @@ export default function ViewLead() {
                         <ViewLabel label={'Designation'} value={state.data?.designation} />
                     </div>
                 </div>
+                {state.logList?.length > 0 && (
+                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 ">
+                        <div className="flex justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
+                                    <IconUser className="text-[#82de69]" />
+                                </div>
+                                <div className=" " style={{ fontSize: '20px' }}>
+                                    Log History {`(${state.logList?.length})`}
+                                </div>
+                            </div>
 
-                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 ">
-                    <div className="flex justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
-                                <IconUser className="text-[#82de69]" />
-                            </div>
-                            <div className=" " style={{ fontSize: '20px' }}>
-                                Log History {`(${state.logList?.length})`}
-                            </div>
+                            <TooltipButton onClick={() => setState({ isOpenLog: true })} icon={<IconPlus />} tipTitle="Add Log" />
                         </div>
-                        <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenLog: true })}>
-                            <IconPlus />
-                        </button>
+                        <div className="max-h-[600px] overflow-y-scroll">
+                            <LogCard data={state.logList} onPress={(item) => router.push(`/opportunity?id=${item.id}`)} onEdit={(item) => onEditLog(item)} editIcon={true} />
+                        </div>
                     </div>
-                    <div className="max-h-[600px] overflow-y-scroll">
-                        {state.logList?.map((item) => (
-                            <div key={item.id} className="mt-1">
-                                <LogCard editIcon={true} data={item} onPress={() => router.push(`/opportunity?id=${item.id}`)} onEdit={() => onEditLog(item)} onDelete={() => deleteOpp(item.id)} />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                )}
             </div>
             <Modal
                 open={state.isOpenLog}
@@ -361,7 +377,7 @@ export default function ViewLead() {
                                     error={state.errors?.focus_segment}
                                 />
 
-                                <CustomSelect
+                                {/* <CustomSelect
                                     title="Created By"
                                     value={state.logCreatedBy}
                                     onChange={(e) => setState({ logCreatedBy: e })}
@@ -369,27 +385,28 @@ export default function ViewLead() {
                                     options={state.createdByList}
                                     error={state.errors?.createdby}
                                     required
-                                />
+                                /> */}
                             </div>
                         )}
-                        <CustomeDatePicker value={state.follow_up_date_time} title="Follow Up" onChange={(e) => setState({ follow_up_date_time: e })} />
                         <CustomSelect
                             title="Log Stage"
                             value={state.logStage}
                             onChange={(e) => setState({ logStage: e })}
                             placeholder={'Log Stage'}
                             options={state.logStageList}
-                            error={state.errors?.lead_status}
+                            error={state.errors?.logStage}
                             required
                         />
+                        <CustomeDatePicker value={state.follow_up_date_time} title="Follow Up" onChange={(e) => setState({ follow_up_date_time: e })} />
+
                         <TextArea height="150px" value={state.details} onChange={(e) => setState({ details: e })} placeholder={'Details'} title={'Details'} />
 
                         <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearLogData()}>
                                 Cancel
                             </button>
-                            <button type="button" className="btn btn-primary" onClick={() => (state.logId ? updateLog() : createLog())}>
-                                {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
+                            <button type="button" className="btn btn-primary" onClick={() => createAndLog()}>
+                                {state.logLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
                         </div>
                     </div>

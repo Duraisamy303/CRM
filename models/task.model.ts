@@ -1,11 +1,11 @@
 import instance from '@/utils/axios.utils';
 
-const lead = {
-    list: (page) => {
+const task = {
+    list: (data,page) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leaddetails/?page=${page}`;
+            let url = `gettask/${page}/`;
             instance()
-                .get(url)
+                .post(url,data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -20,28 +20,9 @@ const lead = {
         return promise;
     },
 
-    logList: (id) => {
+    listFilterByDuration: (data, userId) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leadlog/${id}`;
-            instance()
-                .get(url)
-                .then((res) => {
-                    resolve(res.data);
-                })
-                .catch((error) => {
-                    if (error.response) {
-                        reject(error.response.message);
-                    } else {
-                        reject(error);
-                    }
-                });
-        });
-        return promise;
-    },
-
-    filter: (data: any,page) => {
-        let promise = new Promise((resolve, reject) => {
-            let url = `filter_lead/?page=${page}`;
+            let url = `task/${userId}/`;
             instance()
                 .post(url, data)
                 .then((res) => {
@@ -49,7 +30,7 @@ const lead = {
                 })
                 .catch((error) => {
                     if (error.response) {
-                        reject(error.response.data.message);
+                        reject(error.response.message);
                     } else {
                         reject(error);
                     }
@@ -60,7 +41,7 @@ const lead = {
 
     create: (data: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leaddetails/`;
+            let url = `create-task/`;
             instance()
                 .post(url, data)
                 .then((res) => {
@@ -79,7 +60,7 @@ const lead = {
 
     update: (data: any, id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `/leaddetails/${id}/`;
+            let url = `/log/${id}/`;
 
             instance()
                 .put(url, data)
@@ -119,7 +100,7 @@ const lead = {
 
     details: (id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leaddetails/${id}/`;
+            let url = `contactdetails/${id}/`;
             instance()
                 .get(url)
                 .then((res) => {
@@ -136,75 +117,11 @@ const lead = {
         return promise;
     },
 
-    dropdowns: (type) => {
+    assignTo: (data: any, taskId: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `dropdown/?type=${type}`;
+            let url = `task/${taskId}/assign/`;
             instance()
-                .get(url)
-                .then((res) => {
-                    resolve(res.data);
-                })
-                .catch((error) => {
-                    if (error.response) {
-                        reject(error.response.data.message);
-                    } else {
-                        reject(error);
-                    }
-                });
-        });
-        return promise;
-    },
-
-    focusIdBasedVericalList: (id) => {
-        let promise = new Promise((resolve, reject) => {
-            let url = `focus_segments/${id}/`;
-            instance()
-                .get(url)
-                .then((res) => {
-                    resolve(res.data);
-                })
-                .catch((error) => {
-                    if (error.response) {
-                        reject(error.response.message);
-                    } else {
-                        reject(error);
-                    }
-                });
-        });
-        return promise;
-    },
-
-    stateList: (id: any) => {
-        let promise = new Promise((resolve, reject) => {
-            let url = `dropdown/state/${id}/?type=state`;
-            instance()
-                .get(url)
-                .then((res) => {
-                    resolve(res.data);
-                })
-                .catch((error) => {
-                    if (error.response) {
-                        reject(error.response.data.message);
-                    } else {
-                        reject(error);
-                    }
-                });
-        });
-        return promise;
-    },
-
-    uploadFile: (file: any) => {
-        let promise = new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', file);
-            let url = '/hdd/upload_file';
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data; charset=utf-8;',
-                },
-            };
-            instance()
-                .post(url, formData, config)
+                .post(url, data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -220,4 +137,4 @@ const lead = {
     },
 };
 
-export default lead;
+export default task;

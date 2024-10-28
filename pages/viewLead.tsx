@@ -29,6 +29,12 @@ import moment from 'moment';
 import { leadId } from '@/store/crmConfigSlice';
 import IconEye from '@/components/Icon/IconEye';
 import IconEdit from '@/components/Icon/IconEdit';
+import IconMenuContacts from '@/components/Icon/Menu/IconMenuContacts';
+import IconContacts from '@/components/Icon/IconContact';
+import IconUserPlus from '@/components/Icon/IconUserPlus';
+import Tippy from '@tippyjs/react';
+import IconOpportunity from '@/components/Icon/IconOpportunity';
+import OppLabel from '@/components/oppLabel';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -362,7 +368,6 @@ export default function ViewLead() {
                 name: state.opp_name,
                 owner: state.owner?.value,
                 stage: state.opp_stage?.value,
-                note: state.notes,
                 opportunity_value: state.opportunity_value,
                 recurring_value_per_year: state.recurring_value_per_year,
                 currency_type: state.currency_type?.value,
@@ -373,7 +378,7 @@ export default function ViewLead() {
                 is_active: true,
             };
 
-            await Validation.createOppValidation.validate(validateField, { abortEarly: false });
+            await Validation.createOppsValidation.validate(validateField, { abortEarly: false });
             let res;
             if (state.oppId) {
                 res = await Models.opportunity.update(body, state.oppId);
@@ -464,6 +469,8 @@ export default function ViewLead() {
             opp_created_by: { value: row.created_by.id, label: row.created_by.username },
             opp_closing_date: new Date(row.closing_date),
             opp_stage: { value: row.stage.id, label: row.stage.stage },
+            notes:row.note
+
         });
     };
 
@@ -476,76 +483,110 @@ export default function ViewLead() {
                     <h5 className="text-lg font-semibold dark:text-white-light">{`${state.data?.name} (Lead)`}</h5>
                 </div>
                 <div className="flex gap-5">
-                    <button
-                        type="button"
-                        className="btn btn-primary w-full md:mb-0 md:w-auto"
-                        onClick={() => {
-                            setState({ isOpenOpp: true });
-                        }}
-                    >
-                        Add Opportunity
-                    </button>
+                    <Tippy content="Add Opportunity" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
+                        <button
+                            type="button"
+                            className="btn btn-primary md:mb-0 md:w-auto"
+                            onClick={() => {
+                                setState({ isOpenOpp: true });
+                            }}
+                        >
+                            <IconOpportunity />
+                        </button>
+                    </Tippy>
+
+                    <Tippy content="Add Contact" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
+                        <button type="button" className="btn btn-primary md:mb-0 md:w-auto" onClick={() => setState({ isOpenCreateContact: true })}>
+                            <IconUserPlus />
+                        </button>
+                    </Tippy>
                 </div>
             </div>
 
-            <div className=" mt-4 grid grid-cols-12  gap-4">
-                <div className=" col-span-12 flex flex-col   md:col-span-8">
-                    <div className="panel flex flex-col gap-5 rounded-2xl">
-                        <div className="flex w-full justify-between">
+            {state.contactList?.length > 0 ? (
+                <div className="mt-4 grid grid-cols-12  gap-4  mb-4">
+                    <div className=" col-span-8 flex flex-col   md:col-span-8">
+                        <div className="panel flex flex-col gap-5 rounded-2xl">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
                                     <IconUser className="text-[#82de69]" />
                                 </div>
                                 <div className=" " style={{ fontSize: '20px' }}>
-                                    Lead Information
+                                    Basic Information
                                 </div>
+                            </div>
+                            <ViewLabel label={'Lead Name'} value={state.data?.name} />
+                            <ViewLabel label={'Lead Owner'} value={state.data?.lead_owner?.username} />
+                            {state.data?.company_email && <ViewLabel label={'Company Email'} value={state.data?.company_email} />}
+                            {state.data?.company_website && <ViewLabel label={'Company Website'} value={state.data?.company_website} />}
+                            {state.data?.company_number && <ViewLabel label={'Company Number'} value={state.data?.company_number} />}
+                            {state.data?.annual_revenue && <ViewLabel label={'Annual Revenue'} value={addCommasToNumber(state.data?.annual_revenue)} />}
+                            {state.data?.focus_segment && <ViewLabel label={'Focus Segment'} value={state.data?.focus_segment?.focus_segment} />}
+                            {state.data?.market_segment && <ViewLabel label={'Market Segment'} value={state.data?.market_segment?.market_segment} />}
+                            {state.data?.tags?.length > 0 && <ViewLabel label={'Tags'} value={state.data.tags.map((item) => item?.tag).join(', ')} />}
+                            {state.data?.fax && <ViewLabel label={'Fax'} value={Number(state.data?.fax)} />}
+                            {state.data?.created_by && <ViewLabel label={'Created By'} value={state.data?.created_by?.username} />}
+                            {state.data?.country && <ViewLabel label={'Country'} value={state.data?.country?.country_name} />}
+                            {state.data?.state && <ViewLabel label={'State'} value={state.data?.state?.state_name} />}
+                            <ViewLabel label={'Status'} value={state.data?.is_active ? 'Active' : 'In Active'} />
+                        </div>
+                    </div>
+
+                    <div className="panel col-span-7 flex flex-col gap-5 rounded-2xl md:col-span-4 ">
+                        <div className="flex justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
+                                    <IconUser className="text-[#82de69]" />
+                                </div>
+                                <div className=" " style={{ fontSize: '20px' }}>
+                                    Contacts {`(${state.contactCount})`}
+                                </div>
+                            </div>
+                            <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenCreateContact: true })}>
+                                <IconPlus />
+                            </button>
+                        </div>
+                        <div className="max-h-[580px] overflow-y-scroll">
+                            {state.contactList?.map((item) => (
+                                <div key={item.id} className="mt-3">
+                                    <OppCard data={item} onPress={() => router.push(`/viewContact?id=${item.id}`)} onEdit={() => onEditCantact(item)} onDelete={() => deleteOpp(item.id)} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="col-span-12 mb-2 mt-2 flex flex-col md:col-span-12">
+                    <div className="panel flex flex-col gap-5 rounded-2xl">
+                        <div className="flex w-full justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
+                                    <IconUser className="text-[#82de69]" />
+                                </div>
+                                <div style={{ fontSize: '20px' }}>Lead Information</div>
                             </div>
                             <button type="button" className="btn btn-primary p-2" onClick={() => router.push(`/updateLead?id=${id}`)}>
                                 <IconEdit />
                             </button>
                         </div>
-                        <ViewLabel label={'Lead Name'} value={state.data?.name} />
-                        <ViewLabel label={'Lead Owner'} value={state.data?.lead_owner?.username} />
-                        {state.data?.company_email && <ViewLabel label={'Company Email'} value={state.data?.company_email} />}
-                        {state.data?.company_website && <ViewLabel label={'Company Website'} value={state.data?.company_website} />}
-                        {state.data?.company_number && <ViewLabel label={'Company Number'} value={state.data?.company_number} />}
-                        {state.data?.annual_revenue && <ViewLabel label={'Annual Revenue'} value={addCommasToNumber(state.data?.annual_revenue)} />}
-                        {state.data?.focus_segment && <ViewLabel label={'Focus Segment'} value={state.data?.focus_segment?.focus_segment} />}
-                        {state.data?.market_segment && <ViewLabel label={'Market Segment'} value={state.data?.market_segment?.market_segment} />}
-                        {state.data?.tags?.length > 0 && <ViewLabel label={'Tags'} value={state.data.tags.map((item) => item?.tag).join(', ')} />}
-                        {state.data?.fax && <ViewLabel label={'Fax'} value={Number(state.data?.fax)} />}
-                        {state.data?.created_by && <ViewLabel label={'Created By'} value={state.data?.created_by?.username} />}
-                        {state.data?.country && <ViewLabel label={'Country'} value={state.data?.country?.country_name} />}
-                        {state.data?.state && <ViewLabel label={'State'} value={state.data?.state?.state_name} />}
-                        <ViewLabel label={'Status'} value={state.data?.is_active ? 'Active' : 'In Active'} />
+                        <OppLabel label1="Lead Name" value1={state.data?.name} label2="Lead Owner" value2={state.data?.lead_owner?.username} />
+                        <OppLabel label1="Company Email" value1={state.data?.company_email} label2="Company Website" value2={state.data?.company_website} />
+                        <OppLabel label1="Company Number" value1={state.data?.company_number} label2="Annual Revenue" value2={addCommasToNumber(state.data?.annual_revenue)} />
+                        <OppLabel label1="Vertical" value1={state.data?.focus_segment?.vertical?.vertical} label2="Focus Segment" value2={state.data?.focus_segment?.focus_segment} />
+                        <OppLabel
+                            label1="Market Segment"
+                            value1={state.data?.market_segment?.market_segment}
+                            label2="Tags"
+                            value2={state.data.tags?.length > 0 ? state.data.tags.map((item) => item?.tag).join(', ') : ''}
+                        />
+                        <OppLabel label1="Fax" value1={Number(state.data?.fax)} label2="Country" value2={state.data?.country?.country_name} />
+                        <OppLabel label1="State" value1={state.data?.state?.state_name} label2="Status" value2={state.data?.is_active ? 'Active' : 'Inactive'} />
                     </div>
                 </div>
-
-                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-4 ">
-                    <div className="flex justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
-                                <IconUser className="text-[#82de69]" />
-                            </div>
-                            <div className=" " style={{ fontSize: '20px' }}>
-                                Contacts {`(${state.contactCount})`}
-                            </div>
-                        </div>
-                        <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenCreateContact: true })}>
-                            <IconPlus />
-                        </button>
-                    </div>
-                    <div className="max-h-[580px] overflow-y-scroll">
-                        {state.contactList?.map((item) => (
-                            <div key={item.id} className="mt-3">
-                                <OppCard data={item} onPress={() => router.push(`/viewContact?id=${item.id}`)} onEdit={() => onEditCantact(item)} onDelete={() => deleteOpp(item.id)} />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
+            )}
+            <>
                 {state.opportunityList?.length > 0 && (
-                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-12 ">
+                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-12 mb-4 ">
                         <div className="flex justify-between">
                             <div className="flex w-full justify-between">
                                 <div className="flex items-center gap-3">
@@ -633,21 +674,11 @@ export default function ViewLead() {
                             </div>
                         </div>
                         <div className="max-h-[600px] overflow-y-scroll">
-                            {state.logList?.map((item) => (
-                                <div key={item.id} className="mt-3">
-                                    <LogCard
-                                        editIcon={false}
-                                        data={item}
-                                        onPress={() => router.push(`/opportunity?id=${item.id}`)}
-                                        onEdit={() => onEditCantact(item)}
-                                        onDelete={() => deleteOpp(item.id)}
-                                    />
-                                </div>
-                            ))}
+                            <LogCard data={state.logList} onPress={(item) => router.push(`/opportunity?id=${item.id}`)} onDelete={(item) => deleteOpp(item.id)} editIcon={false} />
                         </div>
                     </div>
                 )}
-            </div>
+            </>
             <SideMenu
                 open={state.isOpen}
                 close={() => setState({ isOpen: false })}
@@ -802,7 +833,7 @@ export default function ViewLead() {
             /> */}
 
             <SideMenu
-                title={state.contactId ? 'Update Contact' : 'Create Contact'}
+                title={state.contactId ? 'Update Contact' : 'Add Contact'}
                 open={state.isOpenCreateContact}
                 close={() => clearContactData()}
                 renderComponent={() => (
@@ -879,7 +910,6 @@ export default function ViewLead() {
                             onChange={(e) => setState({ opportunity_value: e })}
                             placeholder={'Opportunity Value'}
                             required
-
                         />
                         <CustomSelect
                             title="Stage"
@@ -897,7 +927,6 @@ export default function ViewLead() {
                             placeholder={'Recurring Value Per Year'}
                             error={state.errors?.recurring_value_per_year}
                             required
-
                         />
                         <CustomSelect
                             title="Currency Type"
@@ -916,7 +945,6 @@ export default function ViewLead() {
                             error={state.errors?.probability_in_percentage}
                             max={100}
                             required
-
                         />
                         {/* <CustomSelect
                             title="Created By"
@@ -934,8 +962,8 @@ export default function ViewLead() {
                             title="Closing Date"
                             onChange={(e) => setState({ opp_closing_date: e })}
                             required
-
                         />
+
 
                         <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>

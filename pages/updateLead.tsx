@@ -15,10 +15,9 @@ import Models from '@/imports/models.import';
 import CommonLoader from './elements/commonLoader';
 import IconLoader from '@/components/Icon/IconLoader';
 import * as Yup from 'yup';
-
+import { Validation } from '@/utils/imports.utils';
 
 const UpdateLead = () => {
-    
     const dispatch = useDispatch();
     useEffect(() => {
         dispatch(setPageTitle('Update Lead'));
@@ -52,24 +51,24 @@ const UpdateLead = () => {
         submitLoad: false,
         createdByList: [],
         created_by: null,
+        verticalList: [],
+        vertical: '',
     });
 
     useEffect(() => {
         getDate();
-        getFocusSegmentList();
+        verticalList();
         getMarketSegmentList();
         countryList();
         tagList();
         ownerList();
         createdByList();
-
     }, [id]);
 
     const getDate = async () => {
         try {
             setState({ loading: true });
             const res: any = await Models.lead.details(id);
-            console.log('res: ', res);
             setState({
                 loading: false,
                 ...res,
@@ -81,7 +80,9 @@ const UpdateLead = () => {
                 tags: res.tags?.map((item) => ({ value: item.id, label: item?.tag })) || [],
                 is_active: res.is_active ?? false,
                 created_by: { value: res.created_by?.id, label: res.created_by?.username } || null,
+                vertical:{value:res.focus_segment?.vertical?.id,label:res.focus_segment?.vertical?.vertical}
             });
+            getFocusSegmentList({value:res.focus_segment?.vertical?.id})
             stateList({ value: res.country?.id });
         } catch (error) {
             setState({ loading: false });
@@ -90,19 +91,7 @@ const UpdateLead = () => {
         }
     };
 
-    const getFocusSegmentList = async () => {
-        try {
-            setState({ loading: true });
-            const res: any = await Models.lead.dropdowns('focus_segment');
-            const dropdownList = Dropdown(res, 'focus_segment');
-            setState({ focusSegmentList: dropdownList, loading: false });
-        } catch (error) {
-            setState({ loading: false });
-
-            console.log('error: ', error);
-        }
-    };
-
+ 
     const getMarketSegmentList = async () => {
         try {
             setState({ loading: true });
@@ -167,6 +156,17 @@ const UpdateLead = () => {
             console.log('error: ', error);
         }
     };
+    const verticalList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('vertical');
+            const dropdownList = Dropdown(res, 'vertical');
+            setState({ verticalList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+        }
+    };
+
 
     const createdByList = async () => {
         try {
@@ -203,9 +203,9 @@ const UpdateLead = () => {
                 tags: tags,
                 market_segment: state.market_segment?.value,
                 is_active: state.is_active,
+                vertical: state.vertical?.value,
             };
-            console.log("body: ", body);
-
+            await Validation.createLeadValidation.validate(body, { abortEarly: false });
 
             const res: any = await Models.lead.update(body, id);
             setState({ submitLoad: false });
@@ -228,6 +228,22 @@ const UpdateLead = () => {
             setState({ submitLoad: false });
         }
     };
+
+
+    const getFocusSegmentList = async (verticalData: any) => {
+        try {
+            const res: any = await Models.lead.focusIdBasedVericalList(verticalData?.value);
+            let focusList: [];
+            if (res?.length > 0) {
+                focusList = res?.map((item) => ({ value: item?.id, label: item?.focus_segment }));
+            }
+
+            setState({ focusSegmentList: focusList });
+        } catch (error) {
+            setState({ loading: false });
+        }
+    };
+
 
     return state.loading ? (
         <CommonLoader />
@@ -280,7 +296,7 @@ const UpdateLead = () => {
 
                         <TextInput title="Company Email" value={state.company_email} onChange={(e) => setState({ company_email: e })} placeholder={'Company Email'} />
                         <TextInput title="Company Website" value={state.company_website} onChange={(e) => setState({ company_website: e })} placeholder={'Company Website'} />
-                        <NumberInput title="Company Number" value={state.company_number} onChange={(e) => setState({ company_number: e })} placeholder={'Company Number'} />
+                        <TextInput title="Company Number" value={state.company_number} onChange={(e) => setState({ company_number: e })} placeholder={'Company Number'} />
                     </div>
                 </div>
 
@@ -335,12 +351,19 @@ const UpdateLead = () => {
                         </div>
                     </div>
 
-                    <div className=" flex w-full gap-3">
+                    {/* <div className=" flex w-full gap-3">
                         <div className="flex w-[50%]">
                             <CustomSelect
                                 title="Focus Segment"
                                 value={state.focus_segment}
-                                onChange={(e) => setState({ focus_segment: e })}
+                                onChange={(e) => {
+                                    if (e) {
+                                        setState({ focus_segment: e , vertical: ''});
+                                        verticalList(e);
+                                    } else {
+                                        setState({ focus_segment: '', verticalList: [], vertical: '' });
+                                    }
+                                }}
                                 placeholder={'Focus Segment'}
                                 options={state.focusSegmentList}
                                 required
@@ -349,15 +372,63 @@ const UpdateLead = () => {
                         </div>
                         <div className=" flex  w-[50%]">
                             <CustomSelect
-                                title="Market Segment"
-                                value={state.market_segment}
-                                onChange={(e) => setState({ market_segment: e })}
-                                placeholder={'Market Segment'}
-                                options={state.marketSegmentList}
+                                title="Vertical"
+                                value={state.vertical}
+                                onChange={(e) => setState({ vertical: e })}
+                                placeholder={'Vertical'}
+                                options={state.verticalList}
                                 required
-                                error={state.errors?.market_segment}
+                                error={state.errors?.vertical}
                             />
                         </div>
+                    </div> */}
+
+                    <div className=" flex w-full gap-3">
+                        <div className="flex w-[50%]">
+                            <CustomSelect
+                                title="Vertical"
+                                value={state.vertical}
+                                onChange={(e) => {
+                                    if (e) {
+                                        setState({ focus_segment: '', vertical: e });
+                                        getFocusSegmentList(e);
+                                    } else {
+                                        setState({ focus_segment: '', vertical: '' });
+                                    }
+                                }}
+                                placeholder={'Vertical'}
+                                options={state.verticalList}
+                                required
+                                error={state.errors?.vertical}
+                            />
+                        </div>
+
+                        <div className="flex w-[50%]">
+
+                            <CustomSelect
+                                title="Focus Segment"
+                                value={state.focus_segment}
+                                onChange={(e) => {
+                                    setState({ focus_segment: e });
+                                }}
+                                placeholder={'Focus Segment'}
+                                options={state.focusSegmentList}
+                                required
+                                error={state.errors?.focus_segment}
+                            />
+                        </div>
+                    </div>
+
+                    <div className=" flex w-full gap-3">
+                        <CustomSelect
+                            title="Market Segment"
+                            value={state.market_segment}
+                            onChange={(e) => setState({ market_segment: e })}
+                            placeholder={'Market Segment'}
+                            options={state.marketSegmentList}
+                            required
+                            error={state.errors?.market_segment}
+                        />
                     </div>
 
                     <div className=" flex w-full gap-3">

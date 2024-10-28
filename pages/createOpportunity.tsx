@@ -28,7 +28,6 @@ const CreateLead = () => {
     });
 
     const crmConfig = useSelector((state: IRootState) => state.crmConfig);
-    console.log('crmConfig: ', crmConfig);
 
     const router = useRouter();
 

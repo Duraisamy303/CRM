@@ -33,9 +33,29 @@ import IconMenuForms from '@/components/Icon/Menu/IconMenuForms';
 import IconMenuPages from '@/components/Icon/Menu/IconMenuPages';
 import IconMenuMore from '@/components/Icon/Menu/IconMenuMore';
 import IconTask from '../Icon/IconTask';
+import Models from '@/imports/models.import';
+import { useSetState } from '@/utils/functions.utils';
+import TaskCard from '../TaskCard';
+import SideMenu from '@/common_component/sideMenu';
+import CustomSelect from '../Select';
 
 const Header = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
+    const [flag, setFlag] = useState('');
+    const [search, setSearch] = useState(false);
+    const { t, i18n } = useTranslation();
+    const themeConfig = useSelector((state: IRootState) => state.themeConfig);
+    const isRtl = useSelector((state: IRootState) => state.themeConfig.rtlClass) === 'rtl' ? true : false;
+
+    const [state, setState] = useSetState({
+        taskList: [],
+        isOpenTask: false,
+        duration: {
+            value: 'today',
+            label: 'Today',
+        },
+    });
 
     useEffect(() => {
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window.location.pathname + '"]');
@@ -65,9 +85,6 @@ const Header = () => {
         }
     }, [router.pathname]);
 
-    const isRtl = useSelector((state: IRootState) => state.themeConfig.rtlClass) === 'rtl' ? true : false;
-
-    const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const setLocale = (flag: string) => {
         setFlag(flag);
         if (flag.toLowerCase() === 'ae') {
@@ -76,15 +93,38 @@ const Header = () => {
             dispatch(toggleRTL('ltr'));
         }
     };
-    const [flag, setFlag] = useState('');
+
     useEffect(() => {
         setLocale(localStorage.getItem('i18nextLng') || themeConfig.locale);
     }, []);
-    const dispatch = useDispatch();
+
+    useEffect(() => {
+        taskList(state.duration);
+    }, []);
+
+    const taskList = async (e) => {
+        try {
+            setState({ duration: e });
+            const body = {
+                category: e?.value, // tomorrow,today
+            };
+            const res: any = await Models.task.listFilterByDuration(body, 2);
+            setState({ taskList: res?.results?.tasks });
+        } catch (error) {
+            console.log('error: ', error);
+        }
+    };
 
     function createMarkup(messages: any) {
         return { __html: messages };
     }
+    const removeNotification = (value: number) => {
+        setNotifications(notifications.filter((user) => user.id !== value));
+    };
+    const removeMessage = (value: number) => {
+        setMessages(messages.filter((user) => user.id !== value));
+    };
+
     const [messages, setMessages] = useState([
         {
             id: 1,
@@ -116,10 +156,6 @@ const Header = () => {
         },
     ]);
 
-    const removeMessage = (value: number) => {
-        setMessages(messages.filter((user) => user.id !== value));
-    };
-
     const [notifications, setNotifications] = useState([
         {
             id: 1,
@@ -141,18 +177,25 @@ const Header = () => {
         },
     ]);
 
-    const removeNotification = (value: number) => {
-        setNotifications(notifications.filter((user) => user.id !== value));
-    };
-
-    const [search, setSearch] = useState(false);
-
-    const { t, i18n } = useTranslation();
+    const duration = [
+        {
+            value: 'today',
+            label: 'Today',
+        },
+        {
+            value: 'tomorrow',
+            label: 'Tomorrow',
+        },
+        {
+            value: 'next_7_days',
+            label: 'Next 7 Days',
+        },
+    ];
 
     return (
         <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
             <div className="shadow-sm">
-                <div className="relative flex w-full items-center bg-white px-5 py-2.5 dark:bg-black " >
+                <div className="relative flex w-full items-center bg-white px-5 py-2.5 dark:bg-black ">
                     <div className="horizontal-logo flex items-center justify-between ltr:mr-2 rtl:ml-2 lg:hidden">
                         <Link href="/" className="main-logo flex shrink-0 items-center">
                             <img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/logo.svg" alt="logo" />
@@ -280,6 +323,42 @@ const Header = () => {
                                 </ul>
                             </Dropdown>
                         </div> */}
+                        <button
+                            className={'block rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'}
+                            onClick={() => setState({ isOpenTask: true })}
+                        >
+                            <IconTask />
+                        </button>
+
+                        <SideMenu
+                            open={state.isOpenTask}
+                            close={() => setState({ isOpenTask: false })}
+                            title="Task"
+                            renderComponent={() => (
+                                <div>
+                                    <div className="mb-4">
+                                        <CustomSelect
+                                            value={state.duration}
+                                            onChange={(e) => taskList(e)}
+                                            placeholder={'Select Duration '}
+                                            options={duration}
+                                            borderRadius={10}
+                                            // loadMore={() => leadListLoadMore()}
+                                        />
+                                    </div>
+                                    {state.taskList?.length > 0 ? (
+                                        state.taskList?.map((task) => <TaskCard key={task.id} task={task} />)
+                                    ) : (
+                                        <button type="button" className=" flex min-h-[200px] w-full flex-col place-content-center items-center justify-center text-lg hover:!bg-transparent">
+                                            <div className="mx-auto mb-4 rounded-full text-white ring-4 ring-primary/30">
+                                                <IconInfoCircle fill={true} className="h-10 w-10" />
+                                            </div>
+                                            No Task available.
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        />
                         <div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
@@ -287,7 +366,7 @@ const Header = () => {
                                 btnClassName="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60"
                                 button={<IconTask />}
                             >
-                                <ul className="w-[300px] !py-0 text-xs text-dark dark:text-white-dark sm:w-[375px]">
+                                <ul className="max-h-[300px] w-[300px] overflow-scroll !py-0 text-xs text-dark dark:text-white-dark sm:w-[375px]">
                                     <li className="mb-5" onClick={(e) => e.stopPropagation()}>
                                         <div className="relative !h-[68px] w-full overflow-hidden rounded-t-md p-5 text-white hover:!bg-transparent">
                                             <div className="bg- absolute inset-0 h-full w-full bg-[url(/assets/images/menu-heade.jpg)] bg-cover bg-center bg-no-repeat"></div>
@@ -296,28 +375,9 @@ const Header = () => {
                                     </li>
                                     {messages.length > 0 ? (
                                         <>
-                                            <li onClick={(e) => e.stopPropagation()}>
-                                                {messages.map((message) => {
-                                                    return (
-                                                        <div key={message.id} className="flex items-center px-5 py-3">
-                                                            <div dangerouslySetInnerHTML={createMarkup(message.image)}></div>
-                                                            <span className="px-3 dark:text-gray-500">
-                                                                <div className="text-sm font-semibold dark:text-white-light/90">{message.title}</div>
-                                                                <div>{message.message}</div>
-                                                            </span>
-                                                            <span className="whitespace-pre rounded bg-white-dark/20 px-1 font-semibold text-dark/60 ltr:ml-auto ltr:mr-2 rtl:ml-2 rtl:mr-auto dark:text-white-dark">
-                                                                {message.time}
-                                                            </span>
-                                                            <button type="button" className="text-neutral-300 hover:text-danger" onClick={() => removeMessage(message.id)}>
-                                                                <IconXCircle />
-                                                            </button>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </li>
                                             <li className="mt-5 border-t border-white-light text-center dark:border-white/10">
                                                 <button type="button" className="group !h-[48px] justify-center !py-4 font-semibold text-primary dark:text-gray-400">
-                                                    <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL ACTIVITIES</span>
+                                                    <span className="group-hover:underline ltr:mr-1 rtl:ml-1">VIEW ALL TASKS</span>
                                                     <IconArrowLeft className="transition duration-300 group-hover:translate-x-1 ltr:ml-1 rtl:mr-1" />
                                                 </button>
                                             </li>
