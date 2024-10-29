@@ -259,6 +259,7 @@ const Tasks = () => {
                 created_by: item?.created_by?.username,
                 date: item?.created_on,
                 task_date_time: item?.task_date_time,
+                contacts: item?.contact,
             };
         });
 
@@ -324,53 +325,61 @@ const Tasks = () => {
             const validateField = {
                 lead: state.lead?.value,
                 contact: state.contact?.value,
-                stage: state.stage?.value,
+                task_date_time: state.task_date_time ? moment(state.task_date_time).format('YYYY-MM-DD') : '',
             };
             await Validation.createTask.validate(validateField, { abortEarly: false });
 
             const body = {
                 contact_id: state.contact?.value,
-                task_date_time: state.follow_up_date_time,
                 task_detail: state.details,
+                task_date_time: moment(state.task_date_time).format('YYYY-MM-DD'),
             };
 
-            const res: any = await Models.task.create(body);
-            clearTaskData();
-            Success(res.message);
+            if (state.taskId) {
+                const res: any = await Models.task.update(body, state.taskId);
+                clearTaskData();
+                setState({ taskLoading: false });
+                Success(res.message);
+            } else {
+                const res: any = await Models.task.create(body);
+                clearTaskData();
+                setState({ taskLoading: false });
+
+                Success(res.message);
+            }
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 const validationErrors = {};
                 error.inner.forEach((err) => {
                     validationErrors[err.path] = err?.message; // Set the error message for each field
                 });
-                setState({ errors: validationErrors });
-                setState({ taskLoading: false });
+                setState({ errors: validationErrors, taskLoading: false });
             } else {
-                console.log('Error: ', error?.message);
                 setState({ taskLoading: false });
             }
-            setState({ submitLoad: false });
-            console.log('error: ', error);
         }
     };
 
-    const editOppData = (row) => {
+    const editTaskData = (row) => {
         setState({
             taskId: row.id,
             isOpenTask: true,
+            lead: { value: row?.contacts?.lead_id, label: row?.contacts?.lead_name },
+            contact: { value: row?.contacts?.id, label: row?.contacts?.name },
+            details: row?.task_detail,
+            task_date_time: row?.task_date_time,
         });
     };
 
     const clearTaskData = () => {
         setState({
-            logCreatedBy: '',
-            logId: '',
-            logStage: '',
-            focus_segment: '',
-            follow_up_date_time: '',
             details: '',
             isOpenTask: false,
             errors: '',
+            taskId: '',
+            lead: '',
+            contact: '',
+            task_date_time: '',
         });
     };
 
@@ -387,6 +396,11 @@ const Tasks = () => {
     const assignedTask = async () => {
         try {
             setState({ assignLoad: true });
+            const validateField = {
+                assigned_to: state.assigned_to ? moment(state.assigned_to).format('YYYY-MM-DD') : '',
+            };
+            await Validation.assignTask.validate(validateField, { abortEarly: false });
+
             const body = {
                 assigned_to: state.assigned_to?.value,
                 assignment_note: state.assignment_note,
@@ -396,7 +410,15 @@ const Tasks = () => {
             clearAssignData();
             setState({ assignLoad: false });
         } catch (error) {
-            setState({ assignLoad: false });
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = {};
+                error.inner.forEach((err) => {
+                    validationErrors[err.path] = err?.message; // Set the error message for each field
+                });
+                setState({ errors: validationErrors, assignLoad: false });
+            } else {
+                setState({ assignLoad: false });
+            }
         }
     };
 
@@ -487,7 +509,7 @@ const Tasks = () => {
                                                     <IconEye />
                                                 </button>
 
-                                                <button className="flex hover:text-info" onClick={() => editOppData(row)}>
+                                                <button className="flex hover:text-info" onClick={() => editTaskData(row)}>
                                                     <IconEdit className="h-4.5 w-4.5" />
                                                 </button>
                                             </div>
@@ -554,16 +576,14 @@ const Tasks = () => {
                                 loadMore={() => leadListLoadMore()}
                             />
                         </div>
-                        <CustomSelect
-                            title="Log Stage"
-                            value={state.stage}
-                            onChange={(e) => setState({ stage: e })}
-                            placeholder={'Log Stage'}
-                            options={state.logStageList}
-                            error={state.errors?.stage}
-                            required
+
+                        <CustomeDatePicker
+                            value={state.task_date_time}
+                            placeholder="Task Date"
+                            title="Task Date"
+                            onChange={(e) => setState({ task_date_time: e })}
+                            error={state.errors?.task_date_time}
                         />
-                        <CustomeDatePicker value={state.follow_up_date_time} title="Follow Up" onChange={(e) => setState({ follow_up_date_time: e })} />
 
                         <TextArea height="150px" value={state.details} onChange={(e) => setState({ details: e })} placeholder={'Details'} title={'Details'} />
 
@@ -572,7 +592,7 @@ const Tasks = () => {
                                 Cancel
                             </button>
                             <button type="button" className="btn btn-primary" onClick={() => createAndUpdateTask()}>
-                                {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
+                                {state.taskLoading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
                         </div>
                     </div>
@@ -670,14 +690,16 @@ const Tasks = () => {
                                     <span className="text-right">{moment(state.taskDetails?.created_on).format('MMMM DD, YYYY') || 'N/A'}</span>
                                 </div>
                             </div>
-                            <div className="flex">
-                                <div className="w-[30%]">
-                                    <span className="font-semibold">Details:</span>
+                            {state.taskDetails?.task_detail && (
+                                <div className="flex">
+                                    <div className="w-[30%]">
+                                        <span className="font-semibold">Details:</span>
+                                    </div>
+                                    <div className="w-[70%]">
+                                        <ReadMore children={state.taskDetails?.task_detail || 'No details available'} />
+                                    </div>
                                 </div>
-                                <div className="w-[70%]">
-                                    <ReadMore children={state.taskDetails?.task_detail || 'No details available'} />
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 )}

@@ -8,7 +8,7 @@ const ReadMore = ({ children, charLimit = 100, readMoreText = 'Read more', readL
     };
 
     // Truncate content if not expanded
-    const displayText = isExpanded ? children : `${children.substring(0, charLimit)}...`;
+    const displayText = isExpanded ? children : `${children?.substring(0, charLimit)}...`;
 
     return (
         <div>

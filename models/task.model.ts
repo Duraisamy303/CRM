@@ -58,9 +58,9 @@ const task = {
         return promise;
     },
 
-    update: (data: any, id: any) => {
+    update: (data: any, taskId: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `/log/${id}/`;
+            let url = `/task/${taskId}/`;
 
             instance()
                 .put(url, data)

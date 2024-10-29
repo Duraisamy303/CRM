@@ -331,8 +331,8 @@ const Index = () => {
                             className="form-input w-full  rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
                         />
                     </div>
-                    <CustomSelect options={state.focusList} value={state.focus} onChange={(e) => setState({ focus: e })} isMulti={false} placeholder={'Focus Segment'} />
                     <CustomSelect options={state.verticalList} value={state.vertical} onChange={(e) => setState({ vertical: e })} isMulti={false} placeholder={'Vertical'} />
+                    <CustomSelect options={state.focusList} value={state.focus} onChange={(e) => setState({ focus: e })} isMulti={false} placeholder={'Focus Segment'} />
                     <CustomSelect options={state.marketList} value={state.market} onChange={(e) => setState({ market: e })} isMulti={false} placeholder={'Market Segment'} />
                     <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
                         <IconFilter />
@@ -361,10 +361,7 @@ const Index = () => {
                                                 </>
                                             ),
                                         },
-                                        { accessor: 'vertical', sortable: true,
-                                            width: '220px',
-
-                                         },
+                                        { accessor: 'vertical', sortable: true, width: '220px' },
                                         { accessor: 'focus_segment', sortable: true, title: 'Focus Segment', width: '300px' },
 
                                         {

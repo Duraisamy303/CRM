@@ -156,6 +156,7 @@ const UpdateLead = () => {
             console.log('error: ', error);
         }
     };
+    
     const verticalList = async () => {
         try {
             setState({ loading: true });

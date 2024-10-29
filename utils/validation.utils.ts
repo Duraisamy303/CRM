@@ -68,5 +68,9 @@ export const createContact = Yup.object().shape({
 export const createTask = Yup.object().shape({
     lead: Yup.string().required('Lead is required'),
     contact: Yup.string().required('Contact is required'),
-    stage: Yup.string().required('Stage is required'),
+    task_date_time:Yup.string().required('Task date is required')
+});
+
+export const assignTask = Yup.object().shape({
+    assigned_to: Yup.string().required('Select assigned user'),
 });
