@@ -54,7 +54,6 @@ const Index = () => {
 
     useEffect(() => {
         getData();
-        getFocusSegmentList();
         getMarketSegmentList();
         countryList();
         verticalList();
@@ -173,12 +172,15 @@ const Index = () => {
         getData();
     };
 
-    const getFocusSegmentList = async () => {
+    const getFocusSegmentList = async (verticalData: any) => {
         try {
-            setState({ loading: true });
-            const res: any = await Models.lead.dropdowns('focus_segment');
-            const dropdownList = Dropdown(res, 'focus_segment');
-            setState({ focusList: dropdownList, loading: false });
+            const res: any = await Models.lead.focusIdBasedVericalList(verticalData?.value);
+            let focusList: [];
+            if (res?.length > 0) {
+                focusList = res?.map((item) => ({ value: item?.id, label: item?.focus_segment }));
+            }
+
+            setState({ focusList: focusList });
         } catch (error) {
             setState({ loading: false });
         }
@@ -238,7 +240,7 @@ const Index = () => {
                 lead_owner: item?.lead_owner?.username,
                 created_by: item?.created_by?.username,
                 name: item?.name,
-                vertical: item?.focus_segment?.vertical?.vertical,
+                vertical: item?.focus_segment?.vertical?.vertical || item?.vertical?.vertical,
                 annual_revenue: item?.annual_revenue,
             };
         });
@@ -331,7 +333,22 @@ const Index = () => {
                             className="form-input w-full  rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
                         />
                     </div>
-                    <CustomSelect options={state.verticalList} value={state.vertical} onChange={(e) => setState({ vertical: e })} isMulti={false} placeholder={'Vertical'} />
+                    {/* <CustomSelect options={state.verticalList} value={state.vertical} onChange={(e) => setState({ vertical: e })} isMulti={false} placeholder={'Vertical'} /> */}
+                    <CustomSelect
+                        value={state.vertical}
+                        onChange={(e) => {
+                            if (e) {
+                                setState({ focus: '', vertical: e });
+                                getFocusSegmentList(e);
+                            } else {
+                                setState({ focus: '', vertical: '' });
+                            }
+                        }}
+                        placeholder={'Vertical'}
+                        options={state.verticalList}
+                        required
+                        error={state.errors?.vertical}
+                    />
                     <CustomSelect options={state.focusList} value={state.focus} onChange={(e) => setState({ focus: e })} isMulti={false} placeholder={'Focus Segment'} />
                     <CustomSelect options={state.marketList} value={state.market} onChange={(e) => setState({ market: e })} isMulti={false} placeholder={'Market Segment'} />
                     <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
