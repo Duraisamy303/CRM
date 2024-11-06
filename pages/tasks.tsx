@@ -58,7 +58,6 @@ const Tasks = () => {
         totalRecords: 0,
         currentPage: 1,
         search: '',
-        isOpen: false,
         range: [0, 10000],
         maxPrice: 10000,
 
@@ -84,6 +83,8 @@ const Tasks = () => {
         taskDetails: '',
         start_date: null,
         end_date: null,
+        isOpen: false,
+        createdByList: [],
     });
 
     useEffect(() => {
@@ -92,6 +93,8 @@ const Tasks = () => {
         stageList();
         getLogStageList();
         leadList();
+        ownerList();
+        createdByList();
     }, []);
 
     const debouncedSearch = useDebounce(state.search, 500);
@@ -107,11 +110,11 @@ const Tasks = () => {
     const getData = async (page = 1) => {
         try {
             setState({ loading: true });
+            const userString = localStorage.getItem('crmUser');
+            const user = userString ? JSON.parse(userString) : null;
 
             const body = {
-                id: 2,
-                start_date: '',
-                end_date: '',
+                id: user?.id,
             };
 
             const response: any = await Models.task.list(body, page);
@@ -130,7 +133,7 @@ const Tasks = () => {
 
     const filters = () => {
         let filter = false;
-        if (state.search || state.start_date || state.end_date) {
+        if (state.search || state.start_date || state.end_date || state.owner || state.lead || state.assigned_to) {
             filter = true;
         }
         return filter;
@@ -150,11 +153,13 @@ const Tasks = () => {
                     totalRecords: response.count,
                     next: response.next,
                     previous: response.previous,
+                    isOpen: false,
                 });
             } else {
                 getData();
                 setState({
                     loading: false,
+                    isOpen: false,
                 });
             }
         } catch (error) {
@@ -168,6 +173,31 @@ const Tasks = () => {
             const res: any = await Models.opportunity.oppDropdowns('stage');
             const dropdownList = Dropdown(res, 'stage');
             setState({ stageList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const ownerList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('owner');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ ownerList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+    const createdByList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('created_by');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ createdByList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -229,6 +259,15 @@ const Tasks = () => {
         if (state.search) {
             body.key = state.search;
         }
+        if (state.owner) {
+            body.owner = state.owner?.value;
+        }
+        if (state.lead) {
+            body.lead = state.lead?.value;
+        }
+        if (state.assigned_to) {
+            body.assigned_to = state.assigned_to?.value;
+        }
         if (state.start_date) {
             body.start_date = moment(state.start_date).format('YYYY-MM-DD');
         }
@@ -243,6 +282,8 @@ const Tasks = () => {
         const data = res?.map((item) => {
             return {
                 ...item,
+                leadData:{value:item.contact?.lead_id,label:item.contact?.lead_name},
+                contactData:{value:item.contact?.id,label:item.contact?.name},
                 leadName: item.contact?.lead_name,
                 task: item?.tasktype?.label,
                 contact: item?.contact?.name,
@@ -250,6 +291,7 @@ const Tasks = () => {
                 created_by: item?.created_by?.username,
                 date: item?.task_date_time,
                 description: item?.task_detail,
+                assigned_to: item?.assigned_to?.length > 0 ? item?.assigned_to?.map((item) => item?.username).join(', ') : item.created_by?.username,
             };
         });
 
@@ -310,6 +352,7 @@ const Tasks = () => {
                 clearTaskData();
                 setState({ taskLoading: false });
                 Success(res.message);
+                getData()
             } else {
                 const res: any = await Models.task.create(body);
                 clearTaskData();
@@ -334,8 +377,8 @@ const Tasks = () => {
         setState({
             taskId: row.id,
             isOpenTask: true,
-            lead: { value: row?.contacts?.lead_id, label: row?.contacts?.lead_name },
-            contact: { value: row?.contacts?.id, label: row?.contacts?.name },
+            lead:row?.leadData,
+            contact:row?.contactData,
             details: row?.task_detail,
             task_date_time: row?.task_date_time,
         });
@@ -379,6 +422,7 @@ const Tasks = () => {
             Success(res.message);
             clearAssignData();
             setState({ assignLoad: false });
+            getData();
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 const validationErrors = {};
@@ -390,6 +434,19 @@ const Tasks = () => {
                 setState({ assignLoad: false });
             }
         }
+    };
+
+    const clearFilter = () => {
+        setState({
+            search: '',
+            start_date: '',
+            end_date: '',
+            owner: '',
+            lead: '',
+            assigned_to: '',
+            isOpen: false,
+        });
+        getData();
     };
 
     return (
@@ -419,8 +476,8 @@ const Tasks = () => {
                 </div>
                 <CustomeDatePicker value={state.start_date} placeholder="From Date" onChange={(e) => setState({ start_date: e, to_date: null })} />
                 <CustomeDatePicker value={state.end_date} placeholder="To Date" onChange={(e) => setState({ end_date: e })} />
-                <button type="button" className="btn btn-primary font-white w-full md:mb-0 md:w-auto" onClick={() => setState({ search: '', start_date: '', end_date: '' })}>
-                    <IconRefresh />
+                <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
+                    <IconFilter />
                 </button>
             </div>
 
@@ -431,89 +488,99 @@ const Tasks = () => {
                     </div>
                 ) : (
                     <div className=" col-span-12 flex flex-col   md:col-span-12">
-                        <DataTable
-                            className="table-responsive"
-                            records={state.data}
-                            columns={[
-                                {
-                                    accessor: 'leadName',
-                                    sortable: true,
-                                    title: 'Lead Name',
-                                    width: '220px',
-                                },
-                                ,
-                                {
-                                    accessor: 'contact',
-                                    title: 'Contact Person',
-                                    sortable: true,
-                                    width: '220px',
-                                },
-                                {
-                                    accessor: 'date',
-                                    sortable: true,
-                                    width: '220px',
+                        {state.loading ? (
+                            <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
+                                <CommonLoader />
+                            </div>
+                        ) : (
+                            <DataTable
+                                className="table-responsive"
+                                records={state.data}
+                                columns={[
+                                    {
+                                        accessor: 'leadName',
+                                        sortable: true,
+                                        title: 'Lead Name',
+                                        width: '220px',
+                                    },
+                                    ,
+                                    {
+                                        accessor: 'contact',
+                                        title: 'Contact Person',
+                                        sortable: true,
+                                        width: '220px',
+                                    },
+                                    {
+                                        accessor: 'date',
+                                        sortable: true,
+                                        width: '220px',
 
-                                    render: (row: any) => (
-                                        <>
-                                            <div className="">{moment(row.task_date_time).format('YYYY-MM-DD HH:mm a')}</div>
-                                        </>
-                                    ),
-                                },
+                                        render: (row: any) => (
+                                            <>
+                                                <div className="">{moment(row.task_date_time).format('YYYY-MM-DD HH:mm a')}</div>
+                                            </>
+                                        ),
+                                    },
 
-                                { accessor: 'assigned', sortable: true, width: '220px' },
-                                {
-                                    accessor: 'category',
-                                    sortable: true,
-                                    width: '220px',
+                                    { accessor: 'assigned_to', sortable: true, width: '220px', title: 'Assigned to' },
+                                    {
+                                        accessor: 'category',
+                                        sortable: true,
+                                        width: '220px',
 
-                                    render: (row) => (
-                                        <div className={`flex w-max gap-4 rounded-full px-2 py-1 ${row?.category === 'Owned Task' ? 'bg-green-200 text-green-800' : 'bg-purple-200 text-purple-800'}`}>
-                                            {row?.category}
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    accessor: 'actions',
-                                    title: 'Actions',
-                                    render: (row: any) => (
-                                        <>
-                                            <div className="mx-auto flex w-max items-center gap-4">
-                                                <Tippy content="Assign To" className="rounded-lg bg-black p-1 text-sm text-white">
-                                                    <button type="button" className="flex hover:text-primary" onClick={() => setState({ isOpenAssign: true, taskId: row.id })}>
-                                                        <IconUserPlus />
-                                                    </button>
-                                                </Tippy>
-                                                <button
-                                                    type="button"
-                                                    className="flex hover:text-primary"
-                                                    onClick={() => {
-                                                        setState({ taskDetails: row, taskId: row?.id, isOpenViewTask: true });
-                                                    }}
-                                                >
-                                                    <IconEye />
-                                                </button>
-
-                                                <button className="flex hover:text-info" onClick={() => editTaskData(row)}>
-                                                    <IconEdit className="h-4.5 w-4.5" />
-                                                </button>
+                                        render: (row) => (
+                                            <div
+                                                className={`flex w-max gap-4 rounded-full px-2 py-1 ${
+                                                    row?.category === 'Owned Task' ? 'bg-green-200 text-green-800' : 'bg-purple-200 text-purple-800'
+                                                }`}
+                                            >
+                                                {row?.category}
                                             </div>
-                                        </>
-                                    ),
-                                },
-                            ]}
-                            highlightOnHover
-                            totalRecords={state.data?.length}
-                            recordsPerPage={state.pageSize}
-                            minHeight={200}
-                            page={null}
-                            onPageChange={(p) => {}}
-                            withBorder={true}
-                            selectedRecords={state.selectedRecords}
-                            onSelectedRecordsChange={(val) => {
-                                setState({ selectedRecords: val });
-                            }}
-                            paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
-                        />
+                                        ),
+                                    },
+                                    {
+                                        accessor: 'actions',
+                                        title: 'Actions',
+                                        render: (row: any) => (
+                                            <>
+                                                <div className="mx-auto flex w-max items-center gap-4">
+                                                    <Tippy content="Assign To" className="rounded-lg bg-black p-1 text-sm text-white">
+                                                        <button type="button" className="flex hover:text-primary" onClick={() => setState({ isOpenAssign: true, taskId: row.id })}>
+                                                            <IconUserPlus />
+                                                        </button>
+                                                    </Tippy>
+                                                    <button
+                                                        type="button"
+                                                        className="flex hover:text-primary"
+                                                        onClick={() => {
+                                                            setState({ taskDetails: row, taskId: row?.id, isOpenViewTask: true });
+                                                        }}
+                                                    >
+                                                        <IconEye />
+                                                    </button>
+
+                                                    <button className="flex hover:text-info" onClick={() => editTaskData(row)}>
+                                                        <IconEdit className="h-4.5 w-4.5" />
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ),
+                                    },
+                                ]}
+                                highlightOnHover
+                                totalRecords={state.data?.length}
+                                recordsPerPage={state.pageSize}
+                                minHeight={200}
+                                page={null}
+                                onPageChange={(p) => {}}
+                                withBorder={true}
+                                selectedRecords={state.selectedRecords}
+                                onSelectedRecordsChange={(val) => {
+                                    setState({ selectedRecords: val });
+                                }}
+                                paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
+                            />
+                        )}
                         <div className="mt-5 flex justify-center gap-3">
                             <button disabled={!state.previous} onClick={handlePreviousPage} className={`btn ${!state.previous ? 'btn-disabled' : 'btn-primary'}`}>
                                 <IconArrowBackward />
@@ -684,6 +751,40 @@ const Tasks = () => {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+            />
+
+            <SideMenu
+                title="Filter"
+                open={state.isOpen}
+                close={() => setState({ isOpen: false })}
+                renderComponent={() => (
+                    <div>
+                        <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
+                            <CustomSelect title="Owner" value={state.owner} onChange={(e) => setState({ owner: e })} placeholder={'Owner'} options={state.ownerList} />
+
+                            <CustomSelect
+                                title="Lead "
+                                value={state.lead}
+                                onChange={(e) => {
+                                    setState({ lead: e, contact: '' });
+                                }}
+                                placeholder={'Lead '}
+                                options={state.leadList}
+                                loadMore={() => leadListLoadMore()}
+                            />
+                            <CustomSelect title="Assign To" value={state.assigned_to} onChange={(e) => setState({ assigned_to: e })} placeholder={'Assign To'} options={state.createdByList} />
+
+                            <div className=" flex justify-end gap-3">
+                                <button type="button" className="btn btn-primary" onClick={() => filterData()}>
+                                    Submit
+                                </button>
+                                <button type="button" className="btn btn-primary" onClick={() => clearFilter()}>
+                                    Reset
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

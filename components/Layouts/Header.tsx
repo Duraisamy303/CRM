@@ -192,6 +192,11 @@ const Header = () => {
         },
     ];
 
+    const checkValidToken = async () => {
+        localStorage.clear();
+        router.replace('/auth/signin');
+    };
+
     return (
         <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
             <div className="shadow-sm">
@@ -199,7 +204,7 @@ const Header = () => {
                     <div className="horizontal-logo flex items-center justify-between ltr:mr-2 rtl:ml-2 lg:hidden">
                         <Link href="/" className="main-logo flex shrink-0 items-center">
                             <img className="inline w-8 ltr:-ml-1 rtl:-mr-1" src="/assets/images/repute_logo.jpeg" alt="logo" />
-                            <span className="hidden align-middle text-2xl  font-semibold  transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline text-red-600">REPUTE</span>
+                            <span className="hidden align-middle text-2xl  font-semibold  text-red-600 transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">REPUTE</span>
                         </Link>
                         <button
                             type="button"
@@ -509,11 +514,18 @@ const Header = () => {
                                             Lock Screen
                                         </Link>
                                     </li>
-                                    <li className="border-t border-white-light dark:border-white-light/10">
+                                    {/* <li className="border-t border-white-light dark:border-white-light/10">
                                         <Link href="/auth/boxed-signin" className="!py-3 text-danger">
                                             <IconLogout className="h-4.5 w-4.5 shrink-0 rotate-90 ltr:mr-2 rtl:ml-2" />
                                             Sign Out
                                         </Link>
+                                    </li> */}
+
+                                    <li className="border-t border-white-light dark:border-white-light/10">
+                                        <button onClick={() => checkValidToken()} className="!py-3 text-danger">
+                                            <IconLogout className="h-4.5 w-4.5 shrink-0 rotate-90 ltr:mr-2 rtl:ml-2" />
+                                            Sign Out
+                                        </button>
                                     </li>
                                 </ul>
                             </Dropdown>

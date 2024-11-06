@@ -15,7 +15,7 @@ import IconFacebookCircle from '@/components/Icon/IconFacebookCircle';
 import IconTwitter from '@/components/Icon/IconTwitter';
 import IconGoogle from '@/components/Icon/IconGoogle';
 import * as Yup from 'yup';
-import { Failure, useSetState } from '@/utils/functions.utils';
+import { Failure, Success, useSetState } from '@/utils/functions.utils';
 import Models from '@/imports/models.import';
 import IconLoader from '@/components/Icon/IconLoader';
 
@@ -50,10 +50,12 @@ const LoginBoxed = () => {
             };
             await validationSchema.validate(body, { abortEarly: false });
             const res: any = await Models.auth.login(body);
+            console.log("res: ", res);
             localStorage.setItem('crmToken', res.access);
-            localStorage.setItem('crmUser', res.user);
+            localStorage.setItem('crmUser', JSON.stringify(res.user));
             setState({ loading: false, error: {} });
             router.replace('/');
+            Success("Login Sucessfully")
         } catch (error) {
             console.log('error: ', error);
             Failure(error);
