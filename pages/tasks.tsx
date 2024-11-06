@@ -653,7 +653,7 @@ const Tasks = () => {
             <Modal
                 open={state.isOpenAssign}
                 addHeader={'Assign Task'}
-                close={() => clearTaskData()}
+                close={() => clearAssignData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 p-5">
                         <div className="flex flex-col gap-5 ">
