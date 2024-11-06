@@ -40,22 +40,27 @@ const LoginBoxed = () => {
     });
 
     const submitForm = async (e) => {
-        e.preventDefault();
         try {
-            setState({ loading: true });
+            e.preventDefault();
 
-            const body = {
-                email: state.email,
-                password: state.password,
-            };
-            await validationSchema.validate(body, { abortEarly: false });
-            const res: any = await Models.auth.login(body);
-            console.log("res: ", res);
-            localStorage.setItem('crmToken', res.access);
-            localStorage.setItem('crmUser', JSON.stringify(res.user));
-            setState({ loading: false, error: {} });
-            router.replace('/');
-            Success("Login Sucessfully")
+            setState({ loading: true });
+            if (state.email == '' && state.password == '') {
+                Failure('Enter valid email and password');
+                setState({ loading: false });
+            } else {
+                const body = {
+                    email: state.email,
+                    password: state.password,
+                };
+                await validationSchema.validate(body, { abortEarly: false });
+                const res: any = await Models.auth.login(body);
+                console.log('res: ', res);
+                localStorage.setItem('crmToken', res.access);
+                localStorage.setItem('crmUser', JSON.stringify(res.user));
+                setState({ loading: false, error: {} });
+                router.replace('/');
+                Success('Login Sucessfully');
+            }
         } catch (error) {
             console.log('error: ', error);
             Failure(error);
@@ -129,7 +134,7 @@ const LoginBoxed = () => {
                                     </label>
                                 </div> */}
                                 <button type="submit" className="btn btn-gradient !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]">
-                                   {state.loading? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> :"Sign in"} 
+                                    {state.loading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Sign in'}
                                 </button>
                             </form>
                             {/* <div className="relative my-7 text-center md:mb-9">
