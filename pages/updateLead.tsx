@@ -15,7 +15,7 @@ import Models from '@/imports/models.import';
 import CommonLoader from './elements/commonLoader';
 import IconLoader from '@/components/Icon/IconLoader';
 import * as Yup from 'yup';
-import { Validation } from '@/utils/imports.utils';
+import { PrivateRouter, Validation } from '@/utils/imports.utils';
 
 const UpdateLead = () => {
     const dispatch = useDispatch();
@@ -482,4 +482,4 @@ const UpdateLead = () => {
     );
 };
 
-export default UpdateLead;
+export default PrivateRouter(UpdateLead);

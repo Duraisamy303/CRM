@@ -29,6 +29,7 @@ import Modal from '@/common_component/modal';
 import Tippy from '@tippyjs/react';
 import IconUserPlus from '@/components/Icon/IconUserPlus';
 import ReadMore from '@/common_component/readMore';
+import IconRefresh from '@/components/Icon/IconRefresh';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -81,6 +82,8 @@ const Tasks = () => {
         isOpenViewTask: false,
         taskViewId: '',
         taskDetails: '',
+        start_date: null,
+        end_date: null,
     });
 
     useEffect(() => {
@@ -94,19 +97,21 @@ const Tasks = () => {
     const debouncedSearch = useDebounce(state.search, 500);
 
     useEffect(() => {
-        // if (filters()) {
-        //     filterData();
-        // } else {
-        getData(state.currentPage + 1);
-        // }
-    }, [state.currentPage, debouncedSearch]);
+        if (filters()) {
+            filterData();
+        } else {
+            getData(state.currentPage);
+        }
+    }, [state.currentPage, debouncedSearch, state.start_date, state.end_date]);
 
-    const getData = async (page = 2) => {
+    const getData = async (page = 1) => {
         try {
             setState({ loading: true });
 
             const body = {
-                task_name: state.search,
+                id: 2,
+                start_date: '',
+                end_date: '',
             };
 
             const response: any = await Models.task.list(body, page);
@@ -125,7 +130,7 @@ const Tasks = () => {
 
     const filters = () => {
         let filter = false;
-        if (state.search || state.vertical || state.focus || state.market || state.country || state.state || state.range[0] > 0 || state.range[1] != state.maxPrice) {
+        if (state.search || state.start_date || state.end_date) {
             filter = true;
         }
         return filter;
@@ -136,7 +141,7 @@ const Tasks = () => {
             setState({ loading: true });
             let body = bodyData();
             if (!objIsEmpty(body)) {
-                const response: any = await Models.lead.filter(body, page);
+                const response: any = await Models.task.list(body, page);
 
                 tableData(response?.results);
 
@@ -145,14 +150,11 @@ const Tasks = () => {
                     totalRecords: response.count,
                     next: response.next,
                     previous: response.previous,
-                    isOpen: false,
                 });
             } else {
                 getData();
                 setState({
                     loading: false,
-
-                    isOpen: false,
                 });
             }
         } catch (error) {
@@ -224,42 +226,30 @@ const Tasks = () => {
 
     const bodyData = () => {
         let body: any = {};
-
         if (state.search) {
             body.key = state.search;
         }
-        if (state.vertical) {
-            body.vertical_id = [state.vertical?.value];
+        if (state.start_date) {
+            body.start_date = moment(state.start_date).format('YYYY-MM-DD');
         }
-        if (state.focus) {
-            body.focus_segment = [state.focus?.value];
-        }
-        if (state.market) {
-            body.market_segment = [state.market?.value];
-        }
-        if (state.country) {
-            body.country_id = [state.country?.value];
-        }
-        if (state.state) {
-            body.state_id = [state.state?.value];
-        }
-        if (state.range[0] > 0 || state.range[1] != state.maxPrice) {
-            body.annual_revenue = [state.range[0], state.range[1]];
+        if (state.end_date) {
+            body.end_date = moment(state.end_date).format('YYYY-MM-DD');
         }
 
         return body;
     };
+
     const tableData = (res: any) => {
         const data = res?.map((item) => {
             return {
                 ...item,
+                leadName: item.contact?.lead_name,
                 task: item?.tasktype?.label,
                 contact: item?.contact?.name,
                 category: item.category,
                 created_by: item?.created_by?.username,
-                date: item?.created_on,
-                task_date_time: item?.task_date_time,
-                contacts: item?.contact,
+                date: item?.task_date_time,
+                description: item?.task_detail,
             };
         });
 
@@ -279,26 +269,6 @@ const Tasks = () => {
     };
 
     const leadListLoadMore = async () => {
-        try {
-            if (state.hasMoreLead) {
-                const res: any = await Models.lead.list(state.currentLeadPage + 1);
-                const newOptions = Dropdown(res?.results, 'name');
-                setState({
-                    leadList: [...state.leadList, ...newOptions],
-                    hasMoreLead: res.next,
-                    currentLeadPage: state.currentLeadPage + 1,
-                });
-            } else {
-                setState({
-                    leadList: state.leadList,
-                });
-            }
-        } catch (error) {
-            setState((prev) => ({ ...prev, loading: false }));
-        }
-    };
-
-    const employeeListLoadMore = async () => {
         try {
             if (state.hasMoreLead) {
                 const res: any = await Models.lead.list(state.currentLeadPage + 1);
@@ -434,17 +404,24 @@ const Tasks = () => {
                     </button>
                 </div>
             </div>
-            <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
-                <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
-                    <IconSearch className="h-7 w-6 font-bold" /> {/* Icon size slightly reduced */}
+            <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
+                <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
+                    <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
+                        <IconSearch className="h-6 w-6 font-bold" /> {/* Icon size slightly reduced */}
+                    </button>
+                    <input
+                        type="text"
+                        value={state.search}
+                        onChange={(e) => setState({ search: e.target.value })}
+                        placeholder="Search"
+                        className="form-input w-full  rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
+                    />
+                </div>
+                <CustomeDatePicker value={state.start_date} placeholder="From Date" onChange={(e) => setState({ start_date: e, to_date: null })} />
+                <CustomeDatePicker value={state.end_date} placeholder="To Date" onChange={(e) => setState({ end_date: e })} />
+                <button type="button" className="btn btn-primary font-white w-full md:mb-0 md:w-auto" onClick={() => setState({ search: '', start_date: '', end_date: '' })}>
+                    <IconRefresh />
                 </button>
-                <input
-                    type="text"
-                    value={state.search}
-                    onChange={(e) => setState({ search: e.target.value })}
-                    placeholder="Search"
-                    className="form-input w-full rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
-                />
             </div>
 
             <div className=" mt-4 grid grid-cols-12  gap-4">
@@ -459,11 +436,31 @@ const Tasks = () => {
                             records={state.data}
                             columns={[
                                 {
-                                    accessor: 'task',
+                                    accessor: 'leadName',
+                                    sortable: true,
+                                    title: 'Lead Name',
+                                    width: '220px',
+                                },
+                                ,
+                                {
+                                    accessor: 'contact',
+                                    title: 'Contact Person',
                                     sortable: true,
                                     width: '220px',
                                 },
-                                { accessor: 'contact', sortable: true, width: '220px' },
+                                {
+                                    accessor: 'date',
+                                    sortable: true,
+                                    width: '220px',
+
+                                    render: (row: any) => (
+                                        <>
+                                            <div className="">{moment(row.task_date_time).format('YYYY-MM-DD HH:mm a')}</div>
+                                        </>
+                                    ),
+                                },
+
+                                { accessor: 'assigned', sortable: true, width: '220px' },
                                 {
                                     accessor: 'category',
                                     sortable: true,
@@ -475,19 +472,6 @@ const Tasks = () => {
                                         </div>
                                     ),
                                 },
-                                { accessor: 'created_by', sortable: true, title: 'Created By' },
-                                {
-                                    accessor: 'task_date_time',
-                                    sortable: true,
-                                    title: 'Task Date',
-
-                                    render: (row: any) => (
-                                        <>
-                                            <div className="">{moment(row.task_date_time).format('YYYY-MM-DD')}</div>
-                                        </>
-                                    ),
-                                },
-                                { accessor: 'date', sortable: true, title: 'Created On' },
                                 {
                                     accessor: 'actions',
                                     title: 'Actions',

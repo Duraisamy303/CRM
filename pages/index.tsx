@@ -423,6 +423,10 @@ const Index = () => {
                                             ),
                                         },
                                     ]}
+                                    sx={{
+                                        'tbody tr': { height: '20px' },  // Set row height
+                                        'th, td': { width: '100px' },  // Set cell width and padding
+                                      }}
                                     highlightOnHover
                                     totalRecords={state.data?.length}
                                     recordsPerPage={state.pageSize}

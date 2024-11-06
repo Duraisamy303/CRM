@@ -12,7 +12,7 @@ import Models from '@/imports/models.import';
 import CommonLoader from './elements/commonLoader';
 import IconLoader from '@/components/Icon/IconLoader';
 import { createLeadValidation } from '@/utils/validation.utils';
-import { Validation } from '@/utils/imports.utils';
+import { PrivateRouter, Validation } from '@/utils/imports.utils';
 import * as Yup from 'yup';
 
 const CreateLead = () => {
@@ -414,4 +414,4 @@ const CreateLead = () => {
     );
 };
 
-export default CreateLead;
+export default PrivateRouter(CreateLead);

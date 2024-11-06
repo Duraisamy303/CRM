@@ -14,6 +14,10 @@ import IconInstagram from '@/components/Icon/IconInstagram';
 import IconFacebookCircle from '@/components/Icon/IconFacebookCircle';
 import IconTwitter from '@/components/Icon/IconTwitter';
 import IconGoogle from '@/components/Icon/IconGoogle';
+import * as Yup from 'yup';
+import { Failure, useSetState } from '@/utils/functions.utils';
+import Models from '@/imports/models.import';
+import IconLoader from '@/components/Icon/IconLoader';
 
 const LoginBoxed = () => {
     const dispatch = useDispatch();
@@ -22,28 +26,44 @@ const LoginBoxed = () => {
     });
     const router = useRouter();
 
-    const submitForm = (e: any) => {
+    const [state, setState] = useSetState({
+        data: [],
+        loading: false,
+        error: {},
+        email: '',
+        password: '',
+    });
+
+    const validationSchema = Yup.object().shape({
+        email: Yup.string().email('Invalid email address').required('Email is required'),
+        password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+    });
+
+    const submitForm = async (e) => {
         e.preventDefault();
-        router.push('/');
-    };
+        try {
+            setState({ loading: true });
 
-    const isRtl = useSelector((state: IRootState) => state.themeConfig.rtlClass) === 'rtl' ? true : false;
-
-    const themeConfig = useSelector((state: IRootState) => state.themeConfig);
-    const setLocale = (flag: string) => {
-        setFlag(flag);
-        if (flag.toLowerCase() === 'ae') {
-            dispatch(toggleRTL('rtl'));
-        } else {
-            dispatch(toggleRTL('ltr'));
+            const body = {
+                email: state.email,
+                password: state.password,
+            };
+            await validationSchema.validate(body, { abortEarly: false });
+            const res: any = await Models.auth.login(body);
+            localStorage.setItem('crmToken', res.access);
+            localStorage.setItem('crmUser', res.user);
+            setState({ loading: false, error: {} });
+            router.replace('/');
+        } catch (error) {
+            console.log('error: ', error);
+            Failure(error);
+            setState({ loading: false });
         }
     };
-    const [flag, setFlag] = useState('');
-    useEffect(() => {
-        setLocale(localStorage.getItem('i18nextLng') || themeConfig.locale);
-    }, []);
 
-    const { t, i18n } = useTranslation();
+    const handleChange = (e) => {
+        setState({ ...state, [e.target.name]: e.target.value });
+    };
 
     return (
         <div>
@@ -58,49 +78,6 @@ const LoginBoxed = () => {
                 <img src="/assets/images/auth/polygon-object.svg" alt="image" className="absolute bottom-0 end-[28%]" />
                 <div className="relative w-full max-w-[870px] rounded-md bg-[linear-gradient(45deg,#fff9f9_0%,rgba(255,255,255,0)_25%,rgba(255,255,255,0)_75%,_#fff9f9_100%)] p-2 dark:bg-[linear-gradient(52.22deg,#0E1726_0%,rgba(14,23,38,0)_18.66%,rgba(14,23,38,0)_51.04%,rgba(14,23,38,0)_80.07%,#0E1726_100%)]">
                     <div className="relative flex flex-col justify-center rounded-md bg-white/60 px-6 py-20 backdrop-blur-lg dark:bg-black/50 lg:min-h-[758px]">
-                        {/* <div className="absolute end-6 top-6">
-                            <div className="dropdown">
-                                {flag && (
-                                    <Dropdown
-                                        offset={[0, 8]}
-                                        placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                        btnClassName="flex items-center gap-2.5 rounded-lg border border-white-dark/30 bg-white px-2 py-1.5 text-white-dark hover:border-primary hover:text-primary dark:bg-black"
-                                        button={
-                                            <>
-                                                <div>
-                                                    <img src={`/assets/images/flags/${flag.toUpperCase()}.svg`} alt="image" className="h-5 w-5 rounded-full object-cover" />
-                                                </div>
-                                                <div className="text-base font-bold uppercase">{flag}</div>
-                                                <span className="shrink-0">
-                                                    <IconCaretDown />
-                                                </span>
-                                            </>
-                                        }
-                                    >
-                                        <ul className="grid w-[280px] grid-cols-2 gap-2 !px-2 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
-                                            {themeConfig.languageList.map((item: any) => {
-                                                return (
-                                                    <li key={item.code}>
-                                                        <button
-                                                            type="button"
-                                                            className={`flex w-full rounded-lg hover:text-primary ${i18n.language === item.code ? 'bg-primary/10 text-primary' : ''}`}
-                                                            onClick={() => {
-                                                                dispatch(toggleLocale(item.code));
-                                                                i18n.changeLanguage(item.code);
-                                                                setLocale(item.code);
-                                                            }}
-                                                        >
-                                                            <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`} alt="flag" className="h-5 w-5 rounded-full object-cover" />
-                                                            <span className="ltr:ml-3 rtl:mr-3">{item.name}</span>
-                                                        </button>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </Dropdown>
-                                )}
-                            </div>
-                        </div> */}
                         <div className="mx-auto w-full max-w-[440px]">
                             <div className="mb-10">
                                 <h1 className="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl">Sign in</h1>
@@ -110,36 +87,54 @@ const LoginBoxed = () => {
                                 <div>
                                     <label htmlFor="Email">Email</label>
                                     <div className="relative text-white-dark">
-                                        <input id="Email" type="email" placeholder="Enter Email" className="form-input ps-10 placeholder:text-white-dark" />
+                                        <input
+                                            id="Email"
+                                            name="email"
+                                            type="email"
+                                            placeholder="Enter Email"
+                                            className="form-input ps-10 placeholder:text-white-dark"
+                                            value={state.email}
+                                            onChange={handleChange}
+                                        />
                                         <span className="absolute start-4 top-1/2 -translate-y-1/2">
                                             <IconMail fill={true} />
                                         </span>
                                     </div>
+                                    {state.error.email && <div className="mt-1 text-sm text-red-500">{state.error.email}</div>}
                                 </div>
                                 <div>
                                     <label htmlFor="Password">Password</label>
                                     <div className="relative text-white-dark">
-                                        <input id="Password" type="password" placeholder="Enter Password" className="form-input ps-10 placeholder:text-white-dark" />
+                                        <input
+                                            id="Password"
+                                            type="password"
+                                            placeholder="Enter Password"
+                                            className="form-input ps-10 placeholder:text-white-dark"
+                                            value={state.password}
+                                            name="password"
+                                            onChange={handleChange}
+                                        />
                                         <span className="absolute start-4 top-1/2 -translate-y-1/2">
                                             <IconLockDots fill={true} />
                                         </span>
                                     </div>
+                                    {state.error.password && <div className="mt-1 text-sm text-red-500">{state.error.password}</div>}
                                 </div>
-                                <div>
+                                {/* <div>
                                     <label className="flex cursor-pointer items-center">
                                         <input type="checkbox" className="form-checkbox bg-white dark:bg-black" />
                                         <span className="text-white-dark">Subscribe to weekly newsletter</span>
                                     </label>
-                                </div>
+                                </div> */}
                                 <button type="submit" className="btn btn-gradient !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]">
-                                    Sign in
+                                   {state.loading? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> :"Sign in"} 
                                 </button>
                             </form>
-                            <div className="relative my-7 text-center md:mb-9">
+                            {/* <div className="relative my-7 text-center md:mb-9">
                                 <span className="absolute inset-x-0 top-1/2 h-px w-full -translate-y-1/2 bg-white-light dark:bg-white-dark"></span>
                                 <span className="relative bg-white px-2 font-bold uppercase text-white-dark dark:bg-dark dark:text-white-light">or</span>
-                            </div>
-                            <div className="mb-10 md:mb-[60px]">
+                            </div> */}
+                            {/* <div className="mb-10 md:mb-[60px]">
                                 <ul className="flex justify-center gap-3.5 text-white">
                                     <li>
                                         <Link
@@ -178,13 +173,13 @@ const LoginBoxed = () => {
                                         </Link>
                                     </li>
                                 </ul>
-                            </div>
-                            <div className="text-center dark:text-white">
+                            </div> */}
+                            {/* <div className="text-center dark:text-white">
                                 Don't have an account ?&nbsp;
                                 <Link href="/auth/signup" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
                                     SIGN UP
                                 </Link>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

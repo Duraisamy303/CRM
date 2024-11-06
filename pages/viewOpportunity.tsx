@@ -31,6 +31,7 @@ import OppLabel from '@/components/oppLabel';
 import NoteComponent from '@/components/noteComponent';
 import { DataTable } from 'mantine-datatable';
 import ReadMore from '@/common_component/readMore';
+import StageCard from '@/components/StageCard';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -287,23 +288,7 @@ export default function ViewLead() {
                         </div>
                     </div>
                     <div className="max-h-[600px] overflow-y-scroll">
-                        <DataTable
-                            className="table-responsive"
-                            records={state.stageHistoryList}
-                            columns={[
-                                { accessor: 'stage', sortable: true },
-                                { accessor: 'date', sortable: true },
-                                { accessor: 'moved_by', sortable: true, title: 'Moved By' },
-                            ]}
-                            highlightOnHover
-                            totalRecords={state.stageHistoryList?.length}
-                            recordsPerPage={state.pageSize}
-                            minHeight={200}
-                            page={null}
-                            onPageChange={(p) => {}}
-                            withBorder={true}
-                            paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
-                        />
+                        <StageCard data={state.stageHistoryList}/>
                     </div>
                 </div>
             )}

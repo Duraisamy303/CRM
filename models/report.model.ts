@@ -1,11 +1,11 @@
 import instance from '@/utils/axios.utils';
 
 const report = {
-    funnelCount: () => {
+    funnelCount: (data) => {
         let promise = new Promise((resolve, reject) => {
             let url = `countdetails/`;
             instance()
-                .get(url)
+                .post(url,data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -20,11 +20,11 @@ const report = {
         return promise;
     },
 
-    reportLead: () => {
+    reportLead: (data) => {
         let promise = new Promise((resolve, reject) => {
             let url = `report_lead/`;
             instance()
-                .post(url)
+                .post(url,data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -58,11 +58,11 @@ const report = {
         return promise;
     },
 
-    reportOpportunity: () => {
+    reportOpportunity: (data) => {
         let promise = new Promise((resolve, reject) => {
             let url = `opportunity/chart/`;
             instance()
-                .post(url)
+                .post(url, data)
                 .then((res) => {
                     resolve(res.data);
                 })

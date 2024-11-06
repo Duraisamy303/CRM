@@ -20,7 +20,7 @@ export const instance = () => {
 
   });
   data.interceptors.request.use(async function (config) {
-    const accessToken =  localStorage.getItem('token');
+    const accessToken =  localStorage.getItem('crmToken');
     config.headers['authorization'] = accessToken;
     return config;
   });

@@ -317,7 +317,7 @@ const Opportunity = () => {
             isOpenOpp: false,
             oppLoading: false,
             errors: '',
-            lead: '',
+            createlead: '',
         });
     };
 
@@ -333,11 +333,11 @@ const Opportunity = () => {
                 currency_type: state.currency_type?.value,
                 closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
                 probability_in_percentage: state.probability_in_percentage,
-                lead: state.lead?.value,
+                lead: state.createlead?.value,
             };
 
             const body = {
-                lead: state.lead?.value,
+                lead: state.createlead?.value,
                 name: state.opp_name,
                 owner: state.owner?.value,
                 stage: state.opp_stage?.value,
@@ -403,15 +403,15 @@ const Opportunity = () => {
             oppId: row.id,
             isOpenOpp: true,
             opp_name: row.name,
-            owner: { value: row.owner.id, label: row.owner.username },
-            opportunity_value: row.opportunity_value,
-            recurring_value_per_year: row.recurring_value_per_year,
-            currency_type: { value: row.currency_type.id, label: row.currency_type.currency_short },
+            owner: { value: row?.owner?.id, label: row?.owner?.username },
+            opportunity_value: row?.opportunity_value,
+            recurring_value_per_year: row?.recurring_value_per_year,
+            currency_type: { value: row?.currency_type?.id, label: row?.currency_type?.currency_short },
             probability_in_percentage: row.probability_in_percentage,
-            opp_created_by: { value: row.created_by.id, label: row.created_by.username },
-            opp_closing_date: new Date(row.closing_date),
-            opp_stage: { value: row.stage.id, label: row.stage.stage },
-            lead: { value: row.lead.id, label: row.lead.name },
+            opp_created_by: { value: row?.created_by?.id, label: row?.created_by?.username },
+            opp_closing_date: new Date(row?.closing_date),
+            opp_stage: { value: row?.stage?.id, label: row?.stage?.stage },
+            createlead: { value: row?.lead?.id, label: row?.lead?.name },
         });
     };
 
@@ -559,8 +559,8 @@ const Opportunity = () => {
                     <div className="flex flex-col gap-4">
                         <CustomSelect
                             title="Lead "
-                            value={state.lead}
-                            onChange={(e) => setState({ lead: e })}
+                            value={state.createlead}
+                            onChange={(e) => setState({ createlead: e })}
                             placeholder={'Lead '}
                             options={state.leadList}
                             error={state.errors?.lead}

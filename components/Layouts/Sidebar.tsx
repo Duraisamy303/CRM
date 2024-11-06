@@ -95,8 +95,8 @@ const Sidebar = () => {
                 <div className="h-full bg-white dark:bg-black">
                     <div className="flex items-center justify-between px-4 py-3">
                         <Link href="/" className="main-logo flex shrink-0 items-center">
-                            <img className="ml-[5px] w-8 flex-none" src="/assets/images/logo.svg" alt="logo" />
-                            <span className="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline">{t('VRISTO')}</span>
+                            <img className="ml-[5px] w-8 flex-none" src="/assets/images/repute_logo.jpeg" alt="logo" />
+                            <span className="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline text-red-600">{t('REPUTE')}</span>
                         </Link>
 
                         <button
@@ -178,14 +178,14 @@ const Sidebar = () => {
                                             </div>
                                         </Link>
                                     </li>
-                                    <li className="nav-item">
+                                    {/* <li className="nav-item">
                                         <Link href="/settings" className="group">
                                             <div className="flex items-center">
                                                 <IconSettings className="shrink-0 group-hover:!text-primary" />
                                                 <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('Settings')}</span>
                                             </div>
                                         </Link>
-                                    </li>
+                                    </li> */}
                                     {/* <li className="nav-item">
                                         <Link href="/apps/contacts" className="group">
                                             <div className="flex items-center">

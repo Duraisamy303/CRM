@@ -3,7 +3,7 @@ import instance from '@/utils/axios.utils';
 const task = {
     list: (data,page) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `gettask/${page}/`;
+            let url = `alltask/?page=${page}`;
             instance()
                 .post(url,data)
                 .then((res) => {
