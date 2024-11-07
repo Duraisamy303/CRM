@@ -136,6 +136,25 @@ const lead = {
         return promise;
     },
 
+    leadAssign: (leadId: any,data:any) => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `lead/${leadId}/assign/`;
+            instance()
+                .post(url,data)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
     dropdowns: (type) => {
         let promise = new Promise((resolve, reject) => {
             let url = `dropdown/?type=${type}`;

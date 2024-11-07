@@ -41,6 +41,7 @@ const Tasks = () => {
     const [state, setState] = useSetState({
         data: [],
         loading: false,
+        subLoading: false,
         selectedRecords: [],
         isOpenFilter: false,
         focusList: [],
@@ -169,37 +170,35 @@ const Tasks = () => {
 
     const stageList = async () => {
         try {
-            setState({ loading: true });
             const res: any = await Models.opportunity.oppDropdowns('stage');
             const dropdownList = Dropdown(res, 'stage');
-            setState({ stageList: dropdownList, loading: false });
+            setState({ stageList: dropdownList });
         } catch (error) {
-            setState({ loading: false });
-
             console.log('error: ', error);
         }
     };
 
     const ownerList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res = await Models.lead.dropdowns('owner');
             const dropdownList = Dropdown(res, 'username');
-            setState({ ownerList: dropdownList, loading: false });
+            setState({ ownerList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
     };
+
     const createdByList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res = await Models.lead.dropdowns('created_by');
             const dropdownList = Dropdown(res, 'username');
-            setState({ createdByList: dropdownList, loading: false });
+            setState({ createdByList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -207,12 +206,12 @@ const Tasks = () => {
 
     const employeeList = async (page = 1) => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.employee.list(page);
             const dropdownList = Dropdown(res?.results, `first_name`);
-            setState({ employeeList: dropdownList, loading: false });
+            setState({ employeeList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -222,21 +221,21 @@ const Tasks = () => {
         try {
             const res: any = await Models.contact.listByLeadId(val.value, 1);
             const dropdown = Dropdown(res.results, 'name');
-            setState({ contactList: dropdown, loading: false, contactCount: res?.count, contactNext: res.next });
+            setState({ contactList: dropdown, contactCount: res?.count, contactNext: res.next });
         } catch (error) {
-            setState({ loading: false });
+            console.log('error: ', error);
         }
     };
 
     const leadList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.lead.list(state.currentLeadPage);
             const dropdownList = Dropdown(res?.results, 'name');
 
-            setState({ leadList: dropdownList, loading: false, hasMoreLead: res.next });
+            setState({ leadList: dropdownList, subLoading: false, hasMoreLead: res.next });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -244,13 +243,13 @@ const Tasks = () => {
 
     const getLogStageList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.log.logStage();
             const dropdownList = Dropdown(res, 'stage');
 
-            setState({ logStageList: dropdownList, loading: false });
+            setState({ logStageList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
         }
     };
 
@@ -282,15 +281,15 @@ const Tasks = () => {
         const data = res?.map((item) => {
             return {
                 ...item,
-                leadData:{value:item.contact?.lead_id,label:item.contact?.lead_name},
-                contactData:{value:item.contact?.id,label:item.contact?.name},
+                leadData: { value: item.contact?.lead_id, label: item.contact?.lead_name },
+                contactData: { value: item.contact?.id, label: item.contact?.name },
                 leadName: item.contact?.lead_name,
                 task: item?.tasktype?.label,
                 contact: item?.contact?.name,
                 category: item.category,
                 created_by: item?.created_by?.username,
                 date: item?.task_date_time,
-                description: item?.task_detail,
+                description: item?.task_detail ? item?.task_detail : '',
                 assigned_to: item?.assigned_to?.length > 0 ? item?.assigned_to?.map((item) => item?.username).join(', ') : item.created_by?.username,
             };
         });
@@ -326,7 +325,7 @@ const Tasks = () => {
                 });
             }
         } catch (error) {
-            setState((prev) => ({ ...prev, loading: false }));
+            console.log('error: ', error);
         }
     };
 
@@ -352,13 +351,13 @@ const Tasks = () => {
                 clearTaskData();
                 setState({ taskLoading: false });
                 Success(res.message);
-                getData()
+                getData();
             } else {
                 const res: any = await Models.task.create(body);
                 clearTaskData();
                 setState({ taskLoading: false });
-
                 Success(res.message);
+                getData();
             }
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
@@ -377,8 +376,8 @@ const Tasks = () => {
         setState({
             taskId: row.id,
             isOpenTask: true,
-            lead:row?.leadData,
-            contact:row?.contactData,
+            lead: row?.leadData,
+            contact: row?.contactData,
             details: row?.task_detail,
             task_date_time: row?.task_date_time,
         });
@@ -448,11 +447,12 @@ const Tasks = () => {
         });
         getData();
     };
+    console.log('state.loading: ', state.loading);
 
     return (
         <div className="p-2">
-            <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
-                <div className="flex items-center gap-5">
+            <div className="panel flex items-center justify-between gap-5 ">
+                <div className="flex items-center gap-5 pl-3">
                     <h5 className="text-lg font-semibold ">Tasks</h5>
                 </div>
                 <div className="flex gap-5">
@@ -461,7 +461,7 @@ const Tasks = () => {
                     </button>
                 </div>
             </div>
-            <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
+            <div className="panel  mt-2 flex items-center justify-between gap-5 ">
                 <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
                     <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
                         <IconSearch className="h-6 w-6 font-bold" /> {/* Icon size slightly reduced */}
@@ -476,44 +476,39 @@ const Tasks = () => {
                 </div>
                 <CustomeDatePicker value={state.start_date} placeholder="From Date" onChange={(e) => setState({ start_date: e, to_date: null })} />
                 <CustomeDatePicker value={state.end_date} placeholder="To Date" onChange={(e) => setState({ end_date: e })} />
-                <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
+                <button className="btn btn-primary " onClick={() => setState({ isOpen: true })}>
                     <IconFilter />
                 </button>
             </div>
 
-            <div className=" mt-4 grid grid-cols-12  gap-4">
-                {state.loading ? (
+            <div className=" mt-2 grid grid-cols-12  gap-4">
+                {state.loading || state.subLoading ? (
                     <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
                         <CommonLoader />
                     </div>
                 ) : (
                     <div className=" col-span-12 flex flex-col   md:col-span-12">
-                        {state.loading ? (
-                            <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
-                                <CommonLoader />
+                        <div className=" col-span-12 flex flex-col   md:col-span-12">
+                            <div className="flex items-center justify-end pb-2 pr-3">
+                                <div className="rounded-lg bg-gray-300 p-1 font-semibold">
+                                    {state.currentPage}-{Math.min(state.currentPage * 10, state.totalRecords)} of {state.totalRecords}
+                                </div>
                             </div>
-                        ) : (
                             <DataTable
                                 className="table-responsive"
                                 records={state.data}
                                 columns={[
                                     {
                                         accessor: 'leadName',
-                                        sortable: true,
                                         title: 'Lead Name',
-                                        width: '220px',
                                     },
                                     ,
                                     {
                                         accessor: 'contact',
                                         title: 'Contact Person',
-                                        sortable: true,
-                                        width: '220px',
                                     },
                                     {
                                         accessor: 'date',
-                                        sortable: true,
-                                        width: '220px',
 
                                         render: (row: any) => (
                                             <>
@@ -522,11 +517,9 @@ const Tasks = () => {
                                         ),
                                     },
 
-                                    { accessor: 'assigned_to', sortable: true, width: '220px', title: 'Assigned to' },
+                                    { accessor: 'assigned_to', title: 'Assigned to' },
                                     {
                                         accessor: 'category',
-                                        sortable: true,
-                                        width: '220px',
 
                                         render: (row) => (
                                             <div
@@ -536,6 +529,14 @@ const Tasks = () => {
                                             >
                                                 {row?.category}
                                             </div>
+                                        ),
+                                    },
+                                    {
+                                        accessor: 'description',
+                                        render: (row: any) => (
+                                            <>
+                                                <ReadMore charLimit={40}>{row?.description}</ReadMore>
+                                            </>
                                         ),
                                     },
                                     {
@@ -574,13 +575,13 @@ const Tasks = () => {
                                 page={null}
                                 onPageChange={(p) => {}}
                                 withBorder={true}
-                                selectedRecords={state.selectedRecords}
-                                onSelectedRecordsChange={(val) => {
-                                    setState({ selectedRecords: val });
-                                }}
+                                // selectedRecords={state.selectedRecords}
+                                // onSelectedRecordsChange={(val) => {
+                                //     setState({ selectedRecords: val });
+                                // }}
                                 paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
                             />
-                        )}
+                        </div>
                         <div className="mt-5 flex justify-center gap-3">
                             <button disabled={!state.previous} onClick={handlePreviousPage} className={`btn ${!state.previous ? 'btn-disabled' : 'btn-primary'}`}>
                                 <IconArrowBackward />
@@ -760,6 +761,10 @@ const Tasks = () => {
                 title="Filter"
                 open={state.isOpen}
                 close={() => setState({ isOpen: false })}
+                cancelOnClick={() => clearFilter()}
+                submitOnClick={() => filterData()}
+                submitLoading={state.loading}
+                canceTitle="Reset"
                 renderComponent={() => (
                     <div>
                         <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
@@ -777,14 +782,14 @@ const Tasks = () => {
                             />
                             <CustomSelect title="Assign To" value={state.assigned_to} onChange={(e) => setState({ assigned_to: e })} placeholder={'Assign To'} options={state.createdByList} />
 
-                            <div className=" flex justify-end gap-3">
+                            {/* <div className=" flex justify-end gap-3">
                                 <button type="button" className="btn btn-primary" onClick={() => filterData()}>
                                     Submit
                                 </button>
                                 <button type="button" className="btn btn-primary" onClick={() => clearFilter()}>
                                     Reset
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 )}

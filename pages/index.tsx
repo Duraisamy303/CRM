@@ -1,6 +1,6 @@
-import { Models, PrivateRouter } from '@/utils/imports.utils';
+import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, addCommasToNumber, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, Success, addCommasToNumber, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -19,6 +19,14 @@ import IconPlus from '@/components/Icon/IconPlus';
 import OppCard from '@/components/oppCard';
 import IconSearch from '@/components/Icon/IconSearch';
 import Header from '@/components/Layouts/Header';
+import Chip from '@/components/chip';
+import Tippy from '@tippyjs/react';
+import IconUserPlus from '@/components/Icon/IconUserPlus';
+import Modal from '@/common_component/modal';
+import TextArea from '@/components/TextArea';
+import IconLoader from '@/components/Icon/IconLoader';
+import moment from 'moment';
+import * as Yup from 'yup';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -50,13 +58,21 @@ const Index = () => {
         isOpen: false,
         range: [0, 10000],
         maxPrice: 10000,
+        tagList: [],
+        tags: [],
+        isOpenAssign: false,
+        createdByList: [],
+        assigned_to: '',
     });
+    console.log('tags: ', state.tags);
 
     useEffect(() => {
         getData();
         getMarketSegmentList();
         countryList();
         verticalList();
+        tagList();
+        createdByList();
     }, []);
 
     const debouncedSearch = useDebounce(state.search, 500);
@@ -73,10 +89,9 @@ const Index = () => {
         try {
             setState({ loading: true });
             const response: any = await Models.lead.list(page);
+            console.log('response: ', response);
             setState({ range: [response.min_revenue, response.max_revenue], maxPrice: response.max_revenue });
-
             tableData(response?.results);
-
             setState({
                 loading: false,
                 totalRecords: response.count,
@@ -150,6 +165,9 @@ const Index = () => {
         if (state.range[0] > 0 || state.range[1] != state.maxPrice) {
             body.annual_revenue = [state.range[0], state.range[1]];
         }
+        if (state.tags?.length > 0) {
+            body.tags = state.tags?.map((item) => item?.value);
+        }
 
         return body;
     };
@@ -168,6 +186,7 @@ const Index = () => {
             search: '',
             isOpen: false,
             range: [0, state.maxPrice],
+            tags: [],
         });
         getData();
     };
@@ -183,6 +202,32 @@ const Index = () => {
             setState({ focusList: focusList });
         } catch (error) {
             setState({ loading: false });
+        }
+    };
+
+    const tagList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('tags');
+            const dropdownList = Dropdown(res, 'tag');
+            setState({ tagList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const createdByList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('created_by');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ createdByList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
         }
     };
 
@@ -242,6 +287,7 @@ const Index = () => {
                 name: item?.name,
                 vertical: item?.focus_segment?.vertical?.vertical || item?.vertical?.vertical,
                 annual_revenue: item?.annual_revenue,
+                tags: item?.tags,
             };
         });
 
@@ -259,59 +305,70 @@ const Index = () => {
         }
     };
 
+    const leadListLoadMore = async () => {
+        try {
+            if (state.hasMoreLead) {
+                const res: any = await Models.lead.list(state.currentLeadPage + 1);
+                const newOptions = Dropdown(res?.results, 'name');
+                setState({
+                    leadList: [...state.leadList, ...newOptions],
+                    hasMoreLead: res.next,
+                    currentLeadPage: state.currentLeadPage + 1,
+                });
+            } else {
+                setState({
+                    leadList: state.leadList,
+                });
+            }
+        } catch (error) {
+            setState((prev) => ({ ...prev, loading: false }));
+        }
+    };
+
+    const clearAssignData = () => {
+        setState({
+            assigned_to: '',
+            isOpenAssign: false,
+            errors: '',
+            assignLoad: false,
+            leadId: '',
+        });
+    };
+
+    const assignedLead = async () => {
+        try {
+            setState({ assignLoad: true });
+            const validateField = {
+                assigned_to: state.assigned_to ? moment(state.assigned_to).format('YYYY-MM-DD') : '',
+            };
+            await Validation.assignTask.validate(validateField, { abortEarly: false });
+
+            const body = {
+                assigned_to: state.assigned_to?.map((item) => item?.value),
+            };
+            const res: any = await Models.lead.leadAssign(state.leadId, body);
+            Success(res.message);
+            clearAssignData();
+            setState({ assignLoad: false });
+            getData();
+        } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = {};
+                error.inner.forEach((err) => {
+                    validationErrors[err.path] = err?.message; // Set the error message for each field
+                });
+                setState({ errors: validationErrors, assignLoad: false });
+            } else {
+                setState({ assignLoad: false });
+            }
+        }
+    };
+
     return (
         <>
             <div className="p-2">
-                {/* Updated container with responsive flex */}
-                {/* <div className="flex flex-col gap-3 md:flex-row">
-                <div className="panel relative h-full w-full overflow-hidden p-0 md:w-1/3">
-                    <div className="flex p-5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary dark:text-white-light">
-                            <IconUsersGroup className="h-5 w-5" />
-                        </div>
-                        <div className="font-semibold ltr:ml-3 rtl:mr-3">
-                            <p className="text-xl dark:text-white-light">31.6K</p>
-                            <h5 className="text-xs text-[#506690]">LEADS</h5>
-                        </div>
-                    </div>
-                    <div className="h-40 overflow-hidden">
-                        <ReactApexChart series={followers.series} options={followers.options} type="area" height={160} width={'100%'} className="w-full" />
-                    </div>
-                </div>
-
-                <div className="panel relative h-full w-full overflow-hidden p-0 md:w-1/3">
-                    <div className="flex p-5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-danger/10 text-danger dark:bg-danger dark:text-white-light">
-                            <IconLink className="h-5 w-5" />
-                        </div>
-                        <div className="font-semibold ltr:ml-3 rtl:mr-3">
-                            <p className="text-xl dark:text-white-light">1,900</p>
-                            <h5 className="text-xs text-[#506690]">CONTACTS</h5>
-                        </div>
-                    </div>
-                    <div className="h-40 overflow-hidden">
-                        <ReactApexChart series={referral.series} options={referral.options} type="area" height={160} width={'100%'} className="w-full" />
-                    </div>
-                </div>
-
-                <div className="panel relative h-full w-full overflow-hidden p-0 md:w-1/3">
-                    <div className="flex p-5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success dark:bg-success dark:text-white-light">
-                            <IconChatDots className="h-5 w-5" />
-                        </div>
-                        <div className="font-semibold ltr:ml-3 rtl:mr-3">
-                            <p className="text-xl dark:text-white-light">18.2%</p>
-                            <h5 className="text-xs text-[#506690]">OPPORTUNITIES</h5>
-                        </div>
-                    </div>
-                    <div className="h-40 overflow-hidden">
-                        <ReactApexChart series={engagement.series} options={engagement.options} type="area" height={160} width={'100%'} className="w-full" />
-                    </div>
-                </div>
-            </div> */}
-
-                <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
-                    <div className="flex items-center gap-5">
+                <div className="panel  flex items-center justify-between gap-5 ">
+                    <div className="flex items-center gap-5 pl-3">
                         <h5 className="text-lg font-semibold ">Leads</h5>
                     </div>
                     <div className="flex gap-5">
@@ -320,7 +377,7 @@ const Index = () => {
                         </button>
                     </div>
                 </div>
-                <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
+                <div className="panel mt-2 flex flex-col items-center justify-between gap-5 lg:flex-row">
                     <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
                         <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
                             <IconSearch className="h-6 w-6 font-bold" /> {/* Icon size slightly reduced */}
@@ -330,32 +387,51 @@ const Index = () => {
                             value={state.search}
                             onChange={(e) => setState({ search: e.target.value })}
                             placeholder="Search"
-                            className="form-input w-full  rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
+                            className="form-input w-full rounded-r-full border-0 bg-white py-1.5 pl-0 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
                         />
                     </div>
-                    {/* <CustomSelect options={state.verticalList} value={state.vertical} onChange={(e) => setState({ vertical: e })} isMulti={false} placeholder={'Vertical'} /> */}
-                    <CustomSelect
-                        value={state.vertical}
-                        onChange={(e) => {
-                            if (e) {
-                                setState({ focus: '', vertical: e });
-                                getFocusSegmentList(e);
-                            } else {
-                                setState({ focus: '', vertical: '' });
-                            }
-                        }}
-                        placeholder={'Vertical'}
-                        options={state.verticalList}
-                        required
-                        error={state.errors?.vertical}
-                    />
-                    <CustomSelect options={state.focusList} value={state.focus} onChange={(e) => setState({ focus: e })} isMulti={false} placeholder={'Focus Segment'} />
-                    <CustomSelect options={state.marketList} value={state.market} onChange={(e) => setState({ market: e })} isMulti={false} placeholder={'Market Segment'} />
-                    <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
+
+                    <div className="flex w-full flex-col gap-4 lg:w-auto lg:flex-row">
+                        <CustomSelect
+                            value={state.vertical}
+                            onChange={(e) => {
+                                if (e) {
+                                    setState({ focus: '', vertical: e });
+                                    getFocusSegmentList(e);
+                                } else {
+                                    setState({ focus: '', vertical: '' });
+                                }
+                            }}
+                            placeholder={'Vertical'}
+                            options={state.verticalList}
+                            required
+                            error={state.errors?.vertical}
+                            className="w-full lg:w-64" // Make the width responsive
+                        />
+                        <CustomSelect
+                            options={state.focusList}
+                            value={state.focus}
+                            onChange={(e) => setState({ focus: e })}
+                            isMulti={false}
+                            placeholder={'Focus Segment'}
+                            className="w-full lg:w-64" // Make the width responsive
+                        />
+                        <CustomSelect
+                            options={state.marketList}
+                            value={state.market}
+                            onChange={(e) => setState({ market: e })}
+                            isMulti={false}
+                            placeholder={'Market Segment'}
+                            className="w-full lg:w-64" // Make the width responsive
+                        />
+                    </div>
+
+                    <button className="btn btn-primary lg:mt-0" onClick={() => setState({ isOpen: true })}>
                         <IconFilter />
                     </button>
                 </div>
-                <div className=" mt-4 grid grid-cols-12  gap-4">
+
+                <div className=" mt-2 grid grid-cols-12  gap-4">
                     {/*  */}
                     {state.loading ? (
                         <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
@@ -363,6 +439,12 @@ const Index = () => {
                         </div>
                     ) : (
                         <div className=" col-span-12 flex flex-col   md:col-span-12">
+                            <div className="flex items-center justify-end pb-2 pr-3">
+                                <div className="rounded-lg bg-gray-300 p-1 font-semibold">
+                                    {state.currentPage}-{Math.min(state.currentPage * 10, state.totalRecords)} of {state.totalRecords}
+                                </div>
+                            </div>
+
                             <div>
                                 <DataTable
                                     className="table-responsive"
@@ -370,36 +452,49 @@ const Index = () => {
                                     columns={[
                                         {
                                             accessor: 'name',
-                                            sortable: true,
-                                            width: '220px',
                                             render: (row, index) => (
                                                 <>
-                                                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row.name}</div>
+                                                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row?.name}</div>
+                                                    {/* {row.tags?.length > 0 &&
+                                                        row.tags?.map((item) => (
+                                                            <div className="flex gap-2 p-0.5">
+                                                                <div>
+                                                                    <Chip label={item.tag} />
+                                                                </div>
+                                                            </div>
+                                                        ))} */}
                                                 </>
                                             ),
                                         },
-                                        { accessor: 'vertical', sortable: true, width: '220px' },
-                                        { accessor: 'focus_segment', sortable: true, title: 'Focus Segment', width: '300px' },
+                                        { accessor: 'vertical' },
+                                        {
+                                            accessor: 'focus_segment',
+                                            title: 'Focus Segment',
+                                            render: (row, index) => (
+                                                <>
+                                                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row.focus_segment}</div>
+                                                </>
+                                            ),
+                                        },
 
                                         {
                                             accessor: 'annual_revenue',
-                                            sortable: true,
+
                                             title: 'Annual Revenue',
                                             render: (row, index) => (
                                                 <>
-                                                    <div>{addCommasToNumber(row.annual_revenue)}</div>
+                                                    <div>{roundOff(row.annual_revenue)}</div>
                                                 </>
                                             ),
                                         },
-                                        { accessor: 'lead_owner', sortable: true, title: 'Lead Owner' },
-                                        { accessor: 'country', sortable: true, width: '220px' },
-                                        { accessor: 'state', sortable: true, title: 'State' },
+                                        { accessor: 'lead_owner', title: 'Lead Owner' },
+                                        { accessor: 'country', width: '120px' },
+                                        { accessor: 'state', title: 'State' },
                                         {
                                             accessor: 'created_on',
-                                            sortable: true,
-                                            width: 160,
+
                                             title: 'Date',
-                                            render: (row) => <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden', width: '160px' }}>{row.created_on}</div>,
+                                            render: (row) => <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden', width: '100px' }}>{row.created_on}</div>,
                                         },
 
                                         {
@@ -408,7 +503,12 @@ const Index = () => {
                                             render: (row: any) => (
                                                 <>
                                                     <div className="mx-auto flex w-max items-center gap-4">
-                                                        <button type="button" className="flex hover:text-danger" onClick={() => router.push(`/viewLead?id=${row.id}`)}>
+                                                        <Tippy content="Assign To" className="rounded-lg bg-black p-1 text-sm text-white">
+                                                            <button type="button" className="flex hover:text-primary" onClick={() => setState({ isOpenAssign: true, leadId: row.id })}>
+                                                                <IconUserPlus />
+                                                            </button>
+                                                        </Tippy>
+                                                        <button type="button" className="flex hover:text-primary" onClick={() => router.push(`/viewLead?id=${row.id}`)}>
                                                             <IconEye />
                                                         </button>
                                                         <button className="flex hover:text-info" onClick={() => router.push(`/updateLead?id=${row.id}`)}>
@@ -423,10 +523,6 @@ const Index = () => {
                                             ),
                                         },
                                     ]}
-                                    sx={{
-                                        'tbody tr': { height: '20px' },  // Set row height
-                                        'th, td': { width: '100px' },  // Set cell width and padding
-                                      }}
                                     highlightOnHover
                                     totalRecords={state.data?.length}
                                     recordsPerPage={state.pageSize}
@@ -434,10 +530,10 @@ const Index = () => {
                                     page={null}
                                     onPageChange={(p) => {}}
                                     withBorder={true}
-                                    selectedRecords={state.selectedRecords}
-                                    onSelectedRecordsChange={(val) => {
-                                        setState({ selectedRecords: val });
-                                    }}
+                                    // selectedRecords={state.selectedRecords}
+                                    // onSelectedRecordsChange={(val) => {
+                                    //     setState({ selectedRecords: val });
+                                    // }}
                                     paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
                                 />
                             </div>
@@ -453,37 +549,57 @@ const Index = () => {
                     )}
                 </div>
 
+                <Modal
+                    open={state.isOpenAssign}
+                    addHeader={'Assign Lead'}
+                    close={() => clearAssignData()}
+                    renderComponent={() => (
+                        <div className="flex flex-col gap-5 p-5">
+                            <div className="flex flex-col gap-5 ">
+                                <CustomSelect
+                                    title="Assigned To"
+                                    value={state.assigned_to}
+                                    onChange={(e) => setState({ assigned_to: e })}
+                                    placeholder={'Assigned To'}
+                                    options={state.createdByList}
+                                    error={state.errors?.assigned_to}
+                                    required
+                                    isMulti
+                                    loadMore={() => leadListLoadMore()}
+                                />
+                            </div>
+
+                            <div className="mt-3 flex items-center justify-end gap-3">
+                                <button type="button" className="btn btn-outline-danger border " onClick={() => clearAssignData()}>
+                                    Cancel
+                                </button>
+                                <button type="button" className="btn btn-primary" onClick={() => assignedLead()}>
+                                    {state.assignLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                />
                 <SideMenu
                     title="Filter"
                     open={state.isOpen}
                     close={() => setState({ isOpen: false })}
+                    cancelOnClick={() => clearFilter()}
+                    submitOnClick={() => filterData()}
+                    submitLoading={state.loading}
+                    canceTitle="Reset"
                     renderComponent={() => (
                         <div>
                             <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
-                                {/* <CustomSelect
-                                    options={state.verticalList}
-                                    value={state.vertical}
-                                    onChange={(e) => setState({ vertical: e })}
-                                    isMulti={false}
-                                    placeholder={'Vertical'}
-                                    title={'Vertical'}
-                                />
                                 <CustomSelect
-                                    options={state.focusList}
-                                    value={state.focus}
-                                    onChange={(e) => setState({ focus: e })}
-                                    isMulti={false}
-                                    placeholder={'Focus Segment'}
-                                    title={'Focus Segment'}
-                                /> */}
-                                {/* <CustomSelect
-                                    options={state.marketList}
-                                    value={state.market}
-                                    onChange={(e) => setState({ market: e })}
-                                    isMulti={false}
-                                    placeholder={'Market Segment'}
-                                    title={'Market Segment'}
-                                /> */}
+                                    title="Tags"
+                                    value={state.tags}
+                                    isMulti={true}
+                                    onChange={(e) => setState({ tags: e })}
+                                    placeholder={'Tags'}
+                                    options={state.tagList}
+                                    error={state.errors?.tags}
+                                />
                                 <CustomSelect
                                     options={state.countryList}
                                     value={state.country}
@@ -508,14 +624,6 @@ const Index = () => {
                                         <span className="">{state?.range[0] ? addCommasToNumber(state?.range[0]) : 0}</span>
                                         <span className="">{state?.range[1] ? addCommasToNumber(state?.range[1]) : addCommasToNumber(state.maxPrice)}</span>
                                     </div>
-                                </div>
-                                <div className=" flex justify-end gap-3">
-                                    <button type="button" className="btn btn-primary" onClick={() => filterData()}>
-                                        Submit
-                                    </button>
-                                    <button type="button" className="btn btn-primary" onClick={() => clearFilter()}>
-                                        Reset
-                                    </button>
                                 </div>
                             </div>
                         </div>

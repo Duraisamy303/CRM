@@ -249,23 +249,27 @@ const UpdateLead = () => {
     return state.loading ? (
         <CommonLoader />
     ) : (
-        <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
-            <div className="panel flex gap-5 rounded-2xl pl-[30px]">
-                <div className="flex h-[100px] w-[100px] overflow-hidden bg-white" style={{ borderRadius: 50 }}>
-                    <img src="/assets/images/profile-1.jpeg" height={'100%'} width={'100%'} />
-                </div>
-                <div>
-                    <div className=" mt-5 " style={{ fontSize: '30px' }}>
-                        Update Lead
+        <div className="relative h-auto overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            
+
+            <div className="panel  flex  gap-5 ">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-[50px] w-[50px] overflow-hidden bg-white" style={{ borderRadius: 50 }}>
+                        <img src="/assets/images/profile-1.jpeg" height={'100%'} width={'100%'} />
                     </div>
-                    <div className=" mt-3 " style={{ fontSize: '18px', color: 'grey' }}>
-                        Your data journey starts here...
+                    <div>
+                        <h5 className="font-semibold " style={{ fontSize: '18px' }}>
+                        Update Lead
+                        </h5>
+                        <div className="  " style={{ fontSize: '14px', color: 'grey' }}>
+                            Your data journey starts here...
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className=" mt-4 grid grid-cols-12  gap-4">
+            <div className=" mt-2 grid grid-cols-12  gap-2">
                 <div className=" col-span-12 flex flex-col   md:col-span-5">
-                    <div className="panel flex flex-col gap-5 rounded-2xl">
+                    <div className="panel flex flex-col gap-5 rounded-2xl p-3">
                         <div className="flex items-center gap-3">
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
                                 <IconUser className="text-[#82de69]" />
@@ -285,7 +289,7 @@ const UpdateLead = () => {
                             required
                         />
                     </div>
-                    <div className="panel mt-4 flex flex-col gap-5 rounded-2xl">
+                    <div className="panel mt-2 flex flex-col gap-5 rounded-2xl p-3">
                         <div className="flex items-center gap-3">
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffeeee]">
                                 <IconUser className="text-[#fe70f2]" />
@@ -301,7 +305,7 @@ const UpdateLead = () => {
                     </div>
                 </div>
 
-                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 ">
+                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 p-3">
                     <div className="flex items-center gap-3">
                         <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffefe4]">
                             <IconUser className="text-[#ffbb55]" />
@@ -321,69 +325,11 @@ const UpdateLead = () => {
                                 onChange={(e) => setState({ annual_revenue: e })}
                                 placeholder={'Annual Revenue'}
                                 error={state.errors?.annual_revenue}
-                                required
                             />
                         </div>
                     </div>
 
-                    <div className=" flex w-full gap-3">
-                        <div className="flex w-[50%]">
-                            <CustomSelect
-                                title="Tags"
-                                value={state.tags}
-                                isMulti={true}
-                                onChange={(e) => setState({ tags: e })}
-                                placeholder={'Tags'}
-                                options={state.tagList}
-                                required
-                                error={state.errors?.tags}
-                            />
-                        </div>
-                        <div className=" flex  w-[50%]">
-                            <CustomSelect
-                                title="Created By"
-                                value={state.created_by}
-                                onChange={(e) => setState({ created_by: e })}
-                                placeholder={'Created By'}
-                                options={state.createdByList}
-                                required
-                                error={state.errors?.created_by}
-                            />
-                        </div>
-                    </div>
-
-                    {/* <div className=" flex w-full gap-3">
-                        <div className="flex w-[50%]">
-                            <CustomSelect
-                                title="Focus Segment"
-                                value={state.focus_segment}
-                                onChange={(e) => {
-                                    if (e) {
-                                        setState({ focus_segment: e , vertical: ''});
-                                        verticalList(e);
-                                    } else {
-                                        setState({ focus_segment: '', verticalList: [], vertical: '' });
-                                    }
-                                }}
-                                placeholder={'Focus Segment'}
-                                options={state.focusSegmentList}
-                                required
-                                error={state.errors?.focus_segment}
-                            />
-                        </div>
-                        <div className=" flex  w-[50%]">
-                            <CustomSelect
-                                title="Vertical"
-                                value={state.vertical}
-                                onChange={(e) => setState({ vertical: e })}
-                                placeholder={'Vertical'}
-                                options={state.verticalList}
-                                required
-                                error={state.errors?.vertical}
-                            />
-                        </div>
-                    </div> */}
-
+                   
                     <div className=" flex w-full gap-3">
                         <div className="flex w-[50%]">
                             <CustomSelect
@@ -405,7 +351,6 @@ const UpdateLead = () => {
                         </div>
 
                         <div className="flex w-[50%]">
-
                             <CustomSelect
                                 title="Focus Segment"
                                 value={state.focus_segment}
@@ -421,6 +366,8 @@ const UpdateLead = () => {
                     </div>
 
                     <div className=" flex w-full gap-3">
+                    <div className="flex w-[50%]">
+
                         <CustomSelect
                             title="Market Segment"
                             value={state.market_segment}
@@ -430,6 +377,19 @@ const UpdateLead = () => {
                             required
                             error={state.errors?.market_segment}
                         />
+                        </div>
+
+                        <div className="flex w-[50%]">
+                            <CustomSelect
+                                title="Tags"
+                                value={state.tags}
+                                isMulti={true}
+                                onChange={(e) => setState({ tags: e })}
+                                placeholder={'Tags'}
+                                options={state.tagList}
+                                error={state.errors?.tags}
+                            />
+                        </div>
                     </div>
 
                     <div className=" flex w-full gap-3">
@@ -462,13 +422,13 @@ const UpdateLead = () => {
                         </div>
                     </div>
 
-                    <div className="  w-full">
+                    {/* <div className="  w-full">
                         <div className="">
                             <label className="block text-sm font-medium text-gray-700">Status</label>
                             <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
                         </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-end gap-3">
+                    </div> */}
+                    <div className="mt-20  flex items-center justify-end gap-3">
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel
                         </button>

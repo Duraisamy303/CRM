@@ -11,7 +11,7 @@ export default function TooltipButton(props: tooltipbtnProps) {
     const { tipTitle, icon, onClick, position } = props;
     return (
         <Tippy content={tipTitle} placement={position ? position : 'top'} className="rounded-lg bg-black p-1 text-sm text-white">
-            <button type="button" className="btn btn-primary p-2" onClick={onClick}>
+            <button type="button" className="btn btn-primary " onClick={onClick}>
                 {icon}
             </button>
         </Tippy>

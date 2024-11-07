@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, addCommasToNumber, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, addCommasToNumber, capitalizeFLetter, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 import { useDispatch } from 'react-redux';
@@ -108,6 +108,7 @@ export default function ViewLead() {
     const stageList = async () => {
         try {
             setState({ loading: true });
+            const token = localStorage.getItem('crmToken');
             const res: any = await Models.opportunity.oppDropdowns('stage');
             const dropdownList = Dropdown(res, 'stage');
             setState({ stageList: dropdownList, loading: false });
@@ -334,13 +335,14 @@ export default function ViewLead() {
             Success('Contact updated successfully');
             clearContactData();
             getContactList();
+            setState({ createContactLoad: false });
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 const validationErrors = error.inner.reduce((acc, err) => {
                     acc[err.path] = err.message;
                     return acc;
                 }, {});
-                setState({ errors: validationErrors });
+                setState({ errors: validationErrors, createContactLoad: false });
             } else {
                 console.log('Error: ', error?.message);
             }
@@ -361,7 +363,6 @@ export default function ViewLead() {
                 closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
                 probability_in_percentage: state.probability_in_percentage,
             };
-
 
             const body = {
                 lead: id,
@@ -469,33 +470,30 @@ export default function ViewLead() {
             opp_created_by: { value: row.created_by.id, label: row.created_by.username },
             opp_closing_date: new Date(row.closing_date),
             opp_stage: { value: row.stage.id, label: row.stage.stage },
-            notes:row.note
-
+            notes: row.note,
         });
     };
 
     return state.loading ? (
         <CommonLoader />
     ) : (
-        <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
-            <div className="panel  flex items-center justify-between gap-5">
+        <div className="relative h-auto  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <div className="panel flex items-center justify-between gap-5 pl-3">
                 <div className="flex items-center gap-5">
-                    <h5 className="text-lg font-semibold dark:text-white-light">{`${state.data?.name} (Lead)`}</h5>
+                    <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Lead)`}</h5>
                 </div>
                 <div className="flex gap-5">
-                    <Tippy content="Add Opportunity" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
-                        <button
-                            type="button"
-                            className="btn btn-primary md:mb-0 md:w-auto"
-                            onClick={() => {
-                                setState({ isOpenOpp: true });
-                            }}
-                        >
-                            <IconOpportunity />
-                        </button>
-                    </Tippy>
+                    <button
+                        type="button"
+                        className="btn btn-primary md:mb-0 md:w-auto"
+                        onClick={() => {
+                            setState({ isOpenOpp: true });
+                        }}
+                    >
+                        Add Opportunity
+                    </button>
 
-                    <Tippy content="Add Contact" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
+                    <Tippy content="Add Contact" placement="top" className="rounded-md bg-black p-1 text-sm text-white">
                         <button type="button" className="btn btn-primary md:mb-0 md:w-auto" onClick={() => setState({ isOpenCreateContact: true })}>
                             <IconUserPlus />
                         </button>
@@ -504,35 +502,37 @@ export default function ViewLead() {
             </div>
 
             {state.contactList?.length > 0 ? (
-                <div className="mt-4 grid grid-cols-12  gap-4  mb-4">
+                <div className=" mt-2 grid  grid-cols-12  gap-2">
                     <div className=" col-span-8 flex flex-col   md:col-span-8">
-                        <div className="panel flex flex-col gap-5 rounded-2xl">
+                        <div className="panel flex flex-col gap-2 rounded-2xl p-3 min-h-[345px] ">
+                            {/* Header */}
                             <div className="flex items-center gap-3">
-                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
+                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
                                     <IconUser className="text-[#82de69]" />
                                 </div>
-                                <div className=" " style={{ fontSize: '20px' }}>
-                                    Basic Information
-                                </div>
+                                <div style={{ fontSize: '20px' }}>Lead Information</div>
                             </div>
-                            <ViewLabel label={'Lead Name'} value={state.data?.name} />
-                            <ViewLabel label={'Lead Owner'} value={state.data?.lead_owner?.username} />
-                            {state.data?.company_email && <ViewLabel label={'Company Email'} value={state.data?.company_email} />}
-                            {state.data?.company_website && <ViewLabel label={'Company Website'} value={state.data?.company_website} />}
-                            {state.data?.company_number && <ViewLabel label={'Company Number'} value={state.data?.company_number} />}
-                            {state.data?.annual_revenue && <ViewLabel label={'Annual Revenue'} value={addCommasToNumber(state.data?.annual_revenue)} />}
-                            {state.data?.focus_segment && <ViewLabel label={'Focus Segment'} value={state.data?.focus_segment?.focus_segment} />}
-                            {state.data?.market_segment && <ViewLabel label={'Market Segment'} value={state.data?.market_segment?.market_segment} />}
-                            {state.data?.tags?.length > 0 && <ViewLabel label={'Tags'} value={state.data.tags.map((item) => item?.tag).join(', ')} />}
-                            {state.data?.fax && <ViewLabel label={'Fax'} value={Number(state.data?.fax)} />}
-                            {state.data?.created_by && <ViewLabel label={'Created By'} value={state.data?.created_by?.username} />}
-                            {state.data?.country && <ViewLabel label={'Country'} value={state.data?.country?.country_name} />}
-                            {state.data?.state && <ViewLabel label={'State'} value={state.data?.state?.state_name} />}
-                            <ViewLabel label={'Status'} value={state.data?.is_active ? 'Active' : 'In Active'} />
+
+                            {/* Data Grid for ViewLabel items */}
+                            <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
+                                <ViewLabel label="Lead Name" value={state.data?.name} />
+                                <ViewLabel label="Lead Owner" value={state.data?.lead_owner?.username} />
+                                {state.data?.company_email && <ViewLabel label="Company Email" value={state.data?.company_email} />}
+                                {state.data?.company_website && <ViewLabel label="Company Website" value={state.data?.company_website} />}
+                                {state.data?.company_number && <ViewLabel label="Company Number" value={state.data?.company_number} />}
+                                {state.data?.annual_revenue && <ViewLabel label="Annual Revenue" value={addCommasToNumber(state.data?.annual_revenue)} />}
+                                {state.data?.focus_segment && <ViewLabel label="Focus Segment" value={state.data?.focus_segment?.focus_segment} />}
+                                {state.data?.market_segment && <ViewLabel label="Market Segment" value={state.data?.market_segment?.market_segment} />}
+                                {state.data?.tags?.length > 0 && <ViewLabel label="Tags" value={state.data.tags.map((item) => item?.tag).join(', ')} />}
+                                {state.data?.fax && <ViewLabel label="Fax" value={Number(state.data?.fax)} />}
+                                {/* {state.data?.created_by && <ViewLabel label="Created By" value={state.data?.created_by?.username} />} */}
+                                {state.data?.country && <ViewLabel label="Country" value={state.data?.country?.country_name} />}
+                                {state.data?.state && <ViewLabel label="State" value={state.data?.state?.state_name} />}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="panel col-span-7 flex flex-col gap-5 rounded-2xl md:col-span-4 ">
+                    <div className="panel col-span-7 flex flex-col gap-1 rounded-2xl p-3 md:col-span-4 ">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -542,7 +542,7 @@ export default function ViewLead() {
                                     Contacts {`(${state.contactCount})`}
                                 </div>
                             </div>
-                            <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenCreateContact: true })}>
+                            <button type="button" className="btn btn-primary " onClick={() => setState({ isOpenCreateContact: true })}>
                                 <IconPlus />
                             </button>
                         </div>
@@ -557,7 +557,8 @@ export default function ViewLead() {
                 </div>
             ) : (
                 <div className="col-span-12 mb-2 mt-2 flex flex-col md:col-span-12">
-                    <div className="panel flex flex-col gap-5 rounded-2xl">
+                    <div className="panel flex flex-col gap-3 rounded-2xl p-3">
+                        {/* Header */}
                         <div className="flex w-full justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
@@ -565,28 +566,58 @@ export default function ViewLead() {
                                 </div>
                                 <div style={{ fontSize: '20px' }}>Lead Information</div>
                             </div>
-                            <button type="button" className="btn btn-primary p-2" onClick={() => router.push(`/updateLead?id=${id}`)}>
+                            <button type="button" className="btn btn-primary" onClick={() => router.push(`/updateLead?id=${id}`)}>
                                 <IconEdit />
                             </button>
                         </div>
-                        <OppLabel label1="Lead Name" value1={state.data?.name} label2="Lead Owner" value2={state.data?.lead_owner?.username} />
-                        <OppLabel label1="Company Email" value1={state.data?.company_email} label2="Company Website" value2={state.data?.company_website} />
-                        <OppLabel label1="Company Number" value1={state.data?.company_number} label2="Annual Revenue" value2={addCommasToNumber(state.data?.annual_revenue)} />
-                        <OppLabel label1="Vertical" value1={state.data?.focus_segment?.vertical?.vertical} label2="Focus Segment" value2={state.data?.focus_segment?.focus_segment} />
+
+                        {/* Data Rows with Three Items Each */}
                         <OppLabel
-                            label1="Market Segment"
-                            value1={state.data?.market_segment?.market_segment}
-                            label2="Tags"
-                            value2={state.data.tags?.length > 0 ? state.data.tags.map((item) => item?.tag).join(', ') : ''}
+                            label1="Lead Name"
+                            value1={state.data?.name}
+                            label2="Lead Owner"
+                            value2={state.data?.lead_owner?.username}
+                            label3=" Annual Revenue"
+                            value3={addCommasToNumber(state.data?.annual_revenue)}
                         />
-                        <OppLabel label1="Fax" value1={Number(state.data?.fax)} label2="Country" value2={state.data?.country?.country_name} />
-                        <OppLabel label1="State" value1={state.data?.state?.state_name} label2="Status" value2={state.data?.is_active ? 'Active' : 'Inactive'} />
+                        <OppLabel
+                            label1="Company Website"
+                            value1={state.data?.company_website}
+                            label2="Company Number"
+                            value2={state.data?.company_number}
+                            label3="Company Email"
+                            value3={state.data?.company_email}
+                        />
+                        <OppLabel
+                            label1="Vertical"
+                            value1={state.data?.focus_segment?.vertical?.vertical}
+                            label2="Focus Segment"
+                            value2={state.data?.focus_segment?.focus_segment}
+                            label3="Market Segment"
+                            value3={state.data?.market_segment?.market_segment}
+                        />
+                        <OppLabel
+                            label1="Tags"
+                            value1={state.data.tags?.length > 0 ? state.data.tags.map((item) => item?.tag).join(', ') : ''}
+                            label2="Fax"
+                            value2={Number(state.data?.fax)}
+                            label3="Country"
+                            value3={state.data?.country?.country_name}
+                        />
+                        <OppLabel
+                            label1="State"
+                            value1={state.data?.state?.state_name}
+                            label2="Status"
+                            value2={state.data?.is_active ? 'Active' : 'Inactive'}
+                            label3="Created By"
+                            value3={state.data?.created_by?.username}
+                        />
                     </div>
                 </div>
             )}
             <>
                 {state.opportunityList?.length > 0 && (
-                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-12 mb-4 ">
+                    <div className="panel col-span-12 mt-2 flex flex-col gap-5 rounded-2xl p-3 md:col-span-12">
                         <div className="flex justify-between">
                             <div className="flex w-full justify-between">
                                 <div className="flex items-center gap-3">
@@ -600,7 +631,7 @@ export default function ViewLead() {
 
                                 <button
                                     type="button"
-                                    className="btn btn-primary p-2"
+                                    className="btn btn-primary "
                                     onClick={() => {
                                         // dispatch(leadId(id));
                                         // router.push('/createOpportunity');
@@ -662,7 +693,7 @@ export default function ViewLead() {
                     </div>
                 )}
                 {state.logList?.length > 0 && (
-                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-12 ">
+                    <div className="panel col-span-12 mt-2 flex flex-col  rounded-2xl p-3 md:col-span-12">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -679,16 +710,7 @@ export default function ViewLead() {
                     </div>
                 )}
             </>
-            <SideMenu
-                open={state.isOpen}
-                close={() => setState({ isOpen: false })}
-                title="NEW OPPORTUNITY"
-                renderComponent={() => (
-                    <div className="p-2">
-                        <TextInput title="Lead Name" value={state.name} onChange={(e) => setState({ name: e })} placeholder={'Lead Name'} error={state.errors?.name} required />
-                    </div>
-                )}
-            />
+
             {/* For create and update Contact */}
             {/* <Modal
                 open={state.isOpenCreateContact}
@@ -836,8 +858,11 @@ export default function ViewLead() {
                 title={state.contactId ? 'Update Contact' : 'Add Contact'}
                 open={state.isOpenCreateContact}
                 close={() => clearContactData()}
+                cancelOnClick={() => clearContactData()}
+                submitOnClick={() => (state.contactId ? updateContact() : createContact())}
+                submitLoading={state.createContactLoad}
                 renderComponent={() => (
-                    <div className="flex flex-col gap-5 ">
+                    <div className="flex flex-col gap-3 ">
                         <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.contact_name} required />
                         <TextInput
                             title="Designation"
@@ -875,14 +900,14 @@ export default function ViewLead() {
                             error={state.errors?.contact_status}
                             required
                         />
-                        <div className="mt-3 flex items-center justify-end gap-3">
+                        {/* <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
                                 Cancel
                             </button>
                             <button type="button" className="btn btn-primary" onClick={() => (state.contactId ? updateContact() : createContact())}>
                                 {state.createContactLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             />
@@ -890,9 +915,12 @@ export default function ViewLead() {
             <SideMenu
                 title={state.oppId ? 'Update Opportunity' : 'Add Opportunity'}
                 open={state.isOpenOpp}
+                cancelOnClick={() => clearOppData()}
+                submitOnClick={() => createAndUpdateOpportunity()}
+                submitLoading={state.oppLoading}
                 close={() => clearOppData()}
                 renderComponent={() => (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                         <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />
                         <CustomSelect
                             title="Lead Owner"
@@ -911,15 +939,7 @@ export default function ViewLead() {
                             placeholder={'Opportunity Value'}
                             required
                         />
-                        <CustomSelect
-                            title="Stage"
-                            value={state.opp_stage}
-                            onChange={(e) => setState({ opp_stage: e })}
-                            placeholder={'Stage'}
-                            options={state.stageList}
-                            required
-                            error={state.errors?.opp_stage}
-                        />
+
                         <NumberInput
                             title="Recurring Value Per Year"
                             value={state.recurring_value_per_year}
@@ -929,13 +949,13 @@ export default function ViewLead() {
                             required
                         />
                         <CustomSelect
-                            title="Currency Type"
-                            value={state.currency_type}
-                            onChange={(e) => setState({ currency_type: e })}
-                            placeholder={'Currency Type'}
-                            options={state.currencyList}
+                            title="Stage"
+                            value={state.opp_stage}
+                            onChange={(e) => setState({ opp_stage: e })}
+                            placeholder={'Stage'}
+                            options={state.stageList}
                             required
-                            error={state.errors?.currency_type}
+                            error={state.errors?.opp_stage}
                         />
                         <NumberInput
                             title="Probability In Percentage"
@@ -963,16 +983,24 @@ export default function ViewLead() {
                             onChange={(e) => setState({ opp_closing_date: e })}
                             required
                         />
+                        <CustomSelect
+                            title="Currency Type"
+                            value={state.currency_type}
+                            onChange={(e) => setState({ currency_type: e })}
+                            placeholder={'Currency Type'}
+                            options={state.currencyList}
+                            required
+                            error={state.errors?.currency_type}
+                        />
 
-
-                        <div className="mt-3 flex items-center justify-end gap-3">
+                        {/* <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>
                                 Cancel
                             </button>
                             <button type="button" className="btn btn-primary" onClick={() => createAndUpdateOpportunity()}>
                                 {state.oppLoading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             />

@@ -24,6 +24,8 @@ import CustomeDatePicker from '@/common_component/datePicker';
 import IconLoader from '@/components/Icon/IconLoader';
 import moment from 'moment';
 import * as Yup from 'yup';
+import IconFileUpload from '@/components/Icon/IconFileUpload';
+import FileUpload from '@/common_component/fileUpload';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -66,7 +68,12 @@ const Opportunity = () => {
         currency: '',
         range: [0, 10000000],
         maxPrice: 10000000,
+        start_date: '',
+        end_date: '',
+        file:null
     });
+    console.log("file: ", state.file);
+
 
     useEffect(() => {
         getData();
@@ -86,7 +93,7 @@ const Opportunity = () => {
         } else {
             getData(state.currentPage);
         }
-    }, [state.currentPage, debouncedSearch, state.vertical, state.focus, state.lead, state.closing_date]);
+    }, [state.currentPage, debouncedSearch, state.vertical, state.focus, state.lead, state.stage]);
 
     const getData = async (page = 1) => {
         try {
@@ -107,7 +114,7 @@ const Opportunity = () => {
 
     const filters = () => {
         let filter = false;
-        if (state.search || state.vertical || state.focus || state.lead || state.range[0] > 0 || state.range[1] != state.maxPrice || state.closing_date) {
+        if (state.search || state.vertical || state.focus || state.lead || state.range[0] > 0 || state.range[1] != state.maxPrice || state.stage) {
             filter = true;
         }
         return filter;
@@ -119,8 +126,10 @@ const Opportunity = () => {
             let body = bodyData();
             if (!objIsEmpty(body)) {
                 const response: any = await Models.opportunity.filter(body, page);
+                console.log('response: ', response);
 
                 tableData(response?.results);
+                console.log('response.count !== 0 ? state.currectPage : 0: ', response.count !== 0 ? state.currectPage : 0);
 
                 setState({
                     loading: false,
@@ -128,6 +137,7 @@ const Opportunity = () => {
                     next: response.next,
                     previous: response.previous,
                     isOpen: false,
+                    currectPage: response.count !== 0 ? state.currectPage : 0,
                 });
             } else {
                 getData();
@@ -170,8 +180,14 @@ const Opportunity = () => {
         if (state.currency) {
             body.currency_type = [state.currency?.value];
         }
-        if (state.closing_date) {
-            body.closing_date = moment(state.closing_date).format('YYYY-MM-DD');
+        if (state.start_date) {
+            body.start_date = moment(state.start_date).format('YYYY-MM-DD');
+        }
+        if (state.end_date) {
+            body.end_date = moment(state.end_date).format('YYYY-MM-DD');
+        }
+        if (state.focus) {
+            body.focus_segment = [state.focus?.value];
         }
 
         if (state.range[0] > 0 || state.range[1] != state.maxPrice) {
@@ -272,7 +288,7 @@ const Opportunity = () => {
             setState({ loading: false });
         }
     };
-    
+
     const tableData = (res: any) => {
         const data = res?.map((item) => {
             return {
@@ -431,14 +447,28 @@ const Opportunity = () => {
             closing_date: null,
             lead_owner: '',
             lead: '',
+            start_date: '',
+            end_date: '',
+            currency_type: '',
         });
         getData();
     };
 
+    const getProbabilityPercentage = async (e) => {
+        try {
+            if (e) {
+                const res: any = await Models.opportunity.getProbabilityPercentage(e?.value);
+                setState({ probability_in_percentage: res.probability });
+            } else {
+                setState({ probability_in_percentage: '' });
+            }
+        } catch (error) {}
+    };
+
     return (
         <div className="p-2">
-            <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
-                <div className="flex items-center gap-5">
+            <div className="panel flex items-center justify-between gap-5 ">
+                <div className="flex items-center gap-5 pl-3">
                     <h5 className="text-lg font-semibold ">Opportunities</h5>
                 </div>
                 <div className="flex gap-5">
@@ -447,7 +477,7 @@ const Opportunity = () => {
                     </button>
                 </div>
             </div>
-            <div className="panel mb-5 mt-5 flex items-center justify-between gap-5 ">
+            <div className="panel mt-2 flex items-center justify-between gap-5 ">
                 <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
                     <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
                         <IconSearch className="h-6 w-6 font-bold" /> {/* Icon size slightly reduced */}
@@ -457,9 +487,11 @@ const Opportunity = () => {
                         value={state.search}
                         onChange={(e) => setState({ search: e.target.value })}
                         placeholder="Search"
-                        className="form-input w-full  rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
+                        className="form-input w-full rounded-r-full  border-0 bg-white py-1.5 pl-0  text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
                     />
                 </div>
+                <CustomSelect value={state.stage} onChange={(e) => setState({ stage: e })} placeholder={'Stage'} options={state.stageList} error={state.errors?.stage} />
+
                 <CustomSelect options={state.leadList} value={state.lead} onChange={(e) => setState({ lead: e })} isMulti={false} placeholder={'Lead'} />
 
                 <CustomSelect
@@ -478,43 +510,43 @@ const Opportunity = () => {
                 />
                 {/* <CustomSelect options={state.verticalList} value={state.vertical} onChange={(e) => setState({ vertical: e })} isMulti={false} placeholder={'Vertical'} /> */}
 
-                <CustomeDatePicker error={state.errors?.closing_date} value={state.closing_date} placeholder="Closing Date" onChange={(e) => setState({ closing_date: e })} />
-
-                <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
+                <button className="btn btn-primary" onClick={() => setState({ isOpen: true })}>
                     <IconFilter />
                 </button>
             </div>
 
-            <div className=" mt-4 grid grid-cols-12  gap-4">
+            <div className="  mt-2 grid  grid-cols-12 gap-4">
                 {state.loading ? (
                     <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
                         <CommonLoader />
                     </div>
                 ) : (
                     <div className=" col-span-12 flex flex-col   md:col-span-12">
+                        <div className="flex items-center justify-end pb-2 pr-3">
+                            <div className="rounded-lg bg-gray-300 p-1 font-semibold">
+                                {state.currentPage}-{Math.min(state.currentPage * 10, state.totalRecords)} of {state.totalRecords}
+                            </div>
+                        </div>
                         <DataTable
                             className="table-responsive"
                             records={state.data}
                             columns={[
                                 {
                                     accessor: 'name',
-                                    sortable: true,
-
-                                    width: '220px',
                                 },
-                                { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value' },
-                                { accessor: 'probability_in_percentage', sortable: true, title: 'Probability In Percentage' },
-                                { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value Per Year' },
-                                { accessor: 'stages', sortable: true, title: 'Stage', width: '220px' },
-                                { accessor: 'currency', sortable: true, title: 'Currency Type' },
-                                { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
+                                { accessor: 'opportunity_value', title: 'Opportunity' },
+                                { accessor: 'probability_in_percentage', title: 'Probability (%)' },
+                                { accessor: 'recurring_value_per_year', title: 'Recurring (Year)' },
+                                { accessor: 'stages', title: 'Stage' },
+                                { accessor: 'currency', title: 'Currency' },
+                                { accessor: 'closing_date', title: 'Closing Date' },
                                 {
                                     accessor: 'actions',
                                     title: 'Actions',
                                     render: (row: any) => (
                                         <>
                                             <div className="mx-auto flex w-max items-center gap-4">
-                                                <button type="button" className="flex hover:text-danger" onClick={() => router.push(`/viewOpportunity?id=${row.id}`)}>
+                                                <button type="button" className="flex hover:text-primary" onClick={() => router.push(`/viewOpportunity?id=${row.id}`)}>
                                                     <IconEye />
                                                 </button>
                                                 <button className="flex hover:text-info" onClick={() => editOppData(row)}>
@@ -532,10 +564,6 @@ const Opportunity = () => {
                             page={null}
                             onPageChange={(p) => {}}
                             withBorder={true}
-                            selectedRecords={state.selectedRecords}
-                            onSelectedRecordsChange={(val) => {
-                                setState({ selectedRecords: val });
-                            }}
                             paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
                         />
                         <div className="mt-5 flex justify-center gap-3">
@@ -555,8 +583,18 @@ const Opportunity = () => {
                 open={state.isOpenOpp}
                 width={450}
                 close={() => clearOppData()}
+                cancelOnClick={() => clearOppData()}
+                submitOnClick={() => createAndUpdateOpportunity()}
+                submitLoading={state.oppLoading}
                 renderComponent={() => (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
+                        {/* <FileUpload
+                            onFileSelect={(file) => setState({ file })}
+                            buttonText="Upload Document"
+                            iconSrc="/assets/images/fileUplaod.jpg"
+                            accept=".pdf,.doc,.docx,.txt"
+                            isImageAllowed={false} // Only allow non-image files
+                        /> */}
                         <CustomSelect
                             title="Lead "
                             value={state.createlead}
@@ -585,15 +623,6 @@ const Opportunity = () => {
                             placeholder={'Opportunity Value'}
                             required
                         />
-                        <CustomSelect
-                            title="Stage"
-                            value={state.opp_stage}
-                            onChange={(e) => setState({ opp_stage: e })}
-                            placeholder={'Stage'}
-                            options={state.stageList}
-                            required
-                            error={state.errors?.opp_stage}
-                        />
                         <NumberInput
                             title="Recurring Value Per Year"
                             value={state.recurring_value_per_year}
@@ -603,13 +632,16 @@ const Opportunity = () => {
                             required
                         />
                         <CustomSelect
-                            title="Currency Type"
-                            value={state.currency_type}
-                            onChange={(e) => setState({ currency_type: e })}
-                            placeholder={'Currency Type'}
-                            options={state.currencyList}
+                            title="Stage"
+                            value={state.opp_stage}
+                            onChange={(e) => {
+                                setState({ opp_stage: e });
+                                getProbabilityPercentage(e);
+                            }}
+                            placeholder={'Stage'}
+                            options={state.stageList}
                             required
-                            error={state.errors?.currency_type}
+                            error={state.errors?.opp_stage}
                         />
                         <NumberInput
                             title="Probability In Percentage"
@@ -620,6 +652,7 @@ const Opportunity = () => {
                             max={100}
                             required
                         />
+
                         {/* <CustomSelect
                             title="Created By"
                             value={state.opp_created_by}
@@ -637,15 +670,24 @@ const Opportunity = () => {
                             onChange={(e) => setState({ opp_closing_date: e })}
                             required
                         />
+                        <CustomSelect
+                            title="Currency Type"
+                            value={state.currency_type}
+                            onChange={(e) => setState({ currency_type: e })}
+                            placeholder={'Currency Type'}
+                            options={state.currencyList}
+                            required
+                            error={state.errors?.currency_type}
+                        />
 
-                        <div className="mt-3 flex items-center justify-end gap-3">
+                        {/* <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>
                                 Cancel
                             </button>
                             <button type="button" className="btn btn-primary" onClick={() => createAndUpdateOpportunity()}>
                                 {state.oppLoading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             />
@@ -653,6 +695,10 @@ const Opportunity = () => {
                 title="Filter"
                 open={state.isOpen}
                 close={() => setState({ isOpen: false })}
+                cancelOnClick={() => clearFilter()}
+                submitOnClick={() => filterData()}
+                submitLoading={state.loading}
+                canceTitle="Reset"
                 renderComponent={() => (
                     <div>
                         <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
@@ -664,7 +710,9 @@ const Opportunity = () => {
                                 options={state.ownerList}
                                 error={state.errors?.lead_owner}
                             />
-                            <CustomSelect title="Stage" value={state.stage} onChange={(e) => setState({ stage: e })} placeholder={'Stage'} options={state.stageList} error={state.errors?.stage} />
+                            <CustomeDatePicker value={state.start_date} placeholder="Start Date" title="Start Date" onChange={(e) => setState({ start_date: e })} />
+                            <CustomeDatePicker value={state.end_date} placeholder="End Date" title="End Date" onChange={(e) => setState({ end_date: e })} />
+
                             <CustomSelect
                                 title="Currency Type"
                                 value={state.currency_type}
@@ -682,14 +730,6 @@ const Opportunity = () => {
                                     <span className="">{state?.range[0] ? addCommasToNumber(state?.range[0]) : 0}</span>
                                     <span className="">{state?.range[1] ? addCommasToNumber(state?.range[1]) : addCommasToNumber(state.maxPrice)}</span>
                                 </div>
-                            </div>
-                            <div className=" flex justify-end gap-3">
-                                <button type="button" className="btn btn-primary" onClick={() => filterData()}>
-                                    Submit
-                                </button>
-                                <button type="button" className="btn btn-primary" onClick={() => clearFilter()}>
-                                    Reset
-                                </button>
                             </div>
                         </div>
                     </div>

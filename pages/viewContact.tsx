@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, addCommasToNumber, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, addCommasToNumber, capitalizeFLetter, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 
@@ -29,6 +29,7 @@ import moment from 'moment';
 import IconEdit from '@/components/Icon/IconEdit';
 import Tippy from '@tippyjs/react';
 import TooltipButton from '@/common_component/tooltipButton';
+import IconAddLog from '@/components/Icon/IconLogPlus';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -59,6 +60,7 @@ export default function ViewLead() {
         logCreatedBy: null,
         isOpenLog: false,
         logLoad: false,
+        createContactLoad: false,
     });
 
     useEffect(() => {
@@ -207,16 +209,17 @@ export default function ViewLead() {
                 await Validation.createLog.validate(validateField, { abortEarly: false });
             }
 
-            const body = {
-                follow_up_date_time: state.follow_up_date_time ? moment(state.follow_up_date_time).format('YYYY-MM-DD') : '',
+            const body: any = {
                 details: state.details,
                 log_stage: state.logStage?.value,
                 focus_segment: state.focus_segment?.value,
-                createdBy: 1,
             };
+            if (state.follow_up_date_time) {
+                body.follow_up_date_time = moment(state.follow_up_date_time).format('YYYY-MM-DD');
+            }
             if (state.logId) {
                 await Models.log.update(body, state.logId);
-                Success('Log Updated successfully');
+                Success('Log updated successfully');
             } else {
                 await Models.log.create(body, id);
                 Success('Log created successfully');
@@ -242,6 +245,17 @@ export default function ViewLead() {
     const updateContact = async () => {
         try {
             setState({ createContactLoad: true });
+            const validateField = {
+                contact_status: state.contact_status?.value,
+                lead_source: state.lead_source?.value,
+                department: state.department,
+                designation: state.designation,
+                phoneNumber: state.phoneNumber,
+                email: state.email,
+                contact_name: state.contact_name,
+            };
+            await Validation.createContact.validate(validateField, { abortEarly: false });
+
             const body = {
                 lead: id,
                 status: state.contact_status?.value,
@@ -257,10 +271,19 @@ export default function ViewLead() {
 
             const res = await Models.contact.update(body, id);
             Success('Contact updated successfully');
-            setState({ isOpenEdit: false });
             getLogList();
             getDate();
+            clearContactData();
         } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = error.inner.reduce((acc, err) => {
+                    acc[err.path] = err.message;
+                    return acc;
+                }, {});
+                setState({ errors: validationErrors, createContactLoad: false });
+            } else {
+                console.log('Error: ', error?.message);
+            }
             setState({ createContactLoad: false });
         }
     };
@@ -273,14 +296,17 @@ export default function ViewLead() {
             details: item.details,
             logStage: { value: item?.log_stage?.id, label: item?.log_stage?.stage },
             focus_segment: { value: item?.focus_segment?.id, label: item?.focus_segment?.name },
-            follow_up_date_time: new Date(item.follow_up_date_time),
+            follow_up_date_time: item?.follow_up_date_time ? new Date(item?.follow_up_date_time) : null,
         });
     };
 
     const clearContactData = () => {
         setState({
             isOpenEdit: false,
+            errors: '',
+            createContactLoad: false,
         });
+        getDate();
     };
 
     const clearLogData = () => {
@@ -302,21 +328,21 @@ export default function ViewLead() {
     ) : (
         <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
             <div className="panel  flex items-center justify-between gap-5">
-                <div className="flex items-center gap-5">
-                    <h5 className="text-lg font-semibold dark:text-white-light">{`${state.data?.name} (Contact)`}</h5>
+                <div className="flex items-center gap-5 pl-3">
+                    <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Contact)`}</h5>
                 </div>
                 {state.logList?.length == 0 && (
-                    <TooltipButton onClick={() => setState({ isOpenLog: true })} icon={<IconPlus />} tipTitle="Add Log" />
+                    // <TooltipButton onClick={() => setState({ isOpenLog: true })} icon={<IconAddLog />} tipTitle="Add Log" />
                     // <Tippy content="Add Log" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
-                    //     <button type="button" className="btn btn-primary p-2" onClick={() => setState({ isOpenLog: true })}>
-                    //         <IconPlus />
-                    //     </button>
+                    <button type="button" className="btn btn-primary " onClick={() => setState({ isOpenLog: true })}>
+                        Add Log
+                    </button>
                     // </Tippy>
                 )}
             </div>
-            <div className=" mt-4 grid grid-cols-12  gap-4">
+            <div className=" mt-2 grid grid-cols-12  gap-2">
                 <div className=" col-span-12 flex flex-col   md:col-span-5">
-                    <div className="panel flex flex-col gap-5 rounded-2xl">
+                    <div className="panel flex flex-col gap-3 rounded-2xl p-3">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -340,7 +366,7 @@ export default function ViewLead() {
                     </div>
                 </div>
                 {state.logList?.length > 0 && (
-                    <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 ">
+                    <div className="panel col-span-12 flex flex-col gap-3 rounded-2xl p-3 md:col-span-7">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -472,13 +498,30 @@ export default function ViewLead() {
             <SideMenu
                 open={state.isOpenEdit}
                 close={() => clearContactData()}
+                cancelOnClick={() => clearContactData()}
+                submitOnClick={() => updateContact()}
+                submitLoading={state.createContactLoad}
                 title={'Update Contact'}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 ">
-                        <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.name} required />
-                        <TextInput title="Designation" value={state.designation} onChange={(e) => setState({ designation: e })} placeholder={'Designation'} error={state.errors?.name} required />
+                        <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.contact_name} required />
+                        <TextInput
+                            title="Designation"
+                            value={state.designation}
+                            onChange={(e) => setState({ designation: e })}
+                            placeholder={'Designation'}
+                            error={state.errors?.designation}
+                            required
+                        />
                         <TextInput title="Department" value={state.department} onChange={(e) => setState({ department: e })} placeholder={'Department'} error={state.errors?.department} required />
-                        <NumberInput title="Phone Number" value={state.phoneNumber} onChange={(e) => setState({ phoneNumber: e })} placeholder={'Phone Number'} required />
+                        <NumberInput
+                            title="Phone Number"
+                            value={state.phoneNumber}
+                            onChange={(e) => setState({ phoneNumber: e })}
+                            placeholder={'Phone Number'}
+                            error={state.errors?.phoneNumber}
+                            required
+                        />
                         <TextInput title="Email" value={state.email} onChange={(e) => setState({ email: e })} placeholder={'Email'} error={state.errors?.email} required />
                         <CustomSelect
                             title="Lead Source"
@@ -489,38 +532,23 @@ export default function ViewLead() {
                             error={state.errors?.lead_source}
                             required
                         />{' '}
-                        {/* <CustomSelect
-                            title="Created By"
-                            value={state.createdby}
-                            onChange={(e) => setState({ createdby: e })}
-                            placeholder={'Created By'}
-                            options={state.createdByList}
-                            error={state.errors?.createdby}
-                            required
-                        /> */}
                         <CustomSelect
                             title="Contact Status"
                             value={state.contact_status}
                             onChange={(e) => setState({ contact_status: e })}
                             placeholder={'Contact Status'}
                             options={state.statusList}
-                            error={state.errors?.lead_status}
+                            error={state.errors?.contact_status}
                             required
                         />
-                        {/* <div className="  w-full">
-                            <div className="">
-                                <label className="block text-sm font-medium text-gray-700">Status</label>
-                                <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
-                            </div>
-                        </div> */}
-                        <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => updateContact()}>
-                                {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div>
+                        {/* <div className="mt-3 flex items-center justify-end gap-3">
+                        <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
+                            Cancel
+                        </button>
+                        <button type="button" className="btn btn-primary" onClick={() => (state.contactId ? updateContact() : createContact())}>
+                            {state.createContactLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
+                        </button>
+                    </div> */}
                     </div>
                 )}
             />

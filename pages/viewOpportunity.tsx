@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, addCommasToNumber, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, addCommasToNumber, capitalizeFLetter, roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 
@@ -175,8 +175,8 @@ export default function ViewLead() {
     ) : (
         <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
             <div className="panel  flex items-center justify-between gap-5">
-                <div className="flex items-center gap-5">
-                    <h5 className="text-lg font-semibold dark:text-white-light">{`${state.data?.name} (Opportunity)`}</h5>
+                <div className="flex items-center gap-5 pl-3">
+                    <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Opportunity)`}</h5>
                 </div>
                 <div className="flex gap-5">
                     <button
@@ -195,30 +195,45 @@ export default function ViewLead() {
                 </div>
             </div>
 
-            <div className=" mt-4 grid grid-cols-12  gap-4">
-                <div className=" col-span-12 flex flex-col   md:col-span-12">
-                    <div className="panel flex flex-col gap-5 rounded-2xl">
+            <div className=" mt-2 grid grid-cols-12  gap-2">
+                <div className="col-span-12 flex flex-col md:col-span-12">
+                    <div className="panel flex flex-col gap-3 rounded-2xl p-3">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
+                            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
                                 <IconUser className="text-[#82de69]" />
                             </div>
-                            <div className=" " style={{ fontSize: '20px' }}>
-                                Basic Information
-                            </div>
+                            <div style={{ fontSize: '20px' }}>Basic Information</div>
                         </div>
-                        <OppLabel label1="Opportunity Name" value1={state.data?.name} label2="Lead" value2={state.data?.lead?.name} />
-                        <OppLabel label1="Owner" value1={state.data?.owner?.username} label2="Created By" value2={state.data?.created_by?.username} />
-                        <OppLabel label1="Currency" value1={state.data?.currency_type?.currency_short} label2="Stage" value2={state.data?.stage?.stage} />
+
+                        {/* Using the updated OppLabel component with three labels and values */}
+                        <OppLabel label1="Opportunity Name" value1={state.data?.name} label2="Lead" value2={state.data?.lead?.name} label3="Owner" value3={state.data?.owner?.username} />
+                        <OppLabel
+                            label1="Probability"
+                            value1={`${state.data?.probability_in_percentage}%`}
+                            label2="Currency"
+                            value2={state.data?.currency_type?.currency_short}
+                            label3="Stage"
+                            value3={state.data?.stage?.stage}
+                        />
                         <OppLabel
                             label1="Opportunity Value"
-                            value1={addCommasToNumber(state.data?.opportunity_value)}
+                            value1={roundOff(state.data?.opportunity_value)}
                             label2="Recurring Value"
-                            value2={addCommasToNumber(state.data?.recurring_value_per_year)}
+                            value2={(state.data?.recurring_value_per_year)}
+                            label3="Closing Date"
+                            value3={state.data?.closing_date}
                         />
-                        <OppLabel label1="Closing Date" value1={state.data?.closing_date} label2="Probability" value2={`${state.data?.probability_in_percentage}%`} />
-                        <OppLabel label1="Created On" value1={state.data?.created_on} label2="Status" value2={state.data?.is_active ? 'Active' : 'Inactive'} />
+                        {/* <OppLabel
+                            label1="Probability"
+                            value1={`${state.data?.probability_in_percentage}%`}
+                            label2="Created On"
+                            value2={state.data?.created_on}
+                            label3="Status"
+                            value3={state.data?.is_active ? 'Active' : 'Inactive'}
+                        /> */}
                     </div>
                 </div>
+
                 {/* <div className="panel mt-4 flex flex-col gap-5 rounded-2xl">
                         <div className="flex items-center gap-3">
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffeeee]">
@@ -232,7 +247,7 @@ export default function ViewLead() {
                         <TextArea height="150px" value={state.notes} onChange={(e) => setState({ notes: e })} placeholder={'Notes'} />
                     </div> */}
                 {state.notesList?.length > 0 && (
-                    <div className="panel col-span-12 flex max-h-[400px] flex-col gap-5 overflow-scroll rounded-2xl md:col-span-12">
+                    <div className="panel col-span-12 flex max-h-[400px] flex-col overflow-scroll rounded-2xl md:col-span-12 p-3">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -244,7 +259,7 @@ export default function ViewLead() {
                             </div>
                             <button
                                 type="button"
-                                className="btn btn-primary p-2"
+                                className="btn btn-primary "
                                 onClick={() =>
                                     setState({
                                         isOpenAddNote: true,
@@ -274,7 +289,7 @@ export default function ViewLead() {
                 )}
             </div>
             {state.stageHistoryList?.length > 0 && (
-                <div className="panel col-span-12 mt-4 flex max-h-[400px] flex-col gap-5 overflow-scroll rounded-2xl md:col-span-12">
+                <div className="panel col-span-12 mt-2 flex max-h-[400px] flex-col  overflow-scroll rounded-2xl md:col-span-12 p-3">
                     <div className="flex justify-between">
                         <div className="flex w-full justify-between">
                             <div className="flex items-center gap-3">
@@ -288,7 +303,7 @@ export default function ViewLead() {
                         </div>
                     </div>
                     <div className="max-h-[600px] overflow-y-scroll">
-                        <StageCard data={state.stageHistoryList}/>
+                        <StageCard data={state.stageHistoryList} />
                     </div>
                 </div>
             )}

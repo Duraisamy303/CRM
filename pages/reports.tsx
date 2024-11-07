@@ -189,9 +189,9 @@ const Reports = () => {
         if (state.vertical) {
             body.vertical = state.vertical?.value;
         }
-        if (state.lead) {
-            body.lead = state.lead?.value;
-        }
+        // if (state.lead) {
+        //     body.lead = state.lead?.value;
+        // }
         if (state.focus_segment) {
             body.focus_segment = state.focus_segment?.value;
         }
@@ -662,14 +662,13 @@ const Reports = () => {
 
     return (
         <div className="p-2">
-            <div className="panel mb-3 flex items-center justify-between gap-5">
-                <div className="flex items-center gap-5">
+            <div className="panel mb-2 flex items-center justify-between gap-5">
+                <div className="flex items-center gap-5 pl-3">
                     <h5 className="text-lg font-semibold dark:text-white-light">Reports</h5>
                 </div>
-                
             </div>
 
-            <div className="panel mb-3 flex items-center justify-between">
+            <div className="panel mb-2 flex items-center justify-between p-3">
                 <Tab.Group>
                     <Tab.List className="mt-3 flex flex-wrap border-b border-white-light dark:border-[#191e3a]">
                         {['Lead', 'Opportunity', 'Sales'].map((tab) => (
@@ -690,14 +689,14 @@ const Reports = () => {
                         ))}
                     </Tab.List>
                 </Tab.Group>
-                <button className="btn btn-primary p-2" onClick={() => setState({ isOpen: true })}>
+                <button className="btn btn-primary" onClick={() => setState({ isOpen: true })}>
                     <IconFilter />
                 </button>
             </div>
             {state.activeTab == 'Lead' ? (
                 <>
                     <div className="flex flex-wrap gap-5">
-                        <div className="panel w-full items-center   justify-center ">
+                        <div className="panel w-full items-center   justify-center p-3">
                             <div className="mb-2 flex w-full items-center  gap-5">
                                 <h5 className="text-lg font-semibold dark:text-white-light">Lead Source</h5>
                             </div>
@@ -715,7 +714,7 @@ const Reports = () => {
                             )}
                         </div>
                     </div>
-                    <div className="panel mt-3 flex w-full flex-col">
+                    <div className="panel mt-3 flex w-full flex-col p-3">
                         <div className="mb-2 flex w-full items-center  gap-5">
                             <h5 className="text-lg font-semibold dark:text-white-light">Incoming Lead</h5>
                         </div>
@@ -728,8 +727,8 @@ const Reports = () => {
                 </>
             ) : state.activeTab == 'Opportunity' ? (
                 <>
-                    <div className="mt-2 flex flex-wrap gap-5">
-                        <div className="panel flex w-full flex-col  md:w-[48%]">
+                    <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="panel flex w-full flex-col  p-3 md:w-[50%]">
                             <div className="mb-2 flex w-full items-center  gap-5">
                                 <h5 className="text-lg font-semibold dark:text-white-light">Count</h5>
                             </div>
@@ -747,7 +746,7 @@ const Reports = () => {
                             )}
                         </div>
 
-                        <div className="panel flex w-full flex-col  md:w-[48%]">
+                        <div className="panel flex w-full flex-col  p-3 md:w-[49%]">
                             <div className="mb-2 flex w-full items-center  gap-5">
                                 <h5 className="text-lg font-semibold dark:text-white-light">Value</h5>
                             </div>
@@ -765,7 +764,7 @@ const Reports = () => {
                             )}
                         </div>
 
-                        <div className="panel flex w-full flex-col ">
+                        <div className="panel flex w-full flex-col p-3">
                             <div className="mb-2 flex w-full items-center  gap-5">
                                 <h5 className="text-lg font-semibold dark:text-white-light">Recurring Value</h5>
                             </div>
@@ -783,7 +782,7 @@ const Reports = () => {
                             )}
                         </div>
                     </div>
-                    <div className="panel mt-3 flex w-full  flex-col">
+                    <div className="panel mt-3 flex w-full  flex-col p-3">
                         <div className="mb-2 flex w-full items-center  gap-5">
                             <h5 className="text-lg font-semibold dark:text-white-light">Incoming Opportunity</h5>
                         </div>
@@ -796,7 +795,7 @@ const Reports = () => {
                 </>
             ) : (
                 <div className="mt-2 flex flex-wrap gap-5">
-                    <div className="panel flex w-full flex-col items-center justify-center   ">
+                    <div className="panel flex w-full flex-col items-center justify-center  p-3 ">
                         <div className="mb-2 flex w-full items-center  gap-5">
                             <h5 className="text-lg font-semibold dark:text-white-light">Sales</h5>
                         </div>
@@ -810,9 +809,18 @@ const Reports = () => {
                 title="Filter"
                 open={state.isOpen}
                 close={() => clearFilter()}
+                cancelOnClick={() => clearFilter()}
+                submitOnClick={() => {
+                    funnelChartCount(true);
+                    reportLead(true);
+                    reportOpportunity(true);
+                    setState({ isOpen: false });
+                }}
+                submitLoading={state.loading}
+                canceTitle="Reset"
                 renderComponent={() => (
                     <div className=" flex flex-col gap-5">
-                        <CustomSelect title="Lead " value={state.lead} onChange={(e) => setState({ lead: e })} placeholder={'Lead'} options={state.leadList} loadMore={() => leadListLoadMore()} />
+                        {/* <CustomSelect title="Lead " value={state.lead} onChange={(e) => setState({ lead: e })} placeholder={'Lead'} options={state.leadList} loadMore={() => leadListLoadMore()} /> */}
                         <CustomSelect options={state.ownerList} value={state.owner} onChange={(e) => setState({ owner: e })} isMulti={false} placeholder={'Owner'} title={'Owner'} />
                         <CustomSelect
                             value={state.vertical}
@@ -861,7 +869,7 @@ const Reports = () => {
                         <CustomSelect value={state.state} onChange={(e) => setState({ state: e })} placeholder={'State'} title={'State'} options={state.stateList} error={state.errors?.state} />
                         <CustomeDatePicker value={state.from_date} placeholder="From" title="From Date" onChange={(e) => setState({ from_date: e, to_date: null })} />
                         <CustomeDatePicker value={state.to_date} placeholder="To" title="To Date" onChange={(e) => setState({ to_date: e })} />
-                        <div className=" flex justify-end gap-3">
+                        {/* <div className=" flex justify-end gap-3">
                             <button
                                 type="button"
                                 className="btn btn-primary"
@@ -877,7 +885,7 @@ const Reports = () => {
                             <button type="button" className="btn btn-primary" onClick={() => clearFilter()}>
                                 Reset
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             />

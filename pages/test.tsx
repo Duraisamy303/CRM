@@ -1,23 +1,28 @@
-import Funnel from '@/common_component/funnelChart';
-import React, { Component } from 'react';
+import FileUpload from '@/common_component/fileUpload';
+import React from 'react';
 
-import { FunnelChart } from 'react-funnel-pipeline';
-import 'react-funnel-pipeline/dist/index.css';
+const ParentComponent = () => {
+    const handleFileSelect = (file) => {
+        console.log('file: ', file);
+        if (file) {
+            console.log('Selected file:', file.name);
+        } else {
+            console.log('File removed');
+        }
+    };
 
-export default function test() {
     return (
-        <Funnel
-            height={200}
-            width={400}
-            data={[
-                { name: 'Awareness', value: 252 },
-                { name: 'Interest', value: 105 },
-                { name: 'Consideration', value: 84 },
-                { name: 'Evaluation', value: 72 },
-                { name: 'Commitment', value: 19 },
-                { name: 'Pre-sale', value: 0 },
-                { name: 'Sale', value: 0 },
-            ]}
-        />
+        <div>
+            <h1>Upload Document</h1>
+            <FileUpload
+                onFileSelect={handleFileSelect}
+                buttonText="Upload Document"
+                iconSrc="/assets/images/fileUplaod.jpg"
+                accept=".pdf,.doc,.docx,.txt"
+                isImageAllowed={false} // Only allow non-image files
+            />
+        </div>
     );
-}
+};
+
+export default ParentComponent;

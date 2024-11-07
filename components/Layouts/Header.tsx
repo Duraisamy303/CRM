@@ -55,6 +55,7 @@ const Header = () => {
             value: 'today',
             label: 'Today',
         },
+        userInfo:{}
     });
 
     useEffect(() => {
@@ -100,6 +101,7 @@ const Header = () => {
 
     useEffect(() => {
         taskList(state.duration);
+        getUserData();
     }, []);
 
     const taskList = async (e) => {
@@ -110,6 +112,17 @@ const Header = () => {
             };
             const res: any = await Models.task.listFilterByDuration(body, 2);
             setState({ taskList: res?.results?.tasks });
+        } catch (error) {
+            console.log('error: ', error);
+        }
+    };
+
+    const getUserData = async (e) => {
+        try {
+            const userString = localStorage.getItem('crmUser');
+            const user = userString ? JSON.parse(userString) : null;
+            console.log("user: ", user);
+            setState({ userInfo:user});
         } catch (error) {
             console.log('error: ', error);
         }
@@ -339,6 +352,7 @@ const Header = () => {
                             open={state.isOpenTask}
                             close={() => setState({ isOpenTask: false })}
                             title="Task"
+                            btn={true}
                             renderComponent={() => (
                                 <div>
                                     <div className="mb-4">
@@ -479,24 +493,30 @@ const Header = () => {
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="relative group block"
-                                button={<img className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/images/user-profile.jpeg" alt="userProfile" />}
+                                button={<img className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/images/auth/user.png" alt="userProfile" />}
                             >
                                 <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
-                                            <img className="h-10 w-10 rounded-md object-cover" src="/assets/images/user-profile.jpeg" alt="userProfile" />
+                                            <img className="h-10 w-10 rounded-md object-cover" src="/assets/images/auth/user.png" alt="userProfile" />
                                             <div className="truncate ltr:pl-4 rtl:pr-4">
                                                 <h4 className="text-base">
-                                                    John Doe
-                                                    <span className="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">Pro</span>
+                                                    {state.userInfo?.first_name} {state.userInfo?.last_name} 
+                                                    {/* <span className="rounded bg-success-light px-1 text-xs text-success ltr:ml-2 rtl:ml-2">Pro</span> */}
                                                 </h4>
                                                 <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                    johndoe@gmail.com
+                                                {state.userInfo?.email} 
                                                 </button>
                                             </div>
                                         </div>
                                     </li>
                                     <li>
+                                        <Link href="/users/profile" className="dark:hover:text-white">
+                                            <IconUser className="h-4.5 w-4.5 shrink-0 ltr:mr-2 rtl:ml-2" />
+                                            Change Password
+                                        </Link>
+                                    </li>
+                                    {/* <li>
                                         <Link href="/users/profile" className="dark:hover:text-white">
                                             <IconUser className="h-4.5 w-4.5 shrink-0 ltr:mr-2 rtl:ml-2" />
                                             Profile
@@ -513,7 +533,7 @@ const Header = () => {
                                             <IconLockDots className="h-4.5 w-4.5 shrink-0 ltr:mr-2 rtl:ml-2" />
                                             Lock Screen
                                         </Link>
-                                    </li>
+                                    </li> */}
                                     {/* <li className="border-t border-white-light dark:border-white-light/10">
                                         <Link href="/auth/boxed-signin" className="!py-3 text-danger">
                                             <IconLogout className="h-4.5 w-4.5 shrink-0 rotate-90 ltr:mr-2 rtl:ml-2" />

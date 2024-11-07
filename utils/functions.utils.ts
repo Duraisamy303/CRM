@@ -39,6 +39,12 @@ export const validateString = (string: string) => {
     return false;
 };
 
+export const convertUrlToFile = async (url, filename) => {
+    const response = await fetch(url);
+    const blob = await response.blob(); // Convert response to a Blob
+    return new File([blob], filename, { type: blob.type }); // Create a File object
+  };
+
 export const isUrlFound = (url: any) => {
     if (/^https:\/\//.test(url)) {
         return true;
@@ -250,6 +256,24 @@ export const addCommasToNumber = (value) => {
     }
     return values;
 };
+
+export const roundOff = (price: any) => {
+    let roundedPrice = '';
+    if (price) {
+        // Round to the nearest integer (use Math.ceil as per your logic)
+        const roundedValue = Math.ceil(price);
+        
+        // Format the number in the Indian-style without the currency symbol
+        roundedPrice = roundedValue.toLocaleString('en-IN', {
+            minimumFractionDigits: roundedValue % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2,
+        });
+    } else {
+        roundedPrice = price;
+    }
+    return roundedPrice;
+};
+
 
 
 export const showDeleteAlert = (onConfirm, onCancel, title) => {

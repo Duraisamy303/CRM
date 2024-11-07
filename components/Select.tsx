@@ -31,7 +31,7 @@ const CustomSelect = (props: SelectProps) => {
             '&:hover': {
                 borderColor: error ? 'red' : provided.borderColor, // Maintain red border on hover if there's an error
             },
-            borderRadius: borderRadius ? borderRadius : '0px', // Add rounded corners
+            borderRadius: borderRadius ? borderRadius : '5px', // Add rounded corners
         }),
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
         menu: (base: any) => ({ ...base, zIndex: 9999 }),
@@ -53,7 +53,7 @@ const CustomSelect = (props: SelectProps) => {
                     isMulti={isMulti}
                     isClearable={true}
                     styles={customStyles}
-                    className={`react-select  ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
+                    className={`react-select   ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
                     // classNamePrefix="react-select" // Adds a prefix for custom styles
                     // styles={{
                     //     menuPortal: (base) => ({ ...base, zIndex: 9999 }),

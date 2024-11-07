@@ -160,11 +160,11 @@ const CreateLead = () => {
             if (state.tags?.length > 0) {
                 tags = state.tags?.map((item) => item.value);
             }
+          
             const body = {
                 name: state.name,
                 focus_segment: state.focus_segment?.value,
                 lead_owner: state.lead_owner?.value,
-                created_by: state.created_by?.value,
                 country: state.country?.value,
                 state: state.state?.value,
                 company_number: state.company_number,
@@ -213,8 +213,23 @@ const CreateLead = () => {
     return state.loading ? (
         <CommonLoader />
     ) : (
-        <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
-            <div className="panel flex gap-5 rounded-2xl pl-[30px]">
+        <div className="relative h-auto  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <div className="panel  flex  gap-5 ">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-[50px] w-[50px] overflow-hidden bg-white" style={{ borderRadius: 50 }}>
+                        <img src="/assets/images/profile-1.jpeg" height={'100%'} width={'100%'} />
+                    </div>
+                    <div>
+                        <h5 className="font-semibold " style={{ fontSize: '18px' }}>
+                            Create Lead
+                        </h5>
+                        <div className="  " style={{ fontSize: '14px', color: 'grey' }}>
+                            Your data journey starts here...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* <div className="panel flex gap-5 rounded-2xl pl-[30px]">
                 <div className="flex h-[100px] w-[100px] overflow-hidden bg-white" style={{ borderRadius: 50 }}>
                     <img src="/assets/images/profile-1.jpeg" height={'100%'} width={'100%'} />
                 </div>
@@ -226,10 +241,10 @@ const CreateLead = () => {
                         Your data journey starts here...
                     </div>
                 </div>
-            </div>
-            <div className=" mt-4 grid grid-cols-12  gap-4">
+            </div> */}
+            <div className=" mt-2 grid grid-cols-12  gap-2">
                 <div className=" col-span-12 flex flex-col   md:col-span-5">
-                    <div className="panel flex flex-col gap-5 rounded-2xl">
+                    <div className="panel flex flex-col gap-5 rounded-2xl p-3">
                         <div className="flex items-center gap-3">
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
                                 <IconUser className="text-[#82de69]" />
@@ -249,7 +264,7 @@ const CreateLead = () => {
                             required
                         />
                     </div>
-                    <div className="panel mt-4 flex flex-col gap-5 rounded-2xl">
+                    <div className="panel mt-2 flex flex-col gap-5 rounded-2xl p-3">
                         <div className="flex items-center gap-3">
                             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffeeee]">
                                 <IconUser className="text-[#fe70f2]" />
@@ -265,7 +280,7 @@ const CreateLead = () => {
                     </div>
                 </div>
 
-                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 ">
+                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl p-3 md:col-span-7">
                     <div className="flex items-center gap-3">
                         <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffefe4]">
                             <IconUser className="text-[#ffbb55]" />
@@ -285,33 +300,6 @@ const CreateLead = () => {
                                 onChange={(e) => setState({ annual_revenue: e })}
                                 placeholder={'Annual Revenue'}
                                 error={state.errors?.annual_revenue}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className=" flex w-full gap-3">
-                        <div className="flex w-[50%]">
-                            <CustomSelect
-                                title="Tags"
-                                value={state.tags}
-                                isMulti={true}
-                                onChange={(e) => setState({ tags: e })}
-                                placeholder={'Tags'}
-                                options={state.tagList}
-                                required
-                                error={state.errors?.tags}
-                            />
-                        </div>
-                        <div className=" flex  w-[50%]">
-                            <CustomSelect
-                                title="Created By"
-                                value={state.created_by}
-                                onChange={(e) => setState({ created_by: e })}
-                                placeholder={'Created By'}
-                                options={state.createdByList}
-                                required
-                                error={state.errors?.created_by}
                             />
                         </div>
                     </div>
@@ -337,7 +325,6 @@ const CreateLead = () => {
                         </div>
 
                         <div className="flex w-[50%]">
-
                             <CustomSelect
                                 title="Focus Segment"
                                 value={state.focus_segment}
@@ -353,15 +340,29 @@ const CreateLead = () => {
                     </div>
 
                     <div className=" flex w-full gap-3">
-                        <CustomSelect
-                            title="Market Segment"
-                            value={state.market_segment}
-                            onChange={(e) => setState({ market_segment: e })}
-                            placeholder={'Market Segment'}
-                            options={state.marketSegmentList}
-                            required
-                            error={state.errors?.market_segment}
-                        />
+                        <div className="flex w-[50%]">
+                            <CustomSelect
+                                title="Market Segment"
+                                value={state.market_segment}
+                                onChange={(e) => setState({ market_segment: e })}
+                                placeholder={'Market Segment'}
+                                options={state.marketSegmentList}
+                                required
+                                error={state.errors?.market_segment}
+                            />
+                        </div>
+
+                        <div className="flex w-[50%]">
+                            <CustomSelect
+                                title="Tags"
+                                value={state.tags}
+                                isMulti={true}
+                                onChange={(e) => setState({ tags: e })}
+                                placeholder={'Tags'}
+                                options={state.tagList}
+                                error={state.errors?.tags}
+                            />
+                        </div>
                     </div>
 
                     <div className=" flex w-full gap-3">
@@ -400,7 +401,7 @@ const CreateLead = () => {
                             <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
                         </div>
                     </div> */}
-                    <div className="mt-3 flex items-center justify-end gap-3">
+                    <div className="mt-20 flex items-center justify-end gap-3">
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel
                         </button>
