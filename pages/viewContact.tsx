@@ -300,11 +300,11 @@ export default function ViewLead() {
     };
 
     const onEditLog = async (item) => {
-        // if (item?.file_url) {
-        //     const fileName = getFileNameFromUrl(item?.file_url);
-        //     const files = await convertUrlToFile(item?.file_url, fileName);
-        //     setState({ file: files });
-        // }
+        if (item?.file_url) {
+            const fileName = getFileNameFromUrl(item?.file_url);
+            const files = await convertUrlToFile(item?.file_url, fileName);
+            setState({ file: files });
+        }
         setState({
             logId: item.id,
             isOpenLog: true,
