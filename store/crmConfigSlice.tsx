@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     leadId: '',
+    oppId: '',
 };
 
 const crmConfigSlice = createSlice({
@@ -11,9 +12,12 @@ const crmConfigSlice = createSlice({
         leadId(state, { payload }) {
             state.leadId = payload;
         },
+        oppId(state, { payload }) {
+            state.oppId = payload;
+        },
     },
 });
 
-export const { leadId } = crmConfigSlice.actions;
+export const { leadId, oppId } = crmConfigSlice.actions;
 
 export default crmConfigSlice.reducer;

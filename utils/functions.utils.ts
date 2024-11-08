@@ -43,7 +43,7 @@ export const convertUrlToFile = async (url, filename) => {
     const response = await fetch(url);
     const blob = await response.blob(); // Convert response to a Blob
     return new File([blob], filename, { type: blob.type }); // Create a File object
-  };
+};
 
 export const isUrlFound = (url: any) => {
     if (/^https:\/\//.test(url)) {
@@ -262,7 +262,7 @@ export const roundOff = (price: any) => {
     if (price) {
         // Round to the nearest integer (use Math.ceil as per your logic)
         const roundedValue = Math.ceil(price);
-        
+
         // Format the number in the Indian-style without the currency symbol
         roundedPrice = roundedValue.toLocaleString('en-IN', {
             minimumFractionDigits: roundedValue % 1 === 0 ? 0 : 2,
@@ -274,35 +274,50 @@ export const roundOff = (price: any) => {
     return roundedPrice;
 };
 
-
-
 export const showDeleteAlert = (onConfirm, onCancel, title) => {
     const swalWithBootstrapButtons = Swal.mixin({
-      customClass: {
-        confirmButton: "btn confirm-btn", // Add a custom class for the confirm button
-        cancelButton: "btn cancel-btn", // Add a custom class for the cancel button
-        popup: "sweet-alerts",
-      },
-      buttonsStyling: false,
+        customClass: {
+            confirmButton: 'btn confirm-btn', // Add a custom class for the confirm button
+            cancelButton: 'btn cancel-btn', // Add a custom class for the cancel button
+            popup: 'sweet-alerts',
+        },
+        buttonsStyling: false,
     });
-  
+
     swalWithBootstrapButtons
-      .fire({
-        title: title ? title : "Are you sure to cancel order?",
-        // text: "You won't be able to Delete this!",
-        icon: "warning",
-        showCancelButton: true,
-        // confirmButtonText: 'Yes, delete it!',
-        // cancelButtonText: 'No, cancel!',
-        reverseButtons: true,
-        padding: "2em",
-      })
-      .then((result) => {
-        if (result.isConfirmed) {
-          onConfirm(); // Call the onConfirm function if the user confirms the deletion
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          onCancel(); // Call the onCancel function if the user cancels the deletion
+        .fire({
+            title: title ? title : 'Are you sure to cancel order?',
+            // text: "You won't be able to Delete this!",
+            icon: 'warning',
+            showCancelButton: true,
+            // confirmButtonText: 'Yes, delete it!',
+            // cancelButtonText: 'No, cancel!',
+            reverseButtons: true,
+            padding: '2em',
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+                onConfirm(); // Call the onConfirm function if the user confirms the deletion
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                onCancel(); // Call the onCancel function if the user cancels the deletion
+            }
+        });
+};
+
+export const convertToFormData = (body) => {
+    const formData = new FormData();
+
+    for (const key in body) {
+        if (body[key] instanceof File || body[key] instanceof Blob) {
+            formData.append(key, body[key]);
+        } else if (Array.isArray(body[key])) {
+            body[key].forEach((item, index) => {
+                formData.append(`${key}[${index}]`, item);
+            });
+        } else if (body[key] !== null && body[key] !== undefined) {
+            formData.append(key, body[key]);
         }
-      });
-  };
-  
+    }
+    return formData;
+};
+

@@ -1,28 +1,19 @@
-import FileUpload from '@/common_component/fileUpload';
+import Breadcrumb from '@/common_component/breadcrumb';
 import React from 'react';
 
-const ParentComponent = () => {
-    const handleFileSelect = (file) => {
-        console.log('file: ', file);
-        if (file) {
-            console.log('Selected file:', file.name);
-        } else {
-            console.log('File removed');
-        }
-    };
+const Test = () => {
+    const breadcrumbItems = [
+        { label: 'Home', path: '/' },
+        { label: 'Products', path: '/products' },
+        { label: 'Electronics', path: '/products/electronics' },
+        { label: 'Laptops', path: '/products/electronics/laptops' }
+    ];
 
     return (
         <div>
-            <h1>Upload Document</h1>
-            <FileUpload
-                onFileSelect={handleFileSelect}
-                buttonText="Upload Document"
-                iconSrc="/assets/images/fileUplaod.jpg"
-                accept=".pdf,.doc,.docx,.txt"
-                isImageAllowed={false} // Only allow non-image files
-            />
+            <Breadcrumb items={breadcrumbItems} />
         </div>
     );
 };
 
-export default ParentComponent;
+export default Test;

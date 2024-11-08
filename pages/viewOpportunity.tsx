@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, addCommasToNumber, capitalizeFLetter, roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, capitalizeFLetter, roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setPageTitle } from '../store/themeConfigSlice';
 import IconUser from '@/components/Icon/IconUser';
 import TextInput from '@/components/TextInput';
@@ -26,18 +26,22 @@ import LogCard from '@/components/logCard';
 import TextArea from '@/components/TextArea';
 import CustomeDatePicker from '@/common_component/datePicker';
 import moment from 'moment';
-import { leadId } from '@/store/crmConfigSlice';
+import { leadId, oppId } from '@/store/crmConfigSlice';
 import OppLabel from '@/components/oppLabel';
 import NoteComponent from '@/components/noteComponent';
 import { DataTable } from 'mantine-datatable';
 import ReadMore from '@/common_component/readMore';
 import StageCard from '@/components/StageCard';
+import { IRootState } from '@/store';
+import Breadcrumb from '@/common_component/breadcrumb';
 
 export default function ViewLead() {
     const router = useRouter();
     const id = router?.query?.id;
 
     const dispatch = useDispatch();
+
+    const redux = useSelector((state: IRootState) => state.crmConfig);
 
     const [state, setState] = useSetState({
         loading: false,
@@ -81,6 +85,10 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.opportunity.details(id);
+            console.log('res: ', res);
+            dispatch(oppId(res.id));
+            dispatch(leadId(redux.leadId));
+
             setState({
                 loading: false,
                 data: res,
@@ -169,11 +177,26 @@ export default function ViewLead() {
 
         setState({ stageHistoryList: data, loading: false });
     };
+    let breadcrumbItems = [];
+    if (redux?.leadId == '') {
+        breadcrumbItems = [
+            { label: 'Home', path: '/opportunities' },
+            { label: 'Opportunity', path: '' },
+        ];
+    } else {
+        breadcrumbItems = [
+            { label: 'Home', path: '/' },
+            { label: 'Lead', path: `viewLead?id=${redux?.leadId}` },
+            { label: 'Opportunity', path: '' },
+        ];
+    }
 
     return state.loading ? (
         <CommonLoader />
     ) : (
         <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <Breadcrumb items={breadcrumbItems} />
+
             <div className="panel  flex items-center justify-between gap-5">
                 <div className="flex items-center gap-5 pl-3">
                     <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Opportunity)`}</h5>
@@ -219,7 +242,7 @@ export default function ViewLead() {
                             label1="Opportunity Value"
                             value1={roundOff(state.data?.opportunity_value)}
                             label2="Recurring Value"
-                            value2={(state.data?.recurring_value_per_year)}
+                            value2={state.data?.recurring_value_per_year}
                             label3="Closing Date"
                             value3={state.data?.closing_date}
                         />
@@ -247,7 +270,7 @@ export default function ViewLead() {
                         <TextArea height="150px" value={state.notes} onChange={(e) => setState({ notes: e })} placeholder={'Notes'} />
                     </div> */}
                 {state.notesList?.length > 0 && (
-                    <div className="panel col-span-12 flex max-h-[400px] flex-col overflow-scroll rounded-2xl md:col-span-12 p-3">
+                    <div className="panel col-span-12 flex max-h-[400px] flex-col overflow-scroll rounded-2xl p-3 md:col-span-12">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
@@ -289,7 +312,7 @@ export default function ViewLead() {
                 )}
             </div>
             {state.stageHistoryList?.length > 0 && (
-                <div className="panel col-span-12 mt-2 flex max-h-[400px] flex-col  overflow-scroll rounded-2xl md:col-span-12 p-3">
+                <div className="panel col-span-12 mt-2 flex max-h-[400px] flex-col  overflow-scroll rounded-2xl p-3 md:col-span-12">
                     <div className="flex justify-between">
                         <div className="flex w-full justify-between">
                             <div className="flex items-center gap-3">

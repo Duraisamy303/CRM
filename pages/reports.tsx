@@ -1,6 +1,6 @@
 import { Models, PrivateRouter } from '@/utils/imports.utils';
 import React, { useEffect, useState, Fragment } from 'react';
-import { Dropdown, Failure, addCommasToNumber, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, objIsEmpty, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import IconSearch from '@/components/Icon/IconSearch';
 import CustomSelect from '@/components/Select';
@@ -37,8 +37,8 @@ const Reports = () => {
         to_date: null,
         activeTab: 'Lead',
         oppRecValue: '',
-        oppoValue: '',
-        oppoCount: '',
+        oppoValue: [],
+        oppoCount: [],
         currentLeadPage: 1,
         hasMoreLead: '',
         leadList: [],
@@ -52,6 +52,7 @@ const Reports = () => {
         isShowLead: false,
         isShowIncomLead: false,
         incomLead: {},
+        oppLoading: false,
     });
 
     useEffect(() => {
@@ -63,15 +64,29 @@ const Reports = () => {
     }, []);
 
     useEffect(() => {
-        reportOpportunity();
-        reportLead();
-        funnelChartCount();
+        if (state.activeTab == 'Lead') {
+            reportLead();
+        } else if (state.activeTab == 'Sales') {
+            funnelChartCount();
+        } else {
+            reportOpportunity();
+            reportValue();
+            reportIncomValue();
+            reportRecurringValue();
+        }
     }, []);
 
     useEffect(() => {
-        reportOpportunity(true);
-        reportLead(true);
-        funnelChartCount(true);
+        if (state.activeTab == 'Lead') {
+            reportLead(true);
+        } else if (state.activeTab == 'Sales') {
+            funnelChartCount(true);
+        } else {
+            reportOpportunity(true);
+            reportValue(true);
+            reportIncomValue(true);
+            reportRecurringValue(true);
+        }
     }, [state.activeTab]);
 
     const filters = () => {
@@ -220,6 +235,7 @@ const Reports = () => {
 
     const reportOpportunity = async (filter = false) => {
         try {
+            setState({ oppLoading: true });
             let body = {};
             if (filter) {
                 if (filters()) {
@@ -228,7 +244,6 @@ const Reports = () => {
             }
 
             let res: any = await Models.report.reportOpportunity(body);
-
             const formatName = (name) => {
                 if (name === 'no_decision') return 'No Decision';
                 if (name === 'Oops-Follow up') return 'Oops Follow Up';
@@ -242,12 +257,192 @@ const Reports = () => {
                     count: res[name].count,
                 }));
 
+            const countSeries = counts?.map((item) => item?.count);
+            const countLabels = counts?.map((item) => item?.name);
+
+            console.log('countSeries: ', countSeries);
+
+            const count = {
+                series: countSeries, // Ensuring this is a plain array
+                options: {
+                    chart: {
+                        type: 'donut',
+                        height: 460,
+                    },
+                    labels: countLabels, // Ensuring this is a plain array
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%',
+                                background: 'transparent',
+                                labels: {
+                                    show: true,
+                                    name: {
+                                        show: true,
+                                        fontSize: '29px',
+                                        offsetY: -10,
+                                    },
+                                    value: {
+                                        show: true,
+                                        fontSize: '26px',
+                                        color: undefined,
+                                        offsetY: 16,
+                                        formatter: (val: any) => {
+                                            return val;
+                                        },
+                                    },
+                                    total: {
+                                        show: true,
+                                        label: 'Total',
+                                        color: '#888ea8',
+                                        fontSize: '20px',
+                                        formatter: (w: any) => {
+                                            return w.globals.seriesTotals.reduce(function (a: any, b: any) {
+                                                return a + b;
+                                            }, 0);
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    dataLabels: {
+                        enabled: false,
+                    },
+                    stroke: {
+                        show: true,
+                        width: 25,
+                        colors: ['#fff'],
+                    },
+                    colors: ['#e2a03f', '#5c1ac3', '#e7515a', '#e2a03f', '#5c1ac3', '#e7515a'],
+                },
+            };
+            console.log('count: ', count);
+
+            // Update state or render the chart
+            setState({
+                oppoCount: count,
+                oppLoading: false,
+                isShowOppCount: count.series.length > 0,
+            });
+        } catch (error) {
+            setState({ oppLoading: false });
+        }
+    };
+
+    const reportValue = async (filter = false) => {
+        try {
+            setState({ oppLoading: true });
+            let body = {};
+            if (filter) {
+                if (filters()) {
+                    body = bodyData();
+                }
+            }
+
+            let res: any = await Models.report.reportOpportunity(body);
+            const formatName = (name) => {
+                if (name === 'no_decision') return 'No Decision';
+                if (name === 'Oops-Follow up') return 'Oops Follow Up';
+                return name.replace(/\b\w/g, (char) => char.toUpperCase());
+            };
+
             const values = Object.keys(res)
                 .filter((name) => name !== 'total' && name !== 'monthly_data')
                 .map((name) => ({
                     name: formatName(name),
                     value: res[name].value,
                 }));
+
+            const valueSeries = values?.map((item) => item?.value);
+            const valueLabels = values?.map((item) => item?.name);
+
+            console.log('countSeries: ', valueSeries);
+
+            const count = {
+                series: valueSeries, // Ensuring this is a plain array
+                options: {
+                    chart: {
+                        type: 'donut',
+                        height: 460,
+                    },
+                    labels: valueLabels, // Ensuring this is a plain array
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%',
+                                background: 'transparent',
+                                labels: {
+                                    show: true,
+                                    name: {
+                                        show: true,
+                                        fontSize: '29px',
+                                        offsetY: -10,
+                                    },
+                                    value: {
+                                        show: true,
+                                        fontSize: '26px',
+                                        color: undefined,
+                                        offsetY: 16,
+                                        formatter: (val: any) => {
+                                            return val;
+                                        },
+                                    },
+                                    total: {
+                                        show: true,
+                                        label: 'Total',
+                                        color: '#888ea8',
+                                        fontSize: '20px',
+                                        formatter: (w: any) => {
+                                            return w.globals.seriesTotals.reduce(function (a: any, b: any) {
+                                                return a + b;
+                                            }, 0);
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    dataLabels: {
+                        enabled: false,
+                    },
+                    stroke: {
+                        show: true,
+                        width: 25,
+                        colors: ['#fff'],
+                    },
+                    colors: ['#e2a03f', '#5c1ac3', '#e7515a', '#e2a03f', '#5c1ac3', '#e7515a'],
+                },
+            };
+            console.log('count: ', count);
+
+            // Update state or render the chart
+            setState({
+                oppoValue: count,
+                oppLoading: false,
+                isShowOppValue: count.series.length > 0,
+            });
+        } catch (error) {
+            setState({ oppLoading: false });
+        }
+    };
+
+    const reportRecurringValue = async (filter = false) => {
+        try {
+            setState({ oppLoading: true });
+            let body = {};
+            if (filter) {
+                if (filters()) {
+                    body = bodyData();
+                }
+            }
+
+            let res: any = await Models.report.reportOpportunity(body);
+            const formatName = (name) => {
+                if (name === 'no_decision') return 'No Decision';
+                if (name === 'Oops-Follow up') return 'Oops Follow Up';
+                return name.replace(/\b\w/g, (char) => char.toUpperCase());
+            };
 
             const recurringValues = Object.keys(res)
                 .filter((name) => name !== 'total' && name !== 'monthly_data')
@@ -256,124 +451,90 @@ const Reports = () => {
                     recurring_value: res[name]?.recurring_value || 0,
                 }));
 
-            const countSeries = counts?.map((item) => item?.count);
-            const countLabels = counts?.map((item) => item?.name);
-
-            const valueSeries = values?.map((item) => item?.value);
-            const valueLabels = values?.map((item) => item?.name);
-
             const recurringValueSeries = recurringValues?.map((item) => item?.recurring_value);
             const recurringValueLabels = recurringValues?.map((item) => item?.name);
 
-            const monthSeries = res?.monthly_data?.map((item) => item.count); // Get counts for the data series
-            const monthLabels = res?.monthly_data?.map((item) => item.month); // Get month labels for the x-axis
-
-            const checkArrayValues = countSeries?.some((value) => value !== 0);
-            const checkArrayRec = valueSeries?.some((value) => value !== 0);
-            const checkArrayCount = recurringValueSeries?.some((value) => value !== 0);
-            const checkArrayIncom = monthSeries?.some((value) => value !== 0);
-
             const count = {
-                series: countSeries,
+                series: recurringValueSeries, // Ensuring this is a plain array
                 options: {
                     chart: {
-                        height: 300,
-                        type: 'pie',
-                        zoom: {
-                            enabled: false,
-                        },
-                        toolbar: {
-                            show: false,
-                        },
+                        type: 'donut',
+                        height: 460,
                     },
-                    labels: countLabels,
-                    colors: ['#4361ee', '#805dca', '#00ab55', '#ff6b6b', '#ffd93d', '#6bc1ff', '#ffa502', '#38ada9', '#fa983a'],
-                    responsive: [
-                        {
-                            breakpoint: 480,
-                            options: {
-                                chart: {
-                                    width: 200,
+                    labels: recurringValueLabels, // Ensuring this is a plain array
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%',
+                                background: 'transparent',
+                                labels: {
+                                    show: true,
+                                    name: {
+                                        show: true,
+                                        fontSize: '29px',
+                                        offsetY: -10,
+                                    },
+                                    value: {
+                                        show: true,
+                                        fontSize: '26px',
+                                        color: undefined,
+                                        offsetY: 16,
+                                        formatter: (val: any) => {
+                                            return val;
+                                        },
+                                    },
+                                    total: {
+                                        show: true,
+                                        label: 'Total',
+                                        color: '#888ea8',
+                                        fontSize: '20px',
+                                        formatter: (w: any) => {
+                                            return w.globals.seriesTotals.reduce(function (a: any, b: any) {
+                                                return a + b;
+                                            }, 0);
+                                        },
+                                    },
                                 },
                             },
                         },
-                    ],
+                    },
+                    dataLabels: {
+                        enabled: false,
+                    },
                     stroke: {
-                        show: false,
+                        show: true,
+                        width: 25,
+                        colors: ['#fff'],
                     },
-                    legend: {
-                        position: 'bottom',
-                    },
+                    colors: ['#e2a03f', '#5c1ac3', '#e7515a', '#e2a03f', '#5c1ac3', '#e7515a'],
                 },
             };
+            console.log('count: ', count);
 
-            const value = {
-                series: valueSeries,
-                options: {
-                    chart: {
-                        height: 300,
-                        type: 'pie',
-                        zoom: {
-                            enabled: false,
-                        },
-                        toolbar: {
-                            show: false,
-                        },
-                    },
-                    labels: valueLabels,
-                    colors: ['#ff6b6b', '#ffbe76', '#badc58', '#f9ca24', '#30336b', '#4834d4', '#22a6b3', '#be2edd', '#dff9fb'],
-                    responsive: [
-                        {
-                            breakpoint: 480,
-                            options: {
-                                chart: {
-                                    width: 200,
-                                },
-                            },
-                        },
-                    ],
-                    stroke: {
-                        show: false,
-                    },
-                    legend: {
-                        position: 'bottom',
-                    },
-                },
-            };
+            // Update state or render the chart
+            setState({
+                oppRecValue: count,
+                oppLoading: false,
+                isShowOppRec: count.series.length > 0,
+            });
+        } catch (error) {
+            setState({ oppLoading: false });
+        }
+    };
 
-            const rec = {
-                series: recurringValueSeries,
-                options: {
-                    chart: {
-                        height: 300,
-                        type: 'pie',
-                        zoom: {
-                            enabled: false,
-                        },
-                        toolbar: {
-                            show: false,
-                        },
-                    },
-                    labels: recurringValueLabels,
-                    colors: ['#e056fd', '#686de0', '#f0932b', '#eb4d4b', '#7ed6df', '#6ab04c', '#ff7979', '#f6e58d', '#e84118'],
-                    responsive: [
-                        {
-                            breakpoint: 480,
-                            options: {
-                                chart: {
-                                    width: 200,
-                                },
-                            },
-                        },
-                    ],
-                    stroke: {
-                        show: false,
-                    },
-                    legend: {
-                        position: 'bottom',
-                    },
-                },
-            };
+    const reportIncomValue = async (filter = false) => {
+        try {
+            setState({ oppLoading: true });
+            let body = {};
+            if (filter) {
+                if (filters()) {
+                    body = bodyData();
+                }
+            }
+
+            let res: any = await Models.report.reportOpportunity(body);
+            const monthSeries = res?.monthly_data?.map((item) => item.count); // Get counts for the data series
+            const monthLabels = res?.monthly_data?.map((item) => item.month);
 
             const incomOpp = {
                 series: [
@@ -450,18 +611,14 @@ const Reports = () => {
                 },
             };
 
+            // Update state or render the chart
             setState({
-                oppoCount: count,
-                oppoValue: value,
-                oppRecValue: rec,
-                isShowOppCount: checkArrayCount,
-                isShowOppValue: checkArrayValues,
-                isShowOppRec: checkArrayRec,
-                isShowIncom: checkArrayIncom,
+                oppLoading: false,
+                isShowIncom: incomOpp.series.length > 0,
                 incommingOpportunity: incomOpp,
             });
         } catch (error) {
-            setState({ loading: false });
+            setState({ oppLoading: false });
         }
     };
 
@@ -487,6 +644,7 @@ const Reports = () => {
 
             const labels = Object.keys(res?.lead_source_counts); // ["Webinars and Events", "Social Media Ads", "Industry Publications", "Cold Calling"]
             const data = Object.values(res?.lead_source_counts);
+            console.log('data: ', data);
             const checkArrayValues = data?.some((value) => value !== 0);
             const incomLeads = countSeries?.some((value) => value !== 0);
 
@@ -565,18 +723,23 @@ const Reports = () => {
                 },
             };
 
-            const pieChart = {
+            const leadSource: any = {
                 series: data,
                 options: {
                     chart: {
-                        type: 'pie',
-                        height: 350,
+                        type: 'donut',
+                        height: 460,
                         fontFamily: 'Nunito, sans-serif',
-                        toolbar: { show: false },
                     },
-                    labels: labels,
-                    colors: ['#4361ee', '#805dca', '#00ab55', '#ff6b6b'], // Define custom colors for the pie segments
-
+                    dataLabels: {
+                        enabled: false,
+                    },
+                    stroke: {
+                        show: true,
+                        width: 25,
+                        colors: '#fff',
+                    },
+                    colors: ['#e2a03f', '#5c1ac3', '#e7515a'],
                     legend: {
                         position: 'bottom',
                         horizontalAlign: 'center',
@@ -584,20 +747,66 @@ const Reports = () => {
                         markers: {
                             width: 10,
                             height: 10,
+                            offsetX: -2,
                         },
-                        itemMargin: {
-                            horizontal: 10,
-                            vertical: 5,
+                        height: 50,
+                        offsetY: 20,
+                    },
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%',
+                                background: 'transparent',
+                                labels: {
+                                    show: true,
+                                    name: {
+                                        show: true,
+                                        fontSize: '29px',
+                                        offsetY: -10,
+                                    },
+                                    value: {
+                                        show: true,
+                                        fontSize: '26px',
+                                        color: undefined,
+                                        offsetY: 16,
+                                        formatter: (val: any) => {
+                                            return val;
+                                        },
+                                    },
+                                    total: {
+                                        show: true,
+                                        label: 'Total',
+                                        color: '#888ea8',
+                                        fontSize: '20px',
+                                        formatter: (w: any) => {
+                                            return w.globals.seriesTotals.reduce(function (a: any, b: any) {
+                                                return a + b;
+                                            }, 0);
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
-                    tooltip: {
-                        y: {
-                            formatter: (val) => `${val}`, // Display value on tooltip
+                    labels: labels,
+                    states: {
+                        hover: {
+                            filter: {
+                                type: 'none',
+                                value: 0.15,
+                            },
+                        },
+                        active: {
+                            filter: {
+                                type: 'none',
+                                value: 0.15,
+                            },
                         },
                     },
                 },
             };
-            setState({ leadSource: pieChart, reportLead: res, loading: false, isShowLead: checkArrayValues, incomLead: incomLead, isShowIncomLead: incomLeads });
+
+            setState({ leadSource, reportLead: res, loading: false, isShowLead: checkArrayValues, incomLead: incomLead, isShowIncomLead: incomLeads });
         } catch (error) {
             setState({ loading: false });
 
@@ -658,6 +867,9 @@ const Reports = () => {
         reportOpportunity();
         reportLead();
         funnelChartCount();
+        reportValue();
+        reportIncomValue();
+        reportRecurringValue();
     };
 
     return (
@@ -695,104 +907,122 @@ const Reports = () => {
             </div>
             {state.activeTab == 'Lead' ? (
                 <>
-                    <div className="flex flex-wrap gap-5">
-                        <div className="panel w-full items-center   justify-center p-3">
-                            <div className="mb-2 flex w-full items-center  gap-5">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Lead Source</h5>
+                    {state.loading ? (
+                        <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
+                            <CommonLoader />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex flex-wrap gap-5">
+                                <div className="panel w-full items-center   justify-center p-3">
+                                    <div className="mb-2 flex w-full items-center  gap-5">
+                                        <h5 className="text-lg font-semibold dark:text-white-light">Lead Source</h5>
+                                    </div>
+                                    {state.isShowLead ? (
+                                        // <ReactApexChart
+                                        //     series={state.leadSource?.series}
+                                        //     options={state.leadSource?.options}
+                                        //     className="rounded-lg bg-white dark:bg-black"
+                                        //     type="pie"
+                                        //     height={300}
+                                        //     width={'100%'}
+                                        // />
+                                        <ReactApexChart series={state.leadSource?.series} options={state.leadSource?.options} type="donut" height={460} width={'100%'} />
+                                    ) : (
+                                        <div className="flex items-center justify-center">No Data Found</div>
+                                    )}
+                                </div>
                             </div>
-                            {state.isShowLead ? (
-                                <ReactApexChart
-                                    series={state.leadSource?.series}
-                                    options={state.leadSource?.options}
-                                    className="rounded-lg bg-white dark:bg-black"
-                                    type="pie"
-                                    height={300}
-                                    width={'100%'}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center">No Data Found</div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="panel mt-3 flex w-full flex-col p-3">
-                        <div className="mb-2 flex w-full items-center  gap-5">
-                            <h5 className="text-lg font-semibold dark:text-white-light">Incoming Lead</h5>
-                        </div>
-                        {state.isShowIncomLead ? (
-                            <ReactApexChart series={state.incomLead?.series} options={state.incomLead?.options} type="area" height={325} width={'100%'} />
-                        ) : (
-                            <div className="flex items-center justify-center">No Data Found</div>
-                        )}
-                    </div>
+                            <div className="panel mt-3 flex w-full flex-col p-3">
+                                <div className="mb-2 flex w-full items-center  gap-5">
+                                    <h5 className="text-lg font-semibold dark:text-white-light">Incoming Lead</h5>
+                                </div>
+                                {state.isShowIncomLead ? (
+                                    <ReactApexChart series={state.incomLead?.series} options={state.incomLead?.options} type="area" height={400} width={'100%'} />
+                                ) : (
+                                    <div className="flex items-center justify-center">No Data Found</div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </>
             ) : state.activeTab == 'Opportunity' ? (
-                <>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                        <div className="panel flex w-full flex-col  p-3 md:w-[50%]">
-                            <div className="mb-2 flex w-full items-center  gap-5">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Count</h5>
-                            </div>
-                            {state.isShowOppCount ? (
-                                <ReactApexChart
-                                    series={state.oppoCount.series}
-                                    options={state.oppoCount.options}
-                                    className="rounded-lg bg-white dark:bg-black"
-                                    type="pie"
-                                    height={300}
-                                    width={'100%'}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center">No Data Found</div>
-                            )}
-                        </div>
-
-                        <div className="panel flex w-full flex-col  p-3 md:w-[49%]">
-                            <div className="mb-2 flex w-full items-center  gap-5">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Value</h5>
-                            </div>
-                            {state.isShowOppValue ? (
-                                <ReactApexChart
-                                    series={state.oppoValue?.series}
-                                    options={state.oppoValue?.options}
-                                    className="rounded-lg bg-white dark:bg-black"
-                                    type="pie"
-                                    height={300}
-                                    width={'100%'}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center">No Data Found</div>
-                            )}
-                        </div>
-
-                        <div className="panel flex w-full flex-col p-3">
-                            <div className="mb-2 flex w-full items-center  gap-5">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Recurring Value</h5>
-                            </div>
-                            {state.isShowOppRec ? (
-                                <ReactApexChart
-                                    series={state.oppRecValue?.series}
-                                    options={state.oppRecValue?.options}
-                                    className="rounded-lg bg-white dark:bg-black"
-                                    type="pie"
-                                    height={300}
-                                    width={'100%'}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center">No Data Found</div>
-                            )}
-                        </div>
+                state.oppLoading ? (
+                    <div className="relative inset-0 z-10 flex items-center justify-center bg-white bg-opacity-70">
+                        <CommonLoader />
                     </div>
-                    <div className="panel mt-3 flex w-full  flex-col p-3">
-                        <div className="mb-2 flex w-full items-center  gap-5">
-                            <h5 className="text-lg font-semibold dark:text-white-light">Incoming Opportunity</h5>
+                ) : (
+                    <>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            <div className="panel flex w-full flex-col  p-3 md:w-[50%]">
+                                <div className="mb-2 flex w-full items-center  gap-5">
+                                    <h5 className="text-lg font-semibold dark:text-white-light">Count</h5>
+                                </div>
+                                {state.isShowOppCount ? (
+                                    // <ReactApexChart
+                                    //     series={state.oppoCount.series}
+                                    //     options={state.oppoCount.options}
+                                    //     className="rounded-lg bg-white dark:bg-black"
+                                    //     type="pie"
+                                    //     height={300}
+                                    //     width={'100%'}
+                                    // />
+                                    <ReactApexChart series={state.oppoCount.series} options={state.oppoCount.options} type="donut" height={400} width={'100%'} />
+                                ) : (
+                                    <div className="flex items-center justify-center">No Data Found</div>
+                                )}
+                            </div>
+
+                            <div className="panel flex w-full flex-col  p-3 md:w-[49%]">
+                                <div className="mb-2 flex w-full items-center  gap-5">
+                                    <h5 className="text-lg font-semibold dark:text-white-light">Value</h5>
+                                </div>
+                                {state.isShowOppValue ? (
+                                    // <ReactApexChart
+                                    //     series={state.oppoValue?.series}
+                                    //     options={state.oppoValue?.options}
+                                    //     className="rounded-lg bg-white dark:bg-black"
+                                    //     type="pie"
+                                    //     height={300}
+                                    //     width={'100%'}
+                                    // />
+                                    <ReactApexChart series={state.oppoValue?.series} options={state.oppoValue?.options} type="donut" height={400} width={'100%'} />
+                                ) : (
+                                    <div className="flex items-center justify-center">No Data Found</div>
+                                )}
+                            </div>
+
+                            <div className="panel flex w-full flex-col p-3">
+                                <div className="mb-2 flex w-full items-center  gap-5">
+                                    <h5 className="text-lg font-semibold dark:text-white-light">Recurring Value</h5>
+                                </div>
+                                {state.isShowOppRec ? (
+                                    // <ReactApexChart
+                                    //     series={state.oppRecValue?.series}
+                                    //     options={state.oppRecValue?.options}
+                                    //     className="rounded-lg bg-white dark:bg-black"
+                                    //     type="pie"
+                                    //     height={300}
+                                    //     width={'100%'}
+                                    // />
+                                    <ReactApexChart series={state.oppRecValue?.series} options={state.oppRecValue?.options} type="donut" height={400} width={'100%'} />
+                                ) : (
+                                    <div className="flex items-center justify-center">No Data Found</div>
+                                )}
+                            </div>
                         </div>
-                        {state.isShowIncom ? (
-                            <ReactApexChart series={state.incommingOpportunity?.series} options={state.incommingOpportunity?.options} type="area" height={325} width={'100%'} />
-                        ) : (
-                            <div className="flex items-center justify-center">No Data Found</div>
-                        )}
-                    </div>
-                </>
+                        <div className="panel mt-3 flex w-full  flex-col p-3">
+                            <div className="mb-2 flex w-full items-center  gap-5">
+                                <h5 className="text-lg font-semibold dark:text-white-light">Incoming Opportunity</h5>
+                            </div>
+                            {state.isShowIncom ? (
+                                <ReactApexChart series={state.incommingOpportunity?.series} options={state.incommingOpportunity?.options} type="area" height={325} width={'100%'} />
+                            ) : (
+                                <div className="flex items-center justify-center">No Data Found</div>
+                            )}
+                        </div>
+                    </>
+                )
             ) : (
                 <div className="mt-2 flex flex-wrap gap-5">
                     <div className="panel flex w-full flex-col items-center justify-center  p-3 ">
@@ -814,6 +1044,9 @@ const Reports = () => {
                     funnelChartCount(true);
                     reportLead(true);
                     reportOpportunity(true);
+                    reportValue(true);
+                    reportIncomValue(true);
+                    reportRecurringValue(true);
                     setState({ isOpen: false });
                 }}
                 submitLoading={state.loading}

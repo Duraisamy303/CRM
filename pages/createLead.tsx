@@ -14,6 +14,7 @@ import IconLoader from '@/components/Icon/IconLoader';
 import { createLeadValidation } from '@/utils/validation.utils';
 import { PrivateRouter, Validation } from '@/utils/imports.utils';
 import * as Yup from 'yup';
+import Breadcrumb from '@/common_component/breadcrumb';
 
 const CreateLead = () => {
     const dispatch = useDispatch();
@@ -209,11 +210,18 @@ const CreateLead = () => {
             setState({ loading: false });
         }
     };
+    const breadcrumbItems = [
+        { label: 'Home', path: '/' },
+        { label: 'Create Lead', path: '' },
+    ];
+
 
     return state.loading ? (
         <CommonLoader />
     ) : (
         <div className="relative h-auto  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <Breadcrumb items={breadcrumbItems} />
+
             <div className="panel  flex  gap-5 ">
                 <div className="flex items-center gap-2">
                     <div className="flex h-[50px] w-[50px] overflow-hidden bg-white" style={{ borderRadius: 50 }}>

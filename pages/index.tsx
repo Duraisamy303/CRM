@@ -1,6 +1,6 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, addCommasToNumber, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, Success,  objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -621,8 +621,8 @@ const Index = () => {
                                         <InputRange STEP={1} MIN={0} MAX={state.maxPrice} values={state.range} handleChanges={(data) => setState({ range: data })} />
                                     </div>
                                     <div className="mt-2 flex w-full items-center justify-between">
-                                        <span className="">{state?.range[0] ? addCommasToNumber(state?.range[0]) : 0}</span>
-                                        <span className="">{state?.range[1] ? addCommasToNumber(state?.range[1]) : addCommasToNumber(state.maxPrice)}</span>
+                                        <span className="">{state?.range[0] ? roundOff(state?.range[0]) : 0}</span>
+                                        <span className="">{state?.range[1] ? roundOff(state?.range[1]) : roundOff(state.maxPrice)}</span>
                                     </div>
                                 </div>
                             </div>

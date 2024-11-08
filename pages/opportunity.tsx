@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { addCommasToNumber, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import {  roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 
@@ -115,8 +115,8 @@ export default function Opportunity() {
                         {state.data?.probability_in_percentage && <ViewLabel label={'Probability In Percentage'} value={state.data?.probability_in_percentage} />}
                         {state.data?.lead && <ViewLabel label={'Lead'} value={state.data?.lead?.name} />}
                         {state.data?.currency_type?.currency_short && <ViewLabel label={'Currency Type'} value={state.data?.currency_type?.currency_short} />}
-                        {state.data?.recurring_value_per_year && <ViewLabel label={'Recurring Value Per Year'} value={addCommasToNumber(state.data?.recurring_value_per_year)} />}
-                        {state.data?.opportunity_value && <ViewLabel label={'Opportunity Value'} value={addCommasToNumber(state.data?.opportunity_value)} />}
+                        {state.data?.recurring_value_per_year && <ViewLabel label={'Recurring Value Per Year'} value={roundOff(state.data?.recurring_value_per_year)} />}
+                        {state.data?.opportunity_value && <ViewLabel label={'Opportunity Value'} value={roundOff(state.data?.opportunity_value)} />}
                         {state.data?.tags?.length > 0 && <ViewLabel label={'Tags'} value={state.data.tags.map((item) => item?.tag).join(', ')} />}
                         {state.data?.closing_date && <ViewLabel label={'Closing Date'} value={state.data?.closing_date} />}
                         {state.data?.created_by && <ViewLabel label={'Created By'} value={state.data?.created_by?.username} />}

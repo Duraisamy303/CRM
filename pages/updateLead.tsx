@@ -16,6 +16,7 @@ import CommonLoader from './elements/commonLoader';
 import IconLoader from '@/components/Icon/IconLoader';
 import * as Yup from 'yup';
 import { PrivateRouter, Validation } from '@/utils/imports.utils';
+import Breadcrumb from '@/common_component/breadcrumb';
 
 const UpdateLead = () => {
     const dispatch = useDispatch();
@@ -245,11 +246,15 @@ const UpdateLead = () => {
         }
     };
 
-
+    const breadcrumbItems = [
+        { label: 'Home', path: '/' },
+        { label: 'Update Lead', path: '' },
+    ];
     return state.loading ? (
         <CommonLoader />
     ) : (
         <div className="relative h-auto overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <Breadcrumb items={breadcrumbItems} />
             
 
             <div className="panel  flex  gap-5 ">

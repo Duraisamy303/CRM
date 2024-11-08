@@ -117,11 +117,10 @@ const Header = () => {
         }
     };
 
-    const getUserData = async (e) => {
+    const getUserData = async () => {
         try {
             const userString = localStorage.getItem('crmUser');
             const user = userString ? JSON.parse(userString) : null;
-            console.log("user: ", user);
             setState({ userInfo:user});
         } catch (error) {
             console.log('error: ', error);

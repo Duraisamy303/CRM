@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, addCommasToNumber, capitalizeFLetter, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, capitalizeFLetter, roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 import { useDispatch } from 'react-redux';
@@ -26,7 +26,7 @@ import LogCard from '@/components/logCard';
 import TextArea from '@/components/TextArea';
 import CustomeDatePicker from '@/common_component/datePicker';
 import moment from 'moment';
-import { leadId } from '@/store/crmConfigSlice';
+import { leadId, oppId } from '@/store/crmConfigSlice';
 import IconEye from '@/components/Icon/IconEye';
 import IconEdit from '@/components/Icon/IconEdit';
 import IconMenuContacts from '@/components/Icon/Menu/IconMenuContacts';
@@ -35,6 +35,7 @@ import IconUserPlus from '@/components/Icon/IconUserPlus';
 import Tippy from '@tippyjs/react';
 import IconOpportunity from '@/components/Icon/IconOpportunity';
 import OppLabel from '@/components/oppLabel';
+import Breadcrumb from '@/common_component/breadcrumb';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -473,11 +474,16 @@ export default function ViewLead() {
             notes: row.note,
         });
     };
-
+    const breadcrumbItems = [
+        { label: 'Home', path: '/' },
+        { label: 'Lead', path: '' },
+    ];
     return state.loading ? (
         <CommonLoader />
     ) : (
         <div className="relative h-auto  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <Breadcrumb items={breadcrumbItems} />
+
             <div className="panel flex items-center justify-between gap-5 pl-3">
                 <div className="flex items-center gap-5">
                     <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Lead)`}</h5>
@@ -504,7 +510,7 @@ export default function ViewLead() {
             {state.contactList?.length > 0 ? (
                 <div className=" mt-2 grid  grid-cols-12  gap-2">
                     <div className=" col-span-8 flex flex-col   md:col-span-8">
-                        <div className="panel flex flex-col gap-2 rounded-2xl p-3 min-h-[345px] ">
+                        <div className="panel flex min-h-[345px] flex-col gap-2 rounded-2xl p-3 ">
                             {/* Header */}
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
@@ -520,7 +526,7 @@ export default function ViewLead() {
                                 {state.data?.company_email && <ViewLabel label="Company Email" value={state.data?.company_email} />}
                                 {state.data?.company_website && <ViewLabel label="Company Website" value={state.data?.company_website} />}
                                 {state.data?.company_number && <ViewLabel label="Company Number" value={state.data?.company_number} />}
-                                {state.data?.annual_revenue && <ViewLabel label="Annual Revenue" value={addCommasToNumber(state.data?.annual_revenue)} />}
+                                {state.data?.annual_revenue && <ViewLabel label="Annual Revenue" value={roundOff(state.data?.annual_revenue)} />}
                                 {state.data?.focus_segment && <ViewLabel label="Focus Segment" value={state.data?.focus_segment?.focus_segment} />}
                                 {state.data?.market_segment && <ViewLabel label="Market Segment" value={state.data?.market_segment?.market_segment} />}
                                 {state.data?.tags?.length > 0 && <ViewLabel label="Tags" value={state.data.tags.map((item) => item?.tag).join(', ')} />}
@@ -549,7 +555,15 @@ export default function ViewLead() {
                         <div className="max-h-[580px] overflow-y-scroll">
                             {state.contactList?.map((item) => (
                                 <div key={item.id} className="mt-3">
-                                    <OppCard data={item} onPress={() => router.push(`/viewContact?id=${item.id}`)} onEdit={() => onEditCantact(item)} onDelete={() => deleteOpp(item.id)} />
+                                    <OppCard
+                                        data={item}
+                                        onPress={() => {
+                                            dispatch(leadId(id));
+                                            router.push(`/viewContact?id=${item.id}`);
+                                        }}
+                                        onEdit={() => onEditCantact(item)}
+                                        onDelete={() => deleteOpp(item.id)}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -578,7 +592,7 @@ export default function ViewLead() {
                             label2="Lead Owner"
                             value2={state.data?.lead_owner?.username}
                             label3=" Annual Revenue"
-                            value3={addCommasToNumber(state.data?.annual_revenue)}
+                            value3={roundOff(state.data?.annual_revenue)}
                         />
                         <OppLabel
                             label1="Company Website"
@@ -665,7 +679,16 @@ export default function ViewLead() {
                                         render: (row: any) => (
                                             <>
                                                 <div className="mx-auto flex w-max items-center gap-4">
-                                                    <button type="button" className="flex hover:text-danger" onClick={() => router.push(`/viewOpportunity?id=${row.id}`)}>
+                                                    <button
+                                                        type="button"
+                                                        className="flex hover:text-danger"
+                                                        onClick={() => {
+                                                            dispatch(oppId(row?.id));
+                                                            dispatch(leadId(id));
+
+                                                            router.push(`/viewOpportunity?id=${row.id}`);
+                                                        }}
+                                                    >
                                                         <IconEye />
                                                     </button>
                                                     <button className="flex hover:text-info" onClick={() => editOppData(row)}>

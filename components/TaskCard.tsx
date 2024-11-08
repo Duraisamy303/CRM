@@ -4,7 +4,6 @@ import moment from 'moment';
 import React from 'react';
 
 const TaskCard = ({ task }) => {
-    console.log("task: ", task);
     return (
         <div className="mb-1 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
             <div className=" flex items-center justify-between">

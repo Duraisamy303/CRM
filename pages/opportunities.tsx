@@ -1,6 +1,6 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, addCommasToNumber, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, Success, convertUrlToFile, getFileNameFromUrl, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -26,6 +26,10 @@ import moment from 'moment';
 import * as Yup from 'yup';
 import IconFileUpload from '@/components/Icon/IconFileUpload';
 import FileUpload from '@/common_component/fileUpload';
+import YearPicker from '@/common_component/yearPicker';
+import CustomYearSelect from '@/common_component/yearPicker';
+import { useDispatch } from 'react-redux';
+import { leadId, oppId } from '@/store/crmConfigSlice';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -33,6 +37,9 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
 
 const Opportunity = () => {
     const router = useRouter();
+
+    const dispatch = useDispatch();
+
 
     const [state, setState] = useSetState({
         data: [],
@@ -70,10 +77,9 @@ const Opportunity = () => {
         maxPrice: 10000000,
         start_date: '',
         end_date: '',
-        file:null
+        file: null,
+        recurring_value_per_year: '',
     });
-    console.log("file: ", state.file);
-
 
     useEffect(() => {
         getData();
@@ -126,11 +132,7 @@ const Opportunity = () => {
             let body = bodyData();
             if (!objIsEmpty(body)) {
                 const response: any = await Models.opportunity.filter(body, page);
-                console.log('response: ', response);
-
                 tableData(response?.results);
-                console.log('response.count !== 0 ? state.currectPage : 0: ', response.count !== 0 ? state.currectPage : 0);
-
                 setState({
                     loading: false,
                     totalRecords: response.count,
@@ -334,6 +336,7 @@ const Opportunity = () => {
             oppLoading: false,
             errors: '',
             createlead: '',
+            file: null,
         });
     };
 
@@ -352,28 +355,26 @@ const Opportunity = () => {
                 lead: state.createlead?.value,
             };
 
-            const body = {
-                lead: state.createlead?.value,
-                name: state.opp_name,
-                owner: state.owner?.value,
-                stage: state.opp_stage?.value,
-                note: state.notes,
-                opportunity_value: state.opportunity_value,
-                recurring_value_per_year: state.recurring_value_per_year,
-                currency_type: state.currency_type?.value,
-                closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
-                probability_in_percentage: state.probability_in_percentage,
-                file: null,
-                created_by: 1,
-                is_active: true,
-            };
+            const formData = new FormData();
 
+            formData.append('lead', state.createlead?.value || '');
+            formData.append('name', state.opp_name || '');
+            formData.append('owner', state.owner?.value || '');
+            formData.append('stage', state.opp_stage?.value || '');
+            formData.append('opportunity_value', state.opportunity_value || '');
+            formData.append('recurring_value_per_year', state.recurring_value_per_year || '');
+            formData.append('currency_type', state.currency_type?.value || '');
+            formData.append('closing_date', state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '');
+            formData.append('probability_in_percentage', state.probability_in_percentage || '');
+            if (state.file && state.file instanceof File) {
+                formData.append('file', state.file); // Make sure to append the file correctly
+            }
             await Validation.createOppValidation.validate(validateField, { abortEarly: false });
             let res;
             if (state.oppId) {
-                res = await Models.opportunity.update(body, state.oppId);
+                res = await Models.opportunity.update(formData, state.oppId);
             } else {
-                res = await Models.opportunity.create(body);
+                res = await Models.opportunity.create(formData);
             }
             setState({ oppLoading: false });
             getData();
@@ -414,21 +415,31 @@ const Opportunity = () => {
         }
     };
 
-    const editOppData = (row) => {
-        setState({
-            oppId: row.id,
-            isOpenOpp: true,
-            opp_name: row.name,
-            owner: { value: row?.owner?.id, label: row?.owner?.username },
-            opportunity_value: row?.opportunity_value,
-            recurring_value_per_year: row?.recurring_value_per_year,
-            currency_type: { value: row?.currency_type?.id, label: row?.currency_type?.currency_short },
-            probability_in_percentage: row.probability_in_percentage,
-            opp_created_by: { value: row?.created_by?.id, label: row?.created_by?.username },
-            opp_closing_date: new Date(row?.closing_date),
-            opp_stage: { value: row?.stage?.id, label: row?.stage?.stage },
-            createlead: { value: row?.lead?.id, label: row?.lead?.name },
-        });
+    const editOppData = async (row) => {
+        try {
+            if (row?.file_url) {
+                const fileName = getFileNameFromUrl(row?.file_url);
+                const files = await convertUrlToFile(row?.file_url, fileName);
+                console.log("files: ", files);
+                setState({ file: files });
+            }
+            setState({
+                oppId: row.id,
+                isOpenOpp: true,
+                opp_name: row.name,
+                owner: { value: row?.owner?.id, label: row?.owner?.username },
+                opportunity_value: row?.opportunity_value,
+                recurring_value_per_year: row?.recurring_value_per_year,
+                currency_type: { value: row?.currency_type?.id, label: row?.currency_type?.currency_short },
+                probability_in_percentage: row.probability_in_percentage,
+                opp_created_by: { value: row?.created_by?.id, label: row?.created_by?.username },
+                opp_closing_date: new Date(row?.closing_date),
+                opp_stage: { value: row?.stage?.id, label: row?.stage?.stage },
+                createlead: { value: row?.lead?.id, label: row?.lead?.name },
+            });
+        } catch (error) {
+            console.log('error: ', error);
+        }
     };
 
     const clearFilter = () => {
@@ -546,7 +557,11 @@ const Opportunity = () => {
                                     render: (row: any) => (
                                         <>
                                             <div className="mx-auto flex w-max items-center gap-4">
-                                                <button type="button" className="flex hover:text-primary" onClick={() => router.push(`/viewOpportunity?id=${row.id}`)}>
+                                                <button type="button" className="flex hover:text-primary" onClick={() => {
+                                                    dispatch(leadId(""))
+                                                    dispatch(oppId(row.id))
+
+                                                    router.push(`/viewOpportunity?id=${row.id}`)}}>
                                                     <IconEye />
                                                 </button>
                                                 <button className="flex hover:text-info" onClick={() => editOppData(row)}>
@@ -588,13 +603,14 @@ const Opportunity = () => {
                 submitLoading={state.oppLoading}
                 renderComponent={() => (
                     <div className="flex flex-col gap-3">
-                        {/* <FileUpload
+                        <FileUpload
                             onFileSelect={(file) => setState({ file })}
                             buttonText="Upload Document"
                             iconSrc="/assets/images/fileUplaod.jpg"
                             accept=".pdf,.doc,.docx,.txt"
                             isImageAllowed={false} // Only allow non-image files
-                        /> */}
+                            value={state.file}
+                        />
                         <CustomSelect
                             title="Lead "
                             value={state.createlead}
@@ -623,14 +639,23 @@ const Opportunity = () => {
                             placeholder={'Opportunity Value'}
                             required
                         />
-                        <NumberInput
+                        <YearPicker
+                            required
+                            error={state.errors?.recurring_value_per_year}
+                            title="Recurring Value Per Year"
+                            value={state.recurring_value_per_year}
+                            onChange={(year) => {
+                                setState({ recurring_value_per_year: year });
+                            }}
+                        />
+                        {/* <CustomYearSelect
                             title="Recurring Value Per Year"
                             value={state.recurring_value_per_year}
                             onChange={(e) => setState({ recurring_value_per_year: e })}
                             placeholder={'Recurring Value Per Year'}
                             error={state.errors?.recurring_value_per_year}
                             required
-                        />
+                        /> */}
                         <CustomSelect
                             title="Stage"
                             value={state.opp_stage}
@@ -646,7 +671,9 @@ const Opportunity = () => {
                         <NumberInput
                             title="Probability In Percentage"
                             value={state.probability_in_percentage}
-                            onChange={(e) => setState({ probability_in_percentage: e })}
+                            onChange={(e) => {
+                                setState({ probability_in_percentage: e });
+                            }}
                             placeholder={'Probability In Percentage'}
                             error={state.errors?.probability_in_percentage}
                             max={100}
@@ -727,8 +754,8 @@ const Opportunity = () => {
                                     <InputRange STEP={1} MIN={0} MAX={state.maxPrice} values={state.range} handleChanges={(data) => setState({ range: data })} />
                                 </div>
                                 <div className="mt-2 flex w-full items-center justify-between">
-                                    <span className="">{state?.range[0] ? addCommasToNumber(state?.range[0]) : 0}</span>
-                                    <span className="">{state?.range[1] ? addCommasToNumber(state?.range[1]) : addCommasToNumber(state.maxPrice)}</span>
+                                    <span className="">{state?.range[0] ? roundOff(state?.range[0]) : 0}</span>
+                                    <span className="">{state?.range[1] ? roundOff(state?.range[1]) : roundOff(state.maxPrice)}</span>
                                 </div>
                             </div>
                         </div>

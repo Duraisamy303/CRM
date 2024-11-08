@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, addCommasToNumber, capitalizeFLetter, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success,  capitalizeFLetter, convertToFormData, convertUrlToFile, getFileNameFromUrl, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setPageTitle } from '../store/themeConfigSlice';
 import IconUser from '@/components/Icon/IconUser';
 import TextInput from '@/components/TextInput';
@@ -30,11 +30,16 @@ import IconEdit from '@/components/Icon/IconEdit';
 import Tippy from '@tippyjs/react';
 import TooltipButton from '@/common_component/tooltipButton';
 import IconAddLog from '@/components/Icon/IconLogPlus';
+import FileUpload from '@/common_component/fileUpload';
+import Breadcrumb from '@/common_component/breadcrumb';
+import { IRootState } from '@/store';
 
 export default function ViewLead() {
     const router = useRouter();
 
     const id = router?.query?.id;
+
+    const redux = useSelector((state: IRootState) => state.crmConfig);
 
     const [state, setState] = useSetState({
         loading: false,
@@ -61,6 +66,7 @@ export default function ViewLead() {
         isOpenLog: false,
         logLoad: false,
         createContactLoad: false,
+        file: null,
     });
 
     useEffect(() => {
@@ -98,6 +104,7 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.log.listByContactId(id);
+            console.log('res: ', res);
             setState({ logList: res?.results, loading: false });
         } catch (error) {
             setState({ loading: false });
@@ -209,19 +216,23 @@ export default function ViewLead() {
                 await Validation.createLog.validate(validateField, { abortEarly: false });
             }
 
-            const body: any = {
-                details: state.details,
-                log_stage: state.logStage?.value,
-                focus_segment: state.focus_segment?.value,
-            };
+            const formData = new FormData();
+            formData.append('details', state.details);
+            formData.append('log_stage', state.logStage?.value);
+            formData.append('focus_segment', state.focus_segment?.value);
+
             if (state.follow_up_date_time) {
-                body.follow_up_date_time = moment(state.follow_up_date_time).format('YYYY-MM-DD');
+                formData.append('follow_up_date_time', moment(state.follow_up_date_time).format('YYYY-MM-DD'));
+            }
+
+            if (state.file && state.file instanceof File) {
+                formData.append('file', state.file); // Make sure to append the file correctly
             }
             if (state.logId) {
-                await Models.log.update(body, state.logId);
+                await Models.log.update(formData, state.logId);
                 Success('Log updated successfully');
             } else {
-                await Models.log.create(body, id);
+                await Models.log.create(formData, id);
                 Success('Log created successfully');
             }
             clearLogData();
@@ -288,7 +299,12 @@ export default function ViewLead() {
         }
     };
 
-    const onEditLog = (item) => {
+    const onEditLog = async (item) => {
+        // if (item?.file_url) {
+        //     const fileName = getFileNameFromUrl(item?.file_url);
+        //     const files = await convertUrlToFile(item?.file_url, fileName);
+        //     setState({ file: files });
+        // }
         setState({
             logId: item.id,
             isOpenLog: true,
@@ -320,13 +336,21 @@ export default function ViewLead() {
             details: '',
             errors: '',
             logLoad: false,
+            file: null,
         });
     };
 
+    const breadcrumbItems = [
+        { label: 'Home', path: '/' },
+        { label: 'Lead', path: `viewLead?id=${redux?.leadId}` },
+        { label: 'Contact', path: '' },
+    ];
     return state.loading ? (
         <CommonLoader />
     ) : (
         <div className="relative h-[100vh]  overflow-scroll bg-[#dbe7ff] bg-cover p-2">
+            <Breadcrumb items={breadcrumbItems} />
+
             <div className="panel  flex items-center justify-between gap-5">
                 <div className="flex items-center gap-5 pl-3">
                     <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Contact)`}</h5>
@@ -426,7 +450,14 @@ export default function ViewLead() {
                         <CustomeDatePicker value={state.follow_up_date_time} title="Follow Up" onChange={(e) => setState({ follow_up_date_time: e })} />
 
                         <TextArea height="150px" value={state.details} onChange={(e) => setState({ details: e })} placeholder={'Details'} title={'Details'} />
-
+                        <FileUpload
+                            onFileSelect={(file) => setState({ file })}
+                            buttonText="Upload Document"
+                            iconSrc="/assets/images/fileUplaod.jpg"
+                            accept=".pdf,.doc,.docx,.txt"
+                            isImageAllowed={false} // Only allow non-image files
+                            value={state.file}
+                        />
                         <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearLogData()}>
                                 Cancel

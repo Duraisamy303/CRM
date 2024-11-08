@@ -1,13 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-const FileUpload = ({ onFileSelect, buttonText = "Upload File", iconSrc, accept = "*/*", isImageAllowed = false }) => {
+const FileUpload = ({ onFileSelect, buttonText = 'Upload File', iconSrc, accept = '*/*', isImageAllowed = false, value }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (value) {
+            setSelectedFile(value);
+        }
+    }, [value]);
 
     // Handle file selection
     const handleFileChange = (event) => {
         const file = event.target.files[0];
-        
+
         if (file) {
             if (!isImageAllowed && file.type.startsWith('image/')) {
                 alert('Only non-image files are allowed.');
@@ -30,12 +36,9 @@ const FileUpload = ({ onFileSelect, buttonText = "Upload File", iconSrc, accept 
     return (
         <div className="flex flex-col items-center">
             {selectedFile ? (
-                <div className="flex items-center space-x-4 bg-gray-100 p-3 rounded-lg">
+                <div className="flex items-center space-x-4 rounded-lg bg-gray-100 p-3">
                     <span className="text-gray-700">{selectedFile.name}</span>
-                    <button
-                        onClick={removeFile}
-                        className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
-                    >
+                    <button onClick={removeFile} className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600">
                         Remove
                     </button>
                 </div>
@@ -49,13 +52,7 @@ const FileUpload = ({ onFileSelect, buttonText = "Upload File", iconSrc, accept 
                 </div>
             )}
             {/* Hidden file input */}
-            <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-                accept={accept}
-            />
+            <input ref={fileInputRef} type="file" onChange={handleFileChange} style={{ display: 'none' }} accept={accept} />
         </div>
     );
 };

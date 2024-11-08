@@ -81,7 +81,11 @@ const opportunity = {
         let promise = new Promise((resolve, reject) => {
             let url = `opportunity/`;
             instance()
-                .post(url, data)
+                .post(url, data, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data', // Explicitly setting Content-Type for multipart form data
+                    },
+                })
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -196,7 +200,11 @@ const opportunity = {
             let url = `/opportunity/${id}/`;
 
             instance()
-                .put(url, data)
+                .put(url, data, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data', // Explicitly setting Content-Type for multipart form data
+                    },
+                })
                 .then((res) => {
                     resolve(res.data);
                 })

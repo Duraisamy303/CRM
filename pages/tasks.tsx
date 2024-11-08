@@ -1,6 +1,6 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, addCommasToNumber, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, Success,  objIsEmpty, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -535,7 +535,9 @@ const Tasks = () => {
                                         accessor: 'description',
                                         render: (row: any) => (
                                             <>
-                                                <ReadMore charLimit={40}>{row?.description}</ReadMore>
+                                                <Tippy content={row?.description} className="rounded-lg bg-white p-2 text-sm shadow-lg">
+                                                    <div>{row?.description?.length > 20 ? row?.description?.substring(0, 20) + '...' : row?.description}</div>
+                                                </Tippy>
                                             </>
                                         ),
                                     },
