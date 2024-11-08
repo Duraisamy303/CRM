@@ -40,7 +40,6 @@ const Opportunity = () => {
 
     const dispatch = useDispatch();
 
-
     const [state, setState] = useSetState({
         data: [],
         loading: false,
@@ -368,6 +367,8 @@ const Opportunity = () => {
             formData.append('probability_in_percentage', state.probability_in_percentage || '');
             if (state.file && state.file instanceof File) {
                 formData.append('file', state.file); // Make sure to append the file correctly
+            } else {
+                formData.append('file', ''); // Make sure to append the file correctly
             }
             await Validation.createOppValidation.validate(validateField, { abortEarly: false });
             let res;
@@ -420,7 +421,7 @@ const Opportunity = () => {
             if (row?.file_url) {
                 const fileName = getFileNameFromUrl(row?.file_url);
                 const files = await convertUrlToFile(row?.file_url, fileName);
-                console.log("files: ", files);
+                console.log('files: ', files);
                 setState({ file: files });
             }
             setState({
@@ -557,11 +558,16 @@ const Opportunity = () => {
                                     render: (row: any) => (
                                         <>
                                             <div className="mx-auto flex w-max items-center gap-4">
-                                                <button type="button" className="flex hover:text-primary" onClick={() => {
-                                                    dispatch(leadId(""))
-                                                    dispatch(oppId(row.id))
+                                                <button
+                                                    type="button"
+                                                    className="flex hover:text-primary"
+                                                    onClick={() => {
+                                                        dispatch(leadId(''));
+                                                        dispatch(oppId(row.id));
 
-                                                    router.push(`/viewOpportunity?id=${row.id}`)}}>
+                                                        router.push(`/viewOpportunity?id=${row.id}`);
+                                                    }}
+                                                >
                                                     <IconEye />
                                                 </button>
                                                 <button className="flex hover:text-info" onClick={() => editOppData(row)}>

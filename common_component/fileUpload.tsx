@@ -36,9 +36,9 @@ const FileUpload = ({ onFileSelect, buttonText = 'Upload File', iconSrc, accept 
     return (
         <div className="flex flex-col items-center">
             {selectedFile ? (
-                <div className="flex items-center space-x-4 rounded-lg bg-gray-100 p-3">
+                <div className="flex items-center space-x-4 rounded-lg  p-3">
                     <span className="text-gray-700">{selectedFile.name}</span>
-                    <button onClick={removeFile} className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600">
+                    <button onClick={removeFile} className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600" style={{ backgroundColor: 'red' }}>
                         Remove
                     </button>
                 </div>

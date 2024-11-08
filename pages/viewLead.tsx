@@ -80,7 +80,7 @@ export default function ViewLead() {
         opp_stage: '',
         oppLoading: false,
         ownerList: [],
-        file:null
+        file: null,
     });
 
     useEffect(() => {
@@ -396,6 +396,8 @@ export default function ViewLead() {
             formData.append('probability_in_percentage', state.probability_in_percentage || '');
             if (state.file && state.file instanceof File) {
                 formData.append('file', state.file);
+            } else {
+                formData.append('file', ''); // Make sure to append the file correctly
             }
             await Validation.createOppsValidation.validate(validateField, { abortEarly: false });
             let res;
@@ -472,15 +474,15 @@ export default function ViewLead() {
             isOpenOpp: false,
             oppLoading: false,
             errors: '',
-            file:null
+            file: null,
         });
     };
 
-    const editOppData = async(row) => {
+    const editOppData = async (row) => {
         if (row?.file_url) {
             const fileName = getFileNameFromUrl(row?.file_url);
             const files = await convertUrlToFile(row?.file_url, fileName);
-            console.log("files: ", files);
+            console.log('files: ', files);
             setState({ file: files });
         }
         setState({
@@ -514,7 +516,7 @@ export default function ViewLead() {
         { label: 'Home', path: '/' },
         { label: 'Lead', path: '' },
     ];
-    
+
     return state.loading ? (
         <CommonLoader />
     ) : (
@@ -706,7 +708,7 @@ export default function ViewLead() {
                                     },
                                     { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value' },
                                     { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
-                                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring (Year) '},
+                                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring (Year) ' },
                                     { accessor: 'stages', sortable: true, title: 'Stage', width: '220px' },
                                     { accessor: 'currency', sortable: true, title: 'Currency Type' },
                                     { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
@@ -981,7 +983,7 @@ export default function ViewLead() {
                 close={() => clearOppData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-3">
-                         <FileUpload
+                        <FileUpload
                             onFileSelect={(file) => setState({ file })}
                             buttonText="Upload Document"
                             iconSrc="/assets/images/fileUplaod.jpg"
@@ -1016,7 +1018,7 @@ export default function ViewLead() {
                             error={state.errors?.recurring_value_per_year}
                             required
                         /> */}
-                          <YearPicker
+                        <YearPicker
                             required
                             error={state.errors?.recurring_value_per_year}
                             title="Recurring Value Per Year"
@@ -1034,7 +1036,7 @@ export default function ViewLead() {
                             required
                             error={state.errors?.opp_stage}
                         /> */}
-                          <CustomSelect
+                        <CustomSelect
                             title="Stage"
                             value={state.opp_stage}
                             onChange={(e) => {

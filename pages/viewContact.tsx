@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success,  capitalizeFLetter, convertToFormData, convertUrlToFile, getFileNameFromUrl, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, capitalizeFLetter, convertToFormData, convertUrlToFile, getFileNameFromUrl, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 
@@ -227,6 +227,8 @@ export default function ViewLead() {
 
             if (state.file && state.file instanceof File) {
                 formData.append('file', state.file); // Make sure to append the file correctly
+            } else {
+                formData.append('file', ''); // Make sure to append the file correctly
             }
             if (state.logId) {
                 await Models.log.update(formData, state.logId);
