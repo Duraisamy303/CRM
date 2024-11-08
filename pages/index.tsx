@@ -1,6 +1,6 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success,  objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, Success, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -452,17 +452,35 @@ const Index = () => {
                                     columns={[
                                         {
                                             accessor: 'name',
+                                            width:130
+                                            // render: (row, index) => (
+                                            //     <>
+                                            //         <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row?.name}</div>
+                                            //          {row.tags?.length > 0 &&
+                                            //             row.tags?.map((item) => (
+                                            //                 <div className="flex gap-2 p-0.5">
+                                            //                     <div>
+                                            //                         <Chip label={item.tag} />
+                                            //                     </div>
+                                            //                 </div>
+                                            //             ))}
+                                            //     </>
+                                            // ),
+                                        },
+                                        {
+                                            accessor: 'Tags',
+                                            width:150,
+
                                             render: (row, index) => (
                                                 <>
-                                                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row?.name}</div>
-                                                    {/* {row.tags?.length > 0 &&
+                                                    {row.tags?.length > 0 &&
                                                         row.tags?.map((item) => (
                                                             <div className="flex gap-2 p-0.5">
                                                                 <div>
                                                                     <Chip label={item.tag} />
                                                                 </div>
                                                             </div>
-                                                        ))} */}
+                                                        ))}
                                                 </>
                                             ),
                                         },
@@ -470,31 +488,21 @@ const Index = () => {
                                         {
                                             accessor: 'focus_segment',
                                             title: 'Focus Segment',
-                                            render: (row, index) => (
-                                                <>
-                                                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row.focus_segment}</div>
-                                                </>
-                                            ),
                                         },
 
                                         {
                                             accessor: 'annual_revenue',
 
                                             title: 'Annual Revenue',
-                                            render: (row, index) => (
-                                                <>
-                                                    <div>{roundOff(row.annual_revenue)}</div>
-                                                </>
-                                            ),
                                         },
                                         { accessor: 'lead_owner', title: 'Lead Owner' },
+                                        
                                         { accessor: 'country', width: '120px' },
                                         { accessor: 'state', title: 'State' },
                                         {
                                             accessor: 'created_on',
-
                                             title: 'Date',
-                                            render: (row) => <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden', width: '100px' }}>{row.created_on}</div>,
+                                            width:130
                                         },
 
                                         {
