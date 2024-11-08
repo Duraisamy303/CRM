@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CommonLoader from './elements/commonLoader';
-import { Dropdown, Success, capitalizeFLetter, roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, capitalizeFLetter, convertUrlToFile, getFileNameFromUrl, roundOff, showDeleteAlert, useSetState } from '@/utils/functions.utils';
 import { useRouter } from 'next/router';
 import Models from '@/imports/models.import';
 import { useDispatch } from 'react-redux';
@@ -36,6 +36,8 @@ import Tippy from '@tippyjs/react';
 import IconOpportunity from '@/components/Icon/IconOpportunity';
 import OppLabel from '@/components/oppLabel';
 import Breadcrumb from '@/common_component/breadcrumb';
+import YearPicker from '@/common_component/yearPicker';
+import FileUpload from '@/common_component/fileUpload';
 
 export default function ViewLead() {
     const router = useRouter();
@@ -78,6 +80,7 @@ export default function ViewLead() {
         opp_stage: '',
         oppLoading: false,
         ownerList: [],
+        file:null
     });
 
     useEffect(() => {
@@ -365,27 +368,41 @@ export default function ViewLead() {
                 probability_in_percentage: state.probability_in_percentage,
             };
 
-            const body = {
-                lead: id,
-                name: state.opp_name,
-                owner: state.owner?.value,
-                stage: state.opp_stage?.value,
-                opportunity_value: state.opportunity_value,
-                recurring_value_per_year: state.recurring_value_per_year,
-                currency_type: state.currency_type?.value,
-                closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
-                probability_in_percentage: state.probability_in_percentage,
-                file: null,
-                created_by: 1,
-                is_active: true,
-            };
+            // const body = {
+            //     lead: id,
+            //     name: state.opp_name,
+            //     owner: state.owner?.value,
+            //     stage: state.opp_stage?.value,
+            //     opportunity_value: state.opportunity_value,
+            //     recurring_value_per_year: state.recurring_value_per_year,
+            //     currency_type: state.currency_type?.value,
+            //     closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
+            //     probability_in_percentage: state.probability_in_percentage,
+            //     file: null,
+            //     created_by: 1,
+            //     is_active: true,
+            // };
 
+            const formData = new FormData();
+
+            formData.append('lead', state.createlead?.value || '');
+            formData.append('name', state.opp_name || '');
+            formData.append('owner', state.owner?.value || '');
+            formData.append('stage', state.opp_stage?.value || '');
+            formData.append('opportunity_value', state.opportunity_value || '');
+            formData.append('recurring_value_per_year', state.recurring_value_per_year || '');
+            formData.append('currency_type', state.currency_type?.value || '');
+            formData.append('closing_date', state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '');
+            formData.append('probability_in_percentage', state.probability_in_percentage || '');
+            if (state.file && state.file instanceof File) {
+                formData.append('file', state.file);
+            }
             await Validation.createOppsValidation.validate(validateField, { abortEarly: false });
             let res;
             if (state.oppId) {
-                res = await Models.opportunity.update(body, state.oppId);
+                res = await Models.opportunity.update(formData, state.oppId);
             } else {
-                res = await Models.opportunity.create(body);
+                res = await Models.opportunity.create(formData);
             }
             setState({ oppLoading: false });
             getOpportunityList();
@@ -455,10 +472,17 @@ export default function ViewLead() {
             isOpenOpp: false,
             oppLoading: false,
             errors: '',
+            file:null
         });
     };
 
-    const editOppData = (row) => {
+    const editOppData = async(row) => {
+        if (row?.file_url) {
+            const fileName = getFileNameFromUrl(row?.file_url);
+            const files = await convertUrlToFile(row?.file_url, fileName);
+            console.log("files: ", files);
+            setState({ file: files });
+        }
         setState({
             oppId: row.id,
             isOpenOpp: true,
@@ -474,10 +498,23 @@ export default function ViewLead() {
             notes: row.note,
         });
     };
+
+    const getProbabilityPercentage = async (e) => {
+        try {
+            if (e) {
+                const res: any = await Models.opportunity.getProbabilityPercentage(e?.value);
+                setState({ probability_in_percentage: res.probability });
+            } else {
+                setState({ probability_in_percentage: '' });
+            }
+        } catch (error) {}
+    };
+
     const breadcrumbItems = [
         { label: 'Home', path: '/' },
         { label: 'Lead', path: '' },
     ];
+    
     return state.loading ? (
         <CommonLoader />
     ) : (
@@ -668,8 +705,8 @@ export default function ViewLead() {
                                         width: '220px',
                                     },
                                     { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value' },
-                                    { accessor: 'probability_in_percentage', sortable: true, title: 'Probability In Percentage' },
-                                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value Per Year' },
+                                    { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
+                                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring (Year) '},
                                     { accessor: 'stages', sortable: true, title: 'Stage', width: '220px' },
                                     { accessor: 'currency', sortable: true, title: 'Currency Type' },
                                     { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
@@ -944,6 +981,14 @@ export default function ViewLead() {
                 close={() => clearOppData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-3">
+                         <FileUpload
+                            onFileSelect={(file) => setState({ file })}
+                            buttonText="Upload Document"
+                            iconSrc="/assets/images/fileUplaod.jpg"
+                            accept=".pdf,.doc,.docx,.txt"
+                            isImageAllowed={false} // Only allow non-image files
+                            value={state.file}
+                        />
                         <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />
                         <CustomSelect
                             title="Lead Owner"
@@ -963,18 +1008,39 @@ export default function ViewLead() {
                             required
                         />
 
-                        <NumberInput
+                        {/* <NumberInput
                             title="Recurring Value Per Year"
                             value={state.recurring_value_per_year}
                             onChange={(e) => setState({ recurring_value_per_year: e })}
                             placeholder={'Recurring Value Per Year'}
                             error={state.errors?.recurring_value_per_year}
                             required
+                        /> */}
+                          <YearPicker
+                            required
+                            error={state.errors?.recurring_value_per_year}
+                            title="Recurring Value Per Year"
+                            value={state.recurring_value_per_year}
+                            onChange={(year) => {
+                                setState({ recurring_value_per_year: year });
+                            }}
                         />
-                        <CustomSelect
+                        {/* <CustomSelect
                             title="Stage"
                             value={state.opp_stage}
                             onChange={(e) => setState({ opp_stage: e })}
+                            placeholder={'Stage'}
+                            options={state.stageList}
+                            required
+                            error={state.errors?.opp_stage}
+                        /> */}
+                          <CustomSelect
+                            title="Stage"
+                            value={state.opp_stage}
+                            onChange={(e) => {
+                                setState({ opp_stage: e });
+                                getProbabilityPercentage(e);
+                            }}
                             placeholder={'Stage'}
                             options={state.stageList}
                             required
