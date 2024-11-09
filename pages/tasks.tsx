@@ -1,6 +1,6 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success,  objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, Success, objIsEmpty, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -102,11 +102,15 @@ const Tasks = () => {
 
     useEffect(() => {
         if (filters()) {
-            filterData();
+            filterData(state.currentPage);
         } else {
             getData(state.currentPage);
         }
     }, [state.currentPage, debouncedSearch, state.start_date, state.end_date]);
+
+    useEffect(() => {
+        setState({ currentPage: 1 });
+    }, [debouncedSearch, state.start_date, state.end_date]);
 
     const getData = async (page = 1) => {
         try {
@@ -288,7 +292,7 @@ const Tasks = () => {
                 contact: item?.contact?.name,
                 category: item.category,
                 created_by: item?.created_by?.username,
-                date: moment(item?.task_date_time).format("YYYY-MM-DD"),
+                date: moment(item?.task_date_time).format('YYYY-MM-DD'),
                 description: item?.task_detail ? item?.task_detail : '',
                 assigned_to: item?.assigned_to?.length > 0 ? item?.assigned_to?.map((item) => item?.username).join(', ') : item.created_by?.username,
             };
@@ -763,7 +767,7 @@ const Tasks = () => {
                 open={state.isOpen}
                 close={() => setState({ isOpen: false })}
                 cancelOnClick={() => clearFilter()}
-                submitOnClick={() => filterData()}
+                submitOnClick={() => filterData(state.currectPage)}
                 submitLoading={state.loading}
                 canceTitle="Reset"
                 renderComponent={() => (

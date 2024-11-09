@@ -94,11 +94,15 @@ const Opportunity = () => {
 
     useEffect(() => {
         if (filters()) {
-            filterData();
+            filterData(state.currentPage);
         } else {
             getData(state.currentPage);
         }
     }, [state.currentPage, debouncedSearch, state.vertical, state.focus, state.lead, state.stage]);
+
+    useEffect(() => {
+        setState({ currentPage: 1 });
+    }, [ debouncedSearch, state.vertical, state.focus, state.lead, state.stage]);
 
     const getData = async (page = 1) => {
         try {
@@ -138,7 +142,6 @@ const Opportunity = () => {
                     next: response.next,
                     previous: response.previous,
                     isOpen: false,
-                    currectPage: response.count !== 0 ? state.currectPage : 0,
                 });
             } else {
                 getData();
@@ -743,7 +746,7 @@ const Opportunity = () => {
                 open={state.isOpen}
                 close={() => setState({ isOpen: false })}
                 cancelOnClick={() => clearFilter()}
-                submitOnClick={() => filterData()}
+                submitOnClick={() => filterData(state.currectPage)}
                 submitLoading={state.loading}
                 canceTitle="Reset"
                 renderComponent={() => (

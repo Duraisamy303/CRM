@@ -79,11 +79,15 @@ const Index = () => {
 
     useEffect(() => {
         if (filters()) {
-            filterData();
+            filterData(state.currentPage);
         } else {
             getData(state.currentPage);
         }
     }, [state.currentPage, debouncedSearch, state.vertical, state.focus, state.market]);
+
+    useEffect(() => {
+        setState({ currentPage: 1 });
+    }, [debouncedSearch, state.vertical, state.focus, state.market]);
 
     const getData = async (page = 1) => {
         try {
@@ -116,7 +120,6 @@ const Index = () => {
             let body = bodyData();
             if (!objIsEmpty(body)) {
                 const response: any = await Models.lead.filter(body, page);
-                // setState({ range: [response.min_revenue, response.max_revenue], maxPrice: response.max_revenue });
 
                 tableData(response?.results);
 
@@ -600,7 +603,7 @@ const Index = () => {
                     open={state.isOpen}
                     close={() => setState({ isOpen: false })}
                     cancelOnClick={() => clearFilter()}
-                    submitOnClick={() => filterData()}
+                    submitOnClick={() => filterData(state.currentPage)}
                     submitLoading={state.loading}
                     canceTitle="Reset"
                     renderComponent={() => (
