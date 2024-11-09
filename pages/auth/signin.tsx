@@ -54,7 +54,6 @@ const LoginBoxed = () => {
                 };
                 await validationSchema.validate(body, { abortEarly: false });
                 const res: any = await Models.auth.login(body);
-                console.log('res: ', res);
                 localStorage.setItem('crmToken', res.access);
                 localStorage.setItem('crmUser', JSON.stringify(res.user));
                 setState({ loading: false, error: {} });

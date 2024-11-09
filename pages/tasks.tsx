@@ -447,7 +447,6 @@ const Tasks = () => {
         });
         getData();
     };
-    console.log('state.loading: ', state.loading);
 
     return (
         <div className="p-2">

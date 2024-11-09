@@ -54,8 +54,8 @@ const CustomSelect = (props: SelectProps) => {
                     isMulti={isMulti}
                     isClearable={true}
                     styles={customStyles}
-                    onMenuOpen={() => menuOpen(true)} 
-                    onMenuClose={() => menuOpen(false)}
+                    onMenuOpen={() => menuOpen && menuOpen(true)}
+                    onMenuClose={() => menuOpen && menuOpen(false)}
                     className={`react-select   ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
                     // classNamePrefix="react-select" // Adds a prefix for custom styles
                     // styles={{

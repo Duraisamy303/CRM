@@ -1,7 +1,6 @@
 import React from 'react';
 import IconEdit from './Icon/IconEdit';
 import IconTrash from './Icon/IconTrash';
-// import { FaEdit, FaTrash } from 'react-icons/fa'; // Import icons from react-icons
 
 const DummyUserIcon = () => (
     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,12 +16,10 @@ const OppCard = (props: any) => {
         <div
             className={`w-100 cursor-pointer rounded-lg border border-l-4 ${borderColor} border-gray-300 bg-white p-4 shadow-md flex`}
         >
-            {/* Logo on the Left Top */}
             <div className="mr-4 flex h-[40px] w-[40px] flex-shrink-0 items-center justify-center rounded-3xl bg-yellow-500 p-3">
                 <DummyUserIcon />
             </div>
 
-            {/* Main Content */}
             <div className="flex flex-col gap-1 flex-grow" onClick={onPress}>
                 <h3 className="text-lg font-semibold text-gray-800">{data?.name}</h3>
                 <div className="flex gap-2">
@@ -39,20 +36,14 @@ const OppCard = (props: any) => {
                 </div>
             </div>
 
-            {/* Icon Container */}
             <div className="mt-4 flex justify-end gap-2">
                 <button
                     className="flex items-center text-blue-500 hover:text-blue-700"
-                    onClick={onEdit} // Edit action
+                    onClick={onEdit}
                 >
                     <IconEdit />
                 </button>
-                {/* <button
-                    className="flex items-center text-red-500 hover:text-red-700 "
-                    onClick={onDelete} // Delete action
-                >
-                    <IconTrash />
-                </button> */}
+                
             </div>
         </div>
     );

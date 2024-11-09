@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import ReadMore from '@/common_component/readMore';
 import IconEdit from './Icon/IconEdit';
+import { getFileNameFromUrl } from '@/utils/functions.utils';
 
 const Timeline = (props: any) => {
     const { data, onEdit, onDelete, editIcon } = props;
@@ -27,23 +28,27 @@ const Timeline = (props: any) => {
                                             <strong>Follow-up Date:</strong> {moment(item.follow_up_date_time).format('MMMM DD, YYYY')}
                                         </p>
                                     )}
+                                    {item?.file_url && (
+                                        <p className=" flex text-sm">
+                                            <strong>File:</strong>
+                                            <div className="cursor-pointer text-primary underline" onClick={() => window.open(item?.file_url, '_blank')}>
+                                                {' '}
+                                                {getFileNameFromUrl(item?.file_url)}
+                                            </div>
+                                        </p>
+                                    )}
                                     {item?.details && (
                                         <p className=" flex text-sm">
                                             <strong>Details:</strong>
                                             <ReadMore children={item?.details} />
                                         </p>
                                     )}
+
                                     {editIcon && (
                                         <div className="mt-2 flex justify-end">
                                             <button className="flex items-center text-blue-500 hover:text-blue-700" onClick={() => onEdit(item)}>
                                                 <IconEdit className="mr-1 h-5 w-5" />
                                             </button>
-                                            {/* <button
-                                                className="flex items-center text-red-500 hover:text-red-700"
-                                                onClick={onDelete}
-                                            >
-                                                <IconTrash className="h-5 w-5" />
-                                            </button> */}
                                         </div>
                                     )}
                                 </div>

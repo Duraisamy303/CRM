@@ -30,7 +30,7 @@ const CustomeDatePicker = (props: any) => {
                     showTimeSelect
                     dateFormat="Pp"
                     name={name}
-                    customInput={<CustomInput />} // Custom input used for styling
+                    customInput={<CustomInput />} 
                     required={required}
                     {...rest}
                 />

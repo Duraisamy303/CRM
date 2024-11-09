@@ -17,7 +17,6 @@ const Timeline = (props: any) => {
                                 <div className="mt-4 w-full rounded-lg border border-gray-200 bg-white p-4  shadow-lg" >
                                     <h3 className="text-lg font-semibold text-blue-700">{item?.stage}</h3>
                                     <p className="text-sm">
-                                        {/* <strong>Contact:</strong>  */}
                                         {item?.opportunity?.name}
                                     </p>
                                     <p className="text-sm">

@@ -28,7 +28,7 @@ const TextArea = (props: any) => {
                 placeholder={placeholder}
                 name={name}
                 rows={rows}
-                className={`form-textarea ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
+                className={`form-textarea ${className} ${error ? 'border-red-500' : ''}`} 
                 required={required}
                 style={{ height }}
                 {...rest}

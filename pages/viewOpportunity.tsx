@@ -85,7 +85,6 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.opportunity.details(id);
-            console.log('res: ', res);
             dispatch(oppId(res.id));
             dispatch(leadId(redux.leadId));
 
@@ -103,9 +102,9 @@ export default function ViewLead() {
             setState({ noteLoad: true });
             if (state.noteId) {
                 const body = {
-                    note_by: 4, // Need to change token id
                     opportunity_id: id,
                     note: state.note,
+                    note_by: state.noteId,
                 };
 
                 await Validation.createNote.validate(body, { abortEarly: false });
@@ -113,10 +112,8 @@ export default function ViewLead() {
                 Success('Note updated successfully');
                 setState({ isOpenAddNote: false, note: '', errors: '', noteLoad: false, noteId: '' });
                 notesList();
-                setState({ noteLoad: false });
             } else {
                 const body = {
-                    note_by: 4, // Need to change token id
                     opportunity_id: id,
                     note: state.note,
                 };
@@ -126,13 +123,12 @@ export default function ViewLead() {
                 Success('Note added successfully');
                 setState({ isOpenAddNote: false, note: '', errors: '', noteLoad: false });
                 notesList();
-                setState({ noteLoad: false });
             }
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 const validationErrors = {};
                 error.inner.forEach((err) => {
-                    validationErrors[err.path] = err?.message; // Set the error message for each field
+                    validationErrors[err.path] = err?.message;
                 });
                 setState({ errors: validationErrors });
                 setState({ noteLoad: false });
@@ -334,13 +330,13 @@ export default function ViewLead() {
             <Modal
                 open={state.isOpenAddNote}
                 addHeader={state.noteId ? 'Update Note' : 'Add Note'}
-                close={() => setState({ isOpenAddNote: false, note: '', errors: '', noteId: '' })}
+                close={() => setState({ isOpenAddNote: false, note: '', errors: '', noteId: '', noteLoad: false })}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 p-5">
                         <TextArea height="150px" value={state.note} onChange={(e) => setState({ note: e })} placeholder={'Notes'} error={state.errors?.note} />
 
                         <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => setState({ isOpenAddNote: false, note: '', errors: '', noteId: '' })}>
+                            <button type="button" className="btn btn-outline-danger border " onClick={() => setState({ isOpenAddNote: false, note: '', errors: '', noteId: '', noteLoad: false })}>
                                 Cancel
                             </button>
                             <button type="button" className="btn btn-primary" onClick={() => createAndUpdateNote()}>

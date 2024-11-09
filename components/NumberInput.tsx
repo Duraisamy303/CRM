@@ -11,12 +11,12 @@ const NumberInput = (props: any) => {
                 </label>
             )}
             <input
-                type="number" // Ensuring the input is set to accept only numbers
+                type="number" 
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 name={name}
-                className={`form-input ${className} ${error ? 'border-red-500' : ''}`} // Conditional styling for errors
+                className={`form-input ${className} ${error ? 'border-red-500' : ''}`} 
                 required={required}
                 min={min} 
                 max={max}

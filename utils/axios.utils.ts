@@ -8,7 +8,7 @@ export const instance = () => {
   data.interceptors.request.use(async function (config) {
     const accessToken = localStorage.getItem('crmToken');
     if (accessToken) {
-      config.headers['authorization'] = `Bearer ${accessToken}`; // Correct Bearer token format
+      config.headers['authorization'] = `Bearer ${accessToken}`;
     }
     return config;
   });

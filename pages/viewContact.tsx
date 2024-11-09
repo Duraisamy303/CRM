@@ -104,7 +104,6 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.log.listByContactId(id);
-            console.log('res: ', res);
             setState({ logList: res?.results, loading: false });
         } catch (error) {
             setState({ loading: false });
@@ -179,16 +178,11 @@ export default function ViewLead() {
         showDeleteAlert(
             async () => {
                 try {
-                    // Call your delete API function here, e.g., await deleteOpportunity(id);
-                    // Assume the delete operation is successful
                     notifySuccess('Opportunity deleted successfully.');
 
-                    // Optionally, you might want to update your state or list of opportunities here
 
-                    // Show success alert
                     Swal.fire('Deleted!', 'Your opportunity has been deleted.', 'success');
                 } catch (error) {
-                    // Handle the error case
                     notifyError('An error occurred while deleting the opportunity.');
                     Swal.fire('Error!', 'An error occurred while deleting the opportunity.', 'error');
                 }
@@ -203,18 +197,11 @@ export default function ViewLead() {
     const createAndLog = async () => {
         try {
             setState({ logLoad: true });
-            // if (state.logId) {
                 let validateField = {
                     logStage: state.logStage?.value,
                 };
                 await Validation.updateLog.validate(validateField, { abortEarly: false });
-            // } else {
-            //     let validateField = {
-            //         logStage: state.logStage?.value,
-            //         focus_segment: state.focus_segment?.value,
-            //     };
-            //     await Validation.createLog.validate(validateField, { abortEarly: false });
-            // }
+          
 
             const formData = new FormData();
             formData.append('details', state.details);
@@ -226,9 +213,9 @@ export default function ViewLead() {
             }
 
             if (state.file && state.file instanceof File) {
-                formData.append('file', state.file); // Make sure to append the file correctly
+                formData.append('file', state.file); 
             } else {
-                formData.append('file', ''); // Make sure to append the file correctly
+                formData.append('file', ''); 
             }
             if (state.logId) {
                 await Models.log.update(formData, state.logId);
@@ -243,7 +230,7 @@ export default function ViewLead() {
             if (error instanceof Yup.ValidationError) {
                 const validationErrors = {};
                 error.inner.forEach((err) => {
-                    validationErrors[err.path] = err?.message; // Set the error message for each field
+                    validationErrors[err.path] = err?.message; 
                 });
                 setState({ errors: validationErrors });
                 setState({ logLoad: false });
@@ -358,12 +345,9 @@ export default function ViewLead() {
                     <h5 className="text-lg font-semibold dark:text-white-light">{`${capitalizeFLetter(state.data?.name)} (Contact)`}</h5>
                 </div>
                 {state.logList?.length == 0 && (
-                    // <TooltipButton onClick={() => setState({ isOpenLog: true })} icon={<IconAddLog />} tipTitle="Add Log" />
-                    // <Tippy content="Add Log" placement="top" className="rounded-lg bg-black p-1 text-sm text-white">
                     <button type="button" className="btn btn-primary " onClick={() => setState({ isOpenLog: true })}>
                         Add Log
                     </button>
-                    // </Tippy>
                 )}
             </div>
             <div className=" mt-2 grid grid-cols-12  gap-2">
@@ -417,29 +401,7 @@ export default function ViewLead() {
                 close={() => clearLogData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 p-5">
-                        {/* {!state.logId && (
-                            <div className="flex flex-col gap-5 ">
-                                <CustomSelect
-                                    title="Focus Segment"
-                                    value={state.focus_segment}
-                                    onChange={(e) => setState({ focus_segment: e })}
-                                    placeholder={'Focus Segment'}
-                                    options={state.focusSegmentList}
-                                    required
-                                    error={state.errors?.focus_segment}
-                                /> */}
-
-                                {/* <CustomSelect
-                                    title="Created By"
-                                    value={state.logCreatedBy}
-                                    onChange={(e) => setState({ logCreatedBy: e })}
-                                    placeholder={'Created By'}
-                                    options={state.createdByList}
-                                    error={state.errors?.createdby}
-                                    required
-                                /> */}
-                            {/* </div>
-                        )} */}
+                       
                         <CustomSelect
                             title="Log Stage"
                             value={state.logStage}
@@ -457,7 +419,7 @@ export default function ViewLead() {
                             buttonText="Upload Document"
                             iconSrc="/assets/images/fileUplaod.jpg"
                             accept=".pdf,.doc,.docx,.txt"
-                            isImageAllowed={false} // Only allow non-image files
+                            isImageAllowed={false}
                             value={state.file}
                         />
                         <div className="mt-3 flex items-center justify-end gap-3">
@@ -471,62 +433,6 @@ export default function ViewLead() {
                     </div>
                 )}
             />
-
-            {/* <Modal
-                open={state.isOpenEdit}
-                addHeader={'Update Contact'}
-                close={() => clearContactData()}
-                renderComponent={() => (
-                    <div className="flex flex-col gap-5 p-5">
-                        <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.name} required />
-                        <TextInput title="Designation" value={state.designation} onChange={(e) => setState({ designation: e })} placeholder={'Designation'} error={state.errors?.name} required />
-                        <TextInput title="Department" value={state.department} onChange={(e) => setState({ department: e })} placeholder={'Department'} error={state.errors?.department} required />
-                        <NumberInput title="Phone Number" value={state.phoneNumber} onChange={(e) => setState({ phoneNumber: e })} placeholder={'Phone Number'} required />
-                        <TextInput title="Email" value={state.email} onChange={(e) => setState({ email: e })} placeholder={'Email'} error={state.errors?.email} required />
-                        <CustomSelect
-                            title="Lead Source"
-                            value={state.lead_source}
-                            onChange={(e) => setState({ lead_source: e })}
-                            placeholder={'Lead Source'}
-                            options={state.leadSourceList}
-                            error={state.errors?.lead_source}
-                            required
-                        />{' '}
-                        <CustomSelect
-                            title="Created By"
-                            value={state.createdby}
-                            onChange={(e) => setState({ createdby: e })}
-                            placeholder={'Created By'}
-                            options={state.createdByList}
-                            error={state.errors?.createdby}
-                            required
-                        />
-                        <CustomSelect
-                            title="Contact Status"
-                            value={state.contact_status}
-                            onChange={(e) => setState({ contact_status: e })}
-                            placeholder={'Contact Status'}
-                            options={state.statusList}
-                            error={state.errors?.lead_status}
-                            required
-                        />
-                        <div className="  w-full">
-                            <div className="">
-                                <label className="block text-sm font-medium text-gray-700">Status</label>
-                                <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
-                            </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => updateContact()}>
-                                {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div>
-                    </div>
-                )}
-            /> */}
 
             <SideMenu
                 open={state.isOpenEdit}
@@ -574,14 +480,6 @@ export default function ViewLead() {
                             error={state.errors?.contact_status}
                             required
                         />
-                        {/* <div className="mt-3 flex items-center justify-end gap-3">
-                        <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
-                            Cancel
-                        </button>
-                        <button type="button" className="btn btn-primary" onClick={() => (state.contactId ? updateContact() : createContact())}>
-                            {state.createContactLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                        </button>
-                    </div> */}
                     </div>
                 )}
             />

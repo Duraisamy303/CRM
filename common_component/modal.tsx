@@ -11,7 +11,7 @@ interface ModalProps {
     updateHeader?: string;
     subTitle?: string;
     isFullWidth?: boolean;
-    height?: string | number; // Add height prop (string for %, px, etc., or number for px)
+    height?: string | number;
 }
 
 export default function Modal(props: ModalProps) {
@@ -37,7 +37,7 @@ export default function Modal(props: ModalProps) {
                         >
                             <Dialog.Panel
                                 className={`panel w-full ${isFullWidth ? '' : 'max-w-lg'} overflow-hidden rounded-lg border-0 p-0 text-black dark:text-white-dark`}
-                                style={{ height: height || 'auto' }} // Apply height style here
+                                style={{ height: height || 'auto' }}
                             >
                                 <button type="button" onClick={() => close()} className="absolute top-4 text-gray-400 outline-none hover:text-gray-800 ltr:right-4 rtl:left-4 dark:hover:text-gray-600">
                                     <IconX className="h-5 w-5" />

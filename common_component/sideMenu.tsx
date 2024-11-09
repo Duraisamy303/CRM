@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 export default function SideMenu(props: SidebarProps) {
-    const { open, close, title, renderComponent, width = 450, cancelOnClick, submitOnClick, submitTitle, canceTitle, submitLoading, btn } = props; // Set default width to 450
+    const { open, close, title, renderComponent, width = 450, cancelOnClick, submitOnClick, submitTitle, canceTitle, submitLoading, btn } = props; 
 
     useEffect(() => {
         if (open) {

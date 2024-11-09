@@ -237,19 +237,6 @@ const CreateLead = () => {
                     </div>
                 </div>
             </div>
-            {/* <div className="panel flex gap-5 rounded-2xl pl-[30px]">
-                <div className="flex h-[100px] w-[100px] overflow-hidden bg-white" style={{ borderRadius: 50 }}>
-                    <img src="/assets/images/profile-1.jpeg" height={'100%'} width={'100%'} />
-                </div>
-                <div>
-                    <div className=" mt-5 " style={{ fontSize: '30px' }}>
-                        Create Lead
-                    </div>
-                    <div className=" mt-3 " style={{ fontSize: '18px', color: 'grey' }}>
-                        Your data journey starts here...
-                    </div>
-                </div>
-            </div> */}
             <div className=" mt-2 grid grid-cols-12  gap-2">
                 <div className=" col-span-12 flex flex-col   md:col-span-5">
                     <div className="panel flex flex-col gap-5 rounded-2xl p-3">
@@ -403,12 +390,7 @@ const CreateLead = () => {
                         </div>
                     </div>
 
-                    {/* <div className="  w-full">
-                        <div className="">
-                            <label className="block text-sm font-medium text-gray-700">Status</label>
-                            <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
-                        </div>
-                    </div> */}
+                  
                     <div className="mt-20 flex items-center justify-end gap-3">
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel

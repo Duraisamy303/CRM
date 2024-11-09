@@ -240,16 +240,10 @@ export default function ViewLead() {
         showDeleteAlert(
             async () => {
                 try {
-                    // Call your delete API function here, e.g., await deleteOpportunity(id);
-                    // Assume the delete operation is successful
                     notifySuccess('Opportunity deleted successfully.');
 
-                    // Optionally, you might want to update your state or list of opportunities here
-
-                    // Show success alert
                     Swal.fire('Deleted!', 'Your opportunity has been deleted.', 'success');
                 } catch (error) {
-                    // Handle the error case
                     notifyError('An error occurred while deleting the opportunity.');
                     Swal.fire('Error!', 'An error occurred while deleting the opportunity.', 'error');
                 }
@@ -482,7 +476,6 @@ export default function ViewLead() {
         if (row?.file_url) {
             const fileName = getFileNameFromUrl(row?.file_url);
             const files = await convertUrlToFile(row?.file_url, fileName);
-            console.log('files: ', files);
             setState({ file: files });
         }
         setState({

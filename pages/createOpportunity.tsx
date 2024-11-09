@@ -160,9 +160,6 @@ const CreateLead = () => {
             <div className="panel relative flex gap-5 rounded-2xl pl-[30px]">
                 <div className="flex h-[100px] w-[100px] overflow-hidden bg-white" style={{ borderRadius: '50%', position: 'relative' }}>
                     <img src="/assets/images/profile-1.jpeg" alt="Profile" style={{ height: '100%', width: '100%' }} />
-                    {/* <button className="absolute bottom-0 right-0 m-1 rounded-full bg-blue-500 p-1 text-white z-10">
-                        <IconEdit />
-                    </button> */}
                 </div>
                 <div>
                     <div className="mt-5" style={{ fontSize: '30px', fontWeight: 'bold' }}>
@@ -282,20 +279,6 @@ const CreateLead = () => {
                     </div>
                     <CustomeDatePicker error={state.errors?.closing_date} value={state.closing_date} placeholder="Closing Date" title="Closing Date" onChange={(e) => setState({ closing_date: e })} />
 
-                    {/* <div className="mb-5">
-                        <div className="label-container">
-                            <label>Upload </label>
-
-                            <input type="file" className="" accept="*" value={state.file} onChange={(e) => setState({ file: e })} />
-                        </div>
-                    </div> */}
-
-                    {/* <div className="  w-full">
-                        <div className="">
-                            <label className="block text-sm font-medium text-gray-700">Status</label>
-                            <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
-                        </div>
-                    </div> */}
                     <div className="mt-3 flex items-center justify-end gap-3">
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel

@@ -7,7 +7,6 @@ const ReadMore = ({ children, charLimit = 100, readMoreText = 'Read more', readL
         setIsExpanded(!isExpanded);
     };
 
-    // Truncate content if not expanded
     const displayText = isExpanded ? children : `${children?.substring(0, charLimit)}...`;
 
     return (
@@ -16,7 +15,6 @@ const ReadMore = ({ children, charLimit = 100, readMoreText = 'Read more', readL
             {children?.length > 400 && (
                 <button
                     onClick={toggleReadMore}
-                    // style={{ color: "grey", cursor: "pointer", fontWeight: "bold" }}
                     className="text-primary underline"
                 >
                     {isExpanded ? readLessText : readMoreText}

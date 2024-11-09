@@ -66,7 +66,6 @@ const Index = () => {
             if (a[column] > b[column]) return newSortOrder === 'asc' ? 1 : -1;
             return 0;
         });
-        console.log('data: ', sortedData);
 
         // Update state with sorted data
         setState({ data: sortedData });

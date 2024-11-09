@@ -41,8 +41,8 @@ export const validateString = (string: string) => {
 
 export const convertUrlToFile = async (url, filename) => {
     const response = await fetch(url);
-    const blob = await response.blob(); // Convert response to a Blob
-    return new File([blob], filename, { type: blob.type }); // Create a File object
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
 };
 
 export const isUrlFound = (url: any) => {
@@ -84,7 +84,6 @@ export const Success = (message: string) => {
         position: 'top',
         showConfirmButton: false,
         timer: 3000,
-        // Merge provided options with default options
     });
 
     toast.fire({
@@ -100,7 +99,6 @@ export const Failure = (message: string) => {
         position: 'top',
         showConfirmButton: false,
         timer: 3000,
-        // Merge provided options with default options
     });
 
     toast.fire({
@@ -197,8 +195,8 @@ export const getImageSizeIntoKB = async (imageUrl) => {
         const contentLength: any = response.headers.get('Content-Length');
 
         if (contentLength) {
-            const sizeInKB = contentLength / 1024; // Convert bytes to KB
-            return sizeInKB.toFixed(2); // Return size as a string with 2 decimal points
+            const sizeInKB = contentLength / 1024;
+            return sizeInKB.toFixed(2);
         } else {
             console.log('Unable to retrieve content length.');
             return null;
@@ -229,8 +227,7 @@ export const generateTimeOptions = () => {
             options.push(timeString);
         }
     }
-    options.push('24:00'); // Add the final option
-    // return Dropdown(options);
+    options.push('24:00'); 
 };
 
 export const formatTime = (time) => {
@@ -260,10 +257,8 @@ export const addCommasToNumber = (value) => {
 export const roundOff = (price: any) => {
     let roundedPrice = '';
     if (price) {
-        // Round to the nearest integer (use Math.ceil as per your logic)
         const roundedValue = Math.ceil(price);
 
-        // Format the number in the Indian-style without the currency symbol
         roundedPrice = roundedValue.toLocaleString('en-IN', {
             minimumFractionDigits: roundedValue % 1 === 0 ? 0 : 2,
             maximumFractionDigits: 2,
@@ -297,9 +292,9 @@ export const showDeleteAlert = (onConfirm, onCancel, title) => {
         })
         .then((result) => {
             if (result.isConfirmed) {
-                onConfirm(); // Call the onConfirm function if the user confirms the deletion
+                onConfirm(); 
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                onCancel(); // Call the onCancel function if the user cancels the deletion
+                onCancel(); 
             }
         });
 };

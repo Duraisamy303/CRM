@@ -2,7 +2,7 @@ import React from 'react';
 
 interface CheckboxInputProps {
     checked: boolean;
-    onChange: (checked: boolean) => void; // Callback for handling checkbox state
+    onChange: (checked: boolean) => void; 
     label: string;
     name?: string;
     className?: string;
@@ -20,7 +20,7 @@ const CheckboxInput: React.FC<CheckboxInputProps> = ({ checked, onChange, label,
                     onChange={(e) => onChange(e.target.checked)}
                     name={name}
                     required={required}
-                    className={`form-checkbox ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
+                    className={`form-checkbox ${error ? 'border-red-500' : ''}`} 
                 />
                 <span className="ml-1 text-sm font-medium text-gray-700">{label}</span>
             </label>

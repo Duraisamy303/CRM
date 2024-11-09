@@ -16,7 +16,7 @@ const TextInput = (props: any) => {
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 name={name}
-                className={`form-input ${className} ${error ? 'border-red-500' : ''}`} // Add conditional styling for error
+                className={`form-input ${className} ${error ? 'border-red-500' : ''}`} 
                 required={required}
                 {...rest}
             />
