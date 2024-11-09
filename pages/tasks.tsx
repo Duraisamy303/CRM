@@ -86,6 +86,8 @@ const Tasks = () => {
         end_date: null,
         isOpen: false,
         createdByList: [],
+        popupHeight: 'auto',
+
     });
 
     useEffect(() => {
@@ -213,7 +215,8 @@ const Tasks = () => {
             setState({ subLoading: true });
             const res: any = await Models.employee.list(page);
             const dropdownList = Dropdown(res?.results, `first_name`);
-            setState({ employeeList: dropdownList, subLoading: false });
+            const filter = dropdownList?.filter((item) => item?.label !== '');
+            setState({ employeeList: filter, subLoading: false });
         } catch (error) {
             setState({ subLoading: false });
 
@@ -660,6 +663,7 @@ const Tasks = () => {
                 open={state.isOpenAssign}
                 addHeader={'Assign Task'}
                 close={() => clearAssignData()}
+                height={state.popupHeight}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 p-5">
                         <div className="flex flex-col gap-5 ">
@@ -672,6 +676,8 @@ const Tasks = () => {
                                 error={state.errors?.assigned_to}
                                 required
                                 loadMore={() => leadListLoadMore()}
+                                menuOpen={(isOpen) => setState({ popupHeight: isOpen ? 500 : 'auto' })}
+
                             />
                         </div>
 
