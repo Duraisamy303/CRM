@@ -104,7 +104,7 @@ export default function ViewLead() {
                 const body = {
                     opportunity_id: id,
                     note: state.note,
-                    note_by: state.noteId,
+                    // note_by: state.noteId,
                 };
 
                 await Validation.createNote.validate(body, { abortEarly: false });
