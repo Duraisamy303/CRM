@@ -385,7 +385,7 @@ export default function ViewLead() {
 
             const formData = new FormData();
 
-            formData.append('lead', state.createlead?.value || '');
+            formData.append('lead', id as string);
             formData.append('name', state.opp_name || '');
             formData.append('owner', state.owner?.value || '');
             formData.append('stage', state.opp_stage?.value || '');
@@ -547,10 +547,9 @@ export default function ViewLead() {
             </div>
 
             {state.contactList?.length > 0 ? (
-                <div className=" mt-2 grid  grid-cols-12  gap-2">
-                    <div className=" col-span-8 flex flex-col   md:col-span-8">
-                        <div className="panel flex min-h-[345px] flex-col gap-2 rounded-2xl p-3 ">
-                            {/* Header */}
+                <div className="mt-2 grid gap-2 md:grid-cols-12">
+                    <div className="col-span-12 flex flex-col md:col-span-8">
+                        <div className="panel flex min-h-[345px] flex-col gap-2 rounded-2xl p-3">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
                                     <IconUser className="text-[#82de69]" />
@@ -558,8 +557,7 @@ export default function ViewLead() {
                                 <div style={{ fontSize: '20px' }}>Lead Information</div>
                             </div>
 
-                            {/* Data Grid for ViewLabel items */}
-                            <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
+                            <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                                 <ViewLabel label="Lead Name" value={state.data?.name} />
                                 <ViewLabel label="Lead Owner" value={state.data?.lead_owner?.username} />
                                 {state.data?.company_email && <ViewLabel label="Company Email" value={state.data?.company_email} />}
@@ -570,27 +568,26 @@ export default function ViewLead() {
                                 {state.data?.market_segment && <ViewLabel label="Market Segment" value={state.data?.market_segment?.market_segment} />}
                                 {state.data?.tags?.length > 0 && <ViewLabel label="Tags" value={state.data.tags.map((item) => item?.tag).join(', ')} />}
                                 {state.data?.fax && <ViewLabel label="Fax" value={Number(state.data?.fax)} />}
-                                {/* {state.data?.created_by && <ViewLabel label="Created By" value={state.data?.created_by?.username} />} */}
                                 {state.data?.country && <ViewLabel label="Country" value={state.data?.country?.country_name} />}
                                 {state.data?.state && <ViewLabel label="State" value={state.data?.state?.state_name} />}
                             </div>
                         </div>
                     </div>
 
-                    <div className="panel col-span-7 flex flex-col gap-1 rounded-2xl p-3 md:col-span-4 ">
+                    {/* Contacts Section */}
+                    <div className="panel col-span-12 flex flex-col gap-1 rounded-2xl p-3 md:col-span-4">
                         <div className="flex justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#deffd7]">
+                                <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl bg-[#deffd7]">
                                     <IconUser className="text-[#82de69]" />
                                 </div>
-                                <div className=" " style={{ fontSize: '20px' }}>
-                                    Contacts {`(${state.contactCount})`}
-                                </div>
+                                <div style={{ fontSize: '20px' }}>Contacts {`(${state.contactCount})`}</div>
                             </div>
-                            <button type="button" className="btn btn-primary " onClick={() => setState({ isOpenCreateContact: true })}>
+                            <button type="button" className="btn btn-primary" onClick={() => setState({ isOpenCreateContact: true })}>
                                 <IconPlus />
                             </button>
                         </div>
+
                         <div className="max-h-[580px] overflow-y-scroll">
                             {state.contactList?.map((item) => (
                                 <div key={item.id} className="mt-3">
@@ -624,13 +621,13 @@ export default function ViewLead() {
                             </button>
                         </div>
 
-                        {/* Data Rows with Three Items Each */}
+                        {/* Data Rows with Responsive Layout */}
                         <OppLabel
                             label1="Lead Name"
                             value1={state.data?.name}
                             label2="Lead Owner"
                             value2={state.data?.lead_owner?.username}
-                            label3=" Annual Revenue"
+                            label3="Annual Revenue"
                             value3={roundOff(state.data?.annual_revenue)}
                         />
                         <OppLabel
@@ -706,9 +703,9 @@ export default function ViewLead() {
 
                                         width: '220px',
                                     },
-                                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value' },
+                                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value', render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
                                     { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
-                                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring (Year) ' },
+                                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value ', render: (row: any) => <div>{roundOff(row?.recurring_value_per_year)}</div> },
                                     { accessor: 'stages', sortable: true, title: 'Stage', width: '220px' },
                                     { accessor: 'currency', sortable: true, title: 'Currency Type' },
                                     { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
@@ -773,149 +770,6 @@ export default function ViewLead() {
                 )}
             </>
 
-            {/* For create and update Contact */}
-            {/* <Modal
-                open={state.isOpenCreateContact}
-                addHeader={state.contactId ? 'Update Contact' : 'Create Contact'}
-                close={() => clearContactData()}
-                renderComponent={() => (
-                    <div className="flex flex-col gap-5 p-5">
-                        <TextInput title="Name" value={state.contact_name} onChange={(e) => setState({ contact_name: e })} placeholder={'Name'} error={state.errors?.name} required />
-                        <TextInput title="Designation" value={state.designation} onChange={(e) => setState({ designation: e })} placeholder={'Designation'} error={state.errors?.name} required />
-                        <TextInput title="Department" value={state.department} onChange={(e) => setState({ department: e })} placeholder={'Department'} error={state.errors?.department} required />
-                        <NumberInput title="Phone Number" value={state.phoneNumber} onChange={(e) => setState({ phoneNumber: e })} placeholder={'Phone Number'} required />
-                        <TextInput title="Email" value={state.email} onChange={(e) => setState({ email: e })} placeholder={'Email'} error={state.errors?.email} required />
-                       
-                        <CustomSelect
-                            title="Lead Source"
-                            value={state.lead_source}
-                            onChange={(e) => setState({ lead_source: e })}
-                            placeholder={'Lead Source'}
-                            options={state.leadSourceList}
-                            error={state.errors?.lead_source}
-                            required
-                        />{' '}
-                        <CustomSelect
-                            title="Created By"
-                            value={state.createdby}
-                            onChange={(e) => setState({ createdby: e })}
-                            placeholder={'Created By'}
-                            options={state.createdByList}
-                            error={state.errors?.createdby}
-                            required
-                        />
-                        <CustomSelect
-                            title="Contact Status"
-                            value={state.contact_status}
-                            onChange={(e) => setState({ contact_status: e })}
-                            placeholder={'Contact Status'}
-                            options={state.statusList}
-                            error={state.errors?.lead_status}
-                            required
-                        />
-                        <div className="  w-full">
-                            <div className="">
-                                <label className="block text-sm font-medium text-gray-700">Status</label>
-                                <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
-                            </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => (state.contactId ? updateContact() : createContact())}>
-                                {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div>
-                    </div>
-                )}
-            /> */}
-            {/* For Opportunity Create and Update */}
-            {/* <Modal
-                open={state.isOpenOpp}
-                addHeader={state.oppId ? 'Update Opportunity' : 'Add Opportunity'}
-                close={() => clearOppData()}
-                renderComponent={() => (
-                    <div className="flex flex-col gap-5 p-5">
-                        <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.name} required />
-                        <CustomSelect
-                            title="Lead Owner"
-                            value={state.owner}
-                            onChange={(e) => setState({ owner: e })}
-                            placeholder={'Lead '}
-                            options={state.ownerList}
-                            error={state.errors?.owner}
-                            required
-                        />
-                        <NumberInput
-                            error={state.errors?.opportunity_value}
-                            title="Opportunity Value"
-                            value={state.opportunity_value}
-                            onChange={(e) => setState({ opportunity_value: e })}
-                            placeholder={'Opportunity Value'}
-                        />
-                        <CustomSelect
-                            title="Stage"
-                            value={state.opp_stage}
-                            onChange={(e) => setState({ opp_stage: e })}
-                            placeholder={'Stage'}
-                            options={state.stageList}
-                            required
-                            error={state.errors?.stage}
-                        />
-                        <NumberInput
-                            title="Recurring Value Per Year"
-                            value={state.recurring_value_per_year}
-                            onChange={(e) => setState({ recurring_value_per_year: e })}
-                            placeholder={'Recurring Value Per Year'}
-                            error={state.errors?.recurring_value_per_year}
-                        />
-                        <CustomSelect
-                            title="Currency Type"
-                            value={state.currency_type}
-                            onChange={(e) => setState({ currency_type: e })}
-                            placeholder={'Currency Type'}
-                            options={state.currencyList}
-                            required
-                            error={state.errors?.currency_type}
-                        />
-                        <NumberInput
-                            title="Probability In Percentage"
-                            value={state.probability_in_percentage}
-                            onChange={(e) => setState({ probability_in_percentage: e })}
-                            placeholder={'Probability In Percentage'}
-                            error={state.errors?.probability_in_percentage}
-                            max={100}
-                        />
-                        <CustomSelect
-                            title="Created By"
-                            value={state.opp_created_by}
-                            onChange={(e) => setState({ opp_created_by: e })}
-                            placeholder={'Created By'}
-                            options={state.createdByList}
-                            required
-                            error={state.errors?.created_by}
-                        />
-                        <CustomeDatePicker
-                            error={state.errors?.closing_date}
-                            value={state.opp_closing_date}
-                            placeholder="Closing Date"
-                            title="Closing Date"
-                            onChange={(e) => setState({ opp_closing_date: e })}
-                        />
-
-                        <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => createAndUpdateOpportunity()}>
-                                {state.oppLoading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div>
-                    </div>
-                )}
-            /> */}
-
             <SideMenu
                 title={state.contactId ? 'Update Contact' : 'Add Contact'}
                 open={state.isOpenCreateContact}
@@ -962,14 +816,6 @@ export default function ViewLead() {
                             error={state.errors?.contact_status}
                             required
                         />
-                        {/* <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => clearContactData()}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => (state.contactId ? updateContact() : createContact())}>
-                                {state.createContactLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div> */}
                     </div>
                 )}
             />
@@ -1010,15 +856,15 @@ export default function ViewLead() {
                             required
                         />
 
-                        {/* <NumberInput
+                        <NumberInput
                             title="Recurring Value Per Year"
                             value={state.recurring_value_per_year}
                             onChange={(e) => setState({ recurring_value_per_year: e })}
                             placeholder={'Recurring Value Per Year'}
                             error={state.errors?.recurring_value_per_year}
                             required
-                        /> */}
-                        <YearPicker
+                        />
+                        {/* <YearPicker
                             required
                             error={state.errors?.recurring_value_per_year}
                             title="Recurring Value Per Year"
@@ -1026,7 +872,7 @@ export default function ViewLead() {
                             onChange={(year) => {
                                 setState({ recurring_value_per_year: year });
                             }}
-                        />
+                        /> */}
                         {/* <CustomSelect
                             title="Stage"
                             value={state.opp_stage}

@@ -203,18 +203,18 @@ export default function ViewLead() {
     const createAndLog = async () => {
         try {
             setState({ logLoad: true });
-            if (state.logId) {
+            // if (state.logId) {
                 let validateField = {
                     logStage: state.logStage?.value,
                 };
                 await Validation.updateLog.validate(validateField, { abortEarly: false });
-            } else {
-                let validateField = {
-                    logStage: state.logStage?.value,
-                    focus_segment: state.focus_segment?.value,
-                };
-                await Validation.createLog.validate(validateField, { abortEarly: false });
-            }
+            // } else {
+            //     let validateField = {
+            //         logStage: state.logStage?.value,
+            //         focus_segment: state.focus_segment?.value,
+            //     };
+            //     await Validation.createLog.validate(validateField, { abortEarly: false });
+            // }
 
             const formData = new FormData();
             formData.append('details', state.details);
@@ -417,7 +417,7 @@ export default function ViewLead() {
                 close={() => clearLogData()}
                 renderComponent={() => (
                     <div className="flex flex-col gap-5 p-5">
-                        {!state.logId && (
+                        {/* {!state.logId && (
                             <div className="flex flex-col gap-5 ">
                                 <CustomSelect
                                     title="Focus Segment"
@@ -427,7 +427,7 @@ export default function ViewLead() {
                                     options={state.focusSegmentList}
                                     required
                                     error={state.errors?.focus_segment}
-                                />
+                                /> */}
 
                                 {/* <CustomSelect
                                     title="Created By"
@@ -438,8 +438,8 @@ export default function ViewLead() {
                                     error={state.errors?.createdby}
                                     required
                                 /> */}
-                            </div>
-                        )}
+                            {/* </div>
+                        )} */}
                         <CustomSelect
                             title="Log Stage"
                             value={state.logStage}

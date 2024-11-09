@@ -242,7 +242,7 @@ export default function ViewLead() {
                             label1="Opportunity Value"
                             value1={roundOff(state.data?.opportunity_value)}
                             label2="Recurring Value"
-                            value2={state.data?.recurring_value_per_year}
+                            value2={roundOff(state.data?.recurring_value_per_year)}
                             label3="Closing Date"
                             value3={state.data?.closing_date}
                         />

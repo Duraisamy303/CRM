@@ -1,6 +1,6 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
 import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Success, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
 import { DataTable } from 'mantine-datatable';
@@ -63,8 +63,8 @@ const Index = () => {
         isOpenAssign: false,
         createdByList: [],
         assigned_to: '',
+        popupHeight: 'auto',
     });
-    console.log('tags: ', state.tags);
 
     useEffect(() => {
         getData();
@@ -89,7 +89,6 @@ const Index = () => {
         try {
             setState({ loading: true });
             const response: any = await Models.lead.list(page);
-            console.log('response: ', response);
             setState({ range: [response.min_revenue, response.max_revenue], maxPrice: response.max_revenue });
             tableData(response?.results);
             setState({
@@ -286,7 +285,7 @@ const Index = () => {
                 created_by: item?.created_by?.username,
                 name: item?.name,
                 vertical: item?.focus_segment?.vertical?.vertical || item?.vertical?.vertical,
-                annual_revenue: item?.annual_revenue,
+                annual_revenue: roundOff(item?.annual_revenue),
                 tags: item?.tags,
             };
         });
@@ -452,7 +451,7 @@ const Index = () => {
                                     columns={[
                                         {
                                             accessor: 'name',
-                                            width:130
+                                            width: 130,
                                             // render: (row, index) => (
                                             //     <>
                                             //         <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row?.name}</div>
@@ -469,18 +468,25 @@ const Index = () => {
                                         },
                                         {
                                             accessor: 'Tags',
-                                            width:150,
+                                            width: 150,
 
                                             render: (row, index) => (
                                                 <>
-                                                    {row.tags?.length > 0 &&
-                                                        row.tags?.map((item) => (
-                                                            <div className="flex gap-2 p-0.5">
-                                                                <div>
-                                                                    <Chip label={item.tag} />
+                                                    {row.tags?.length > 0 && (
+                                                        <Tippy
+                                                            content={
+                                                                <div className="rounded-lg bg-white p-2 text-sm shadow-lg">
+                                                                    {row.tags.map((item, index) => (
+                                                                        <div key={index} className="p-0.5">
+                                                                            <Chip label={item.tag} />
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
-                                                            </div>
-                                                        ))}
+                                                            }
+                                                        >
+                                                            <div className="flex gap-2 p-0.5">{row.tags[0]?.tag}</div>
+                                                        </Tippy>
+                                                    )}
                                                 </>
                                             ),
                                         },
@@ -496,13 +502,12 @@ const Index = () => {
                                             title: 'Annual Revenue',
                                         },
                                         { accessor: 'lead_owner', title: 'Lead Owner' },
-                                        
                                         { accessor: 'country', width: '120px' },
                                         { accessor: 'state', title: 'State' },
                                         {
                                             accessor: 'created_on',
                                             title: 'Date',
-                                            width:130
+                                            width: 130,
                                         },
 
                                         {
@@ -560,6 +565,7 @@ const Index = () => {
                 <Modal
                     open={state.isOpenAssign}
                     addHeader={'Assign Lead'}
+                    height={state.popupHeight}
                     close={() => clearAssignData()}
                     renderComponent={() => (
                         <div className="flex flex-col gap-5 p-5">
@@ -574,6 +580,7 @@ const Index = () => {
                                     required
                                     isMulti
                                     loadMore={() => leadListLoadMore()}
+                                    menuOpen={(isOpen) => setState({ popupHeight: isOpen ? 500 : 'auto' })}
                                 />
                             </div>
 

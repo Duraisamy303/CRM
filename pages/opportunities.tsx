@@ -429,8 +429,8 @@ const Opportunity = () => {
                 isOpenOpp: true,
                 opp_name: row.name,
                 owner: { value: row?.owner?.id, label: row?.owner?.username },
-                opportunity_value: row?.opportunity_value,
-                recurring_value_per_year: row?.recurring_value_per_year,
+                opportunity_value: Number(row?.opportunity_value),
+                recurring_value_per_year: Number(row?.recurring_value_per_year),
                 currency_type: { value: row?.currency_type?.id, label: row?.currency_type?.currency_short },
                 probability_in_percentage: row.probability_in_percentage,
                 opp_created_by: { value: row?.created_by?.id, label: row?.created_by?.username },
@@ -546,9 +546,14 @@ const Opportunity = () => {
                                 {
                                     accessor: 'name',
                                 },
-                                { accessor: 'opportunity_value', title: 'Opportunity' },
+                                { accessor: 'opportunity_value', title: 'Opportunity', render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
                                 { accessor: 'probability_in_percentage', title: 'Probability (%)' },
-                                { accessor: 'recurring_value_per_year', title: 'Recurring (Year)' },
+                                {
+                                    accessor: 'recurring_value_per_year',
+                                    title: 'Recurring Value',
+
+                                    render: (row: any) => <div>{roundOff(row?.recurring_value_per_year)}</div>,
+                                },
                                 { accessor: 'stages', title: 'Stage' },
                                 { accessor: 'currency', title: 'Currency' },
                                 { accessor: 'closing_date', title: 'Closing Date' },
@@ -645,7 +650,7 @@ const Opportunity = () => {
                             placeholder={'Opportunity Value'}
                             required
                         />
-                        <YearPicker
+                        {/* <YearPicker
                             required
                             error={state.errors?.recurring_value_per_year}
                             title="Recurring Value Per Year"
@@ -653,7 +658,7 @@ const Opportunity = () => {
                             onChange={(year) => {
                                 setState({ recurring_value_per_year: year });
                             }}
-                        />
+                        /> */}
                         {/* <CustomYearSelect
                             title="Recurring Value Per Year"
                             value={state.recurring_value_per_year}
@@ -661,7 +666,16 @@ const Opportunity = () => {
                             placeholder={'Recurring Value Per Year'}
                             error={state.errors?.recurring_value_per_year}
                             required
-                        /> */}
+                        />  */}
+
+                        <NumberInput
+                            title="Recurring Value Per Year"
+                            value={state.recurring_value_per_year}
+                            onChange={(e) => setState({ recurring_value_per_year: e })}
+                            placeholder={'Recurring Value Per Year'}
+                            error={state.errors?.recurring_value_per_year}
+                            required
+                        />
                         <CustomSelect
                             title="Stage"
                             value={state.opp_stage}

@@ -125,7 +125,7 @@ const Tasks = () => {
                 loading: false,
                 totalRecords: response.count,
                 next: response.next,
-                previous: response.previous,
+                previous: response.prev,
             });
         } catch (error) {
             setState({ loading: false });
@@ -288,7 +288,7 @@ const Tasks = () => {
                 contact: item?.contact?.name,
                 category: item.category,
                 created_by: item?.created_by?.username,
-                date: item?.task_date_time,
+                date: moment(item?.task_date_time).format("YYYY-MM-DD"),
                 description: item?.task_detail ? item?.task_detail : '',
                 assigned_to: item?.assigned_to?.length > 0 ? item?.assigned_to?.map((item) => item?.username).join(', ') : item.created_by?.username,
             };

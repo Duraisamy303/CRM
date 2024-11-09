@@ -1,16 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const FileUpload = ({ onFileSelect, buttonText = 'Upload File', iconSrc, accept = '*/*', isImageAllowed = false, value }) => {
-    const [selectedFile, setSelectedFile] = useState(null);
     const fileInputRef = useRef(null);
 
-    useEffect(() => {
-        if (value) {
-            setSelectedFile(value);
-        }
-    }, [value]);
-
-    // Handle file selection
     const handleFileChange = (event) => {
         const file = event.target.files[0];
 
@@ -19,25 +11,22 @@ const FileUpload = ({ onFileSelect, buttonText = 'Upload File', iconSrc, accept 
                 alert('Only non-image files are allowed.');
                 return;
             }
-            setSelectedFile(file);
-            onFileSelect && onFileSelect(file); // Call onFileSelect if provided
+            onFileSelect && onFileSelect(file);
         }
     };
 
-    // Handle removing the selected file
     const removeFile = () => {
-        setSelectedFile(null);
-        onFileSelect && onFileSelect(null); // Inform parent that file is removed
+        onFileSelect && onFileSelect(null);
         if (fileInputRef.current) {
-            fileInputRef.current.value = ''; // Reset file input value
+            fileInputRef.current.value = '';
         }
     };
 
     return (
         <div className="flex flex-col items-center">
-            {selectedFile ? (
+            {value ? (
                 <div className="flex items-center space-x-4 rounded-lg  p-3">
-                    <span className="text-gray-700">{selectedFile.name}</span>
+                    <span className="text-gray-700">{value?.name}</span>
                     <button onClick={removeFile} className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600" style={{ backgroundColor: 'red' }}>
                         Remove
                     </button>
@@ -51,7 +40,6 @@ const FileUpload = ({ onFileSelect, buttonText = 'Upload File', iconSrc, accept 
                     <span className="text-gray-600">{buttonText}</span>
                 </div>
             )}
-            {/* Hidden file input */}
             <input ref={fileInputRef} type="file" onChange={handleFileChange} style={{ display: 'none' }} accept={accept} />
         </div>
     );

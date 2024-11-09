@@ -260,8 +260,6 @@ const Reports = () => {
             const countSeries = counts?.map((item) => item?.count);
             const countLabels = counts?.map((item) => item?.name);
 
-            console.log('countSeries: ', countSeries);
-
             const count = {
                 series: countSeries, // Ensuring this is a plain array
                 options: {
@@ -314,12 +312,10 @@ const Reports = () => {
                         width: 25,
                         colors: ['#fff'],
                     },
-                    colors: ['#e2a03f', '#5c1ac3', '#e7515a', '#e2a03f', '#5c1ac3', '#e7515a'],
+                    colors: ['#e2833f', '#691ac3', '#e73e5a', '#3ad4e2', '#7a7ce3', '#a2e530'],
                 },
             };
-            console.log('count: ', count);
 
-            // Update state or render the chart
             setState({
                 oppoCount: count,
                 oppLoading: false,
@@ -357,16 +353,14 @@ const Reports = () => {
             const valueSeries = values?.map((item) => item?.value);
             const valueLabels = values?.map((item) => item?.name);
 
-            console.log('countSeries: ', valueSeries);
-
             const count = {
-                series: valueSeries, // Ensuring this is a plain array
+                series: valueSeries,
                 options: {
                     chart: {
                         type: 'donut',
                         height: 460,
                     },
-                    labels: valueLabels, // Ensuring this is a plain array
+                    labels: valueLabels,
                     plotOptions: {
                         pie: {
                             donut: {
@@ -411,12 +405,10 @@ const Reports = () => {
                         width: 25,
                         colors: ['#fff'],
                     },
-                    colors: ['#e2a03f', '#5c1ac3', '#e7515a', '#e2a03f', '#5c1ac3', '#e7515a'],
+                    colors: ['#e2bd3f', '#4c1ac3', '#e7605a', '#3ab3e2', '#7a42e3', '#91e51a'],
                 },
             };
-            console.log('count: ', count);
 
-            // Update state or render the chart
             setState({
                 oppoValue: count,
                 oppLoading: false,
@@ -506,12 +498,10 @@ const Reports = () => {
                         width: 25,
                         colors: ['#fff'],
                     },
-                    colors: ['#e2a03f', '#5c1ac3', '#e7515a', '#e2a03f', '#5c1ac3', '#e7515a'],
+                    colors: ['#e2833f', '#691ac3', '#e73e5a', '#3ad4e2', '#7a7ce3', '#a2e530'],
                 },
             };
-            console.log('count: ', count);
 
-            // Update state or render the chart
             setState({
                 oppRecValue: count,
                 oppLoading: false,
@@ -533,7 +523,7 @@ const Reports = () => {
             }
 
             let res: any = await Models.report.reportOpportunity(body);
-            const monthSeries = res?.monthly_data?.map((item) => item.count); // Get counts for the data series
+            const monthSeries = res?.monthly_data?.map((item) => item.count);
             const monthLabels = res?.monthly_data?.map((item) => item.month);
 
             const incomOpp = {
@@ -546,7 +536,7 @@ const Reports = () => {
                 options: {
                     chart: {
                         height: 325,
-                        type: 'line', // Change to 'line' for a line chart
+                        type: 'line',
                         fontFamily: 'Nunito, sans-serif',
                         zoom: { enabled: false },
                         toolbar: { show: false },
@@ -565,11 +555,11 @@ const Reports = () => {
                         left: -7,
                         top: 22,
                     },
-                    colors: ['#1B55E2'], // Use a single color since there's one series
+                    colors: ['#1B55E2'],
                     markers: {
                         size: 5,
                     },
-                    labels: monthLabels, // Set month labels
+                    labels: monthLabels,
                     xaxis: {
                         axisBorder: { show: false },
                         axisTicks: { show: false },
@@ -611,7 +601,6 @@ const Reports = () => {
                 },
             };
 
-            // Update state or render the chart
             setState({
                 oppLoading: false,
                 isShowIncom: incomOpp.series.length > 0,
@@ -632,7 +621,6 @@ const Reports = () => {
                 }
             }
             const res: any = await Models.report.reportLead(body);
-            console.log('res: ', res);
 
             const counts = res?.chart_data?.monthly_data?.map((item) => ({
                 name: item?.month,
@@ -642,9 +630,8 @@ const Reports = () => {
             const countSeries = counts?.map((item) => item?.count);
             const countLabels = counts?.map((item) => item?.name);
 
-            const labels = Object.keys(res?.lead_source_counts); // ["Webinars and Events", "Social Media Ads", "Industry Publications", "Cold Calling"]
+            const labels = Object.keys(res?.lead_source_counts);
             const data = Object.values(res?.lead_source_counts);
-            console.log('data: ', data);
             const checkArrayValues = data?.some((value) => value !== 0);
             const incomLeads = countSeries?.some((value) => value !== 0);
 
@@ -658,7 +645,7 @@ const Reports = () => {
                 options: {
                     chart: {
                         height: 325,
-                        type: 'line', // Change to 'line' for a line chart
+                        type: 'line',
                         fontFamily: 'Nunito, sans-serif',
                         zoom: { enabled: false },
                         toolbar: { show: false },
@@ -677,11 +664,11 @@ const Reports = () => {
                         left: -7,
                         top: 22,
                     },
-                    colors: ['#1B55E2'], // Use a single color since there's one series
+                    colors: ['#1B55E2'],
                     markers: {
                         size: 5,
                     },
-                    labels: countLabels, // Set month labels
+                    labels: countLabels,
                     xaxis: {
                         axisBorder: { show: false },
                         axisTicks: { show: false },
@@ -967,7 +954,7 @@ const Reports = () => {
                                     //     height={300}
                                     //     width={'100%'}
                                     // />
-                                    <ReactApexChart series={state.oppoCount.series} options={state.oppoCount.options} type="donut" height={400} width={'100%'} />
+                                    <ReactApexChart series={state.oppoCount.series} options={state.oppoCount.options} type="donut" height={350} width={'100%'} />
                                 ) : (
                                     <div className="flex items-center justify-center">No Data Found</div>
                                 )}
@@ -986,7 +973,7 @@ const Reports = () => {
                                     //     height={300}
                                     //     width={'100%'}
                                     // />
-                                    <ReactApexChart series={state.oppoValue?.series} options={state.oppoValue?.options} type="donut" height={400} width={'100%'} />
+                                    <ReactApexChart series={state.oppoValue?.series} options={state.oppoValue?.options} type="donut" height={350} width={'100%'} />
                                 ) : (
                                     <div className="flex items-center justify-center">No Data Found</div>
                                 )}
@@ -1005,7 +992,7 @@ const Reports = () => {
                                     //     height={300}
                                     //     width={'100%'}
                                     // />
-                                    <ReactApexChart series={state.oppRecValue?.series} options={state.oppRecValue?.options} type="donut" height={400} width={'100%'} />
+                                    <ReactApexChart series={state.oppRecValue?.series} options={state.oppRecValue?.options} type="donut" height={350} width={'100%'} />
                                 ) : (
                                     <div className="flex items-center justify-center">No Data Found</div>
                                 )}

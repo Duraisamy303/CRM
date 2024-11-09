@@ -321,3 +321,17 @@ export const convertToFormData = (body) => {
     return formData;
 };
 
+export const handleSort = (column: string, sortColumn, sortOrder, data) => {
+    const newSortOrder = sortColumn === column && sortOrder === 'asc' ? 'desc' : 'asc';
+    const sortedData = [...data].sort((a, b) => {
+        if (a[column] < b[column]) return newSortOrder === 'asc' ? -1 : 1;
+        if (a[column] > b[column]) return newSortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+    const body = {
+        sortColumn,
+        sortOrder: newSortOrder,
+        sortedData,
+    };
+    return body;
+};
