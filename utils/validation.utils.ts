@@ -5,7 +5,7 @@ export const createLeadValidation = Yup.object().shape({
     lead_owner: Yup.string().required('Lead Owner is required'),
     // company_email: Yup.string().email('Invalid email').required('Company Email is required'),
     // company_website: Yup.string().url('Invalid URL'),
-    created_by: Yup.string().required('Created By is required'),
+    // created_by: Yup.string().required('Created By is required'),
     // annual_revenue: Yup.number().nullable().required('Annual Revenue is required').typeError('Annual Revenue must be a number'),
     // tags: Yup.array().min(1, 'At least one tag is required'),
     focus_segment: Yup.string().required('Focus Segment is required'),
