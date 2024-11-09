@@ -64,29 +64,32 @@ const Reports = () => {
     }, []);
 
     useEffect(() => {
-        if (state.activeTab == 'Lead') {
+        // if (state.activeTab == 'Lead') {
             reportLead();
-        } else if (state.activeTab == 'Sales') {
+            reportLeadSource()
+        // } else if (state.activeTab == 'Sales') {
             funnelChartCount();
-        } else {
+        // } else {
             reportOpportunity();
             reportValue();
             reportIncomValue();
             reportRecurringValue();
-        }
+        // }
     }, []);
 
     useEffect(() => {
-        if (state.activeTab == 'Lead') {
+        // if (state.activeTab == 'Lead') {
             reportLead(true);
-        } else if (state.activeTab == 'Sales') {
+            reportLeadSource(true)
+            
+        // } else if (state.activeTab == 'Sales') {
             funnelChartCount(true);
-        } else {
+        // } else {
             reportOpportunity(true);
             reportValue(true);
             reportIncomValue(true);
             reportRecurringValue(true);
-        }
+        // }
     }, [state.activeTab]);
 
     const filters = () => {
@@ -603,7 +606,7 @@ const Reports = () => {
 
             setState({
                 oppLoading: false,
-                isShowIncom: incomOpp.series.length > 0,
+                isShowIncom: incomOpp?.series?.length > 0,
                 incommingOpportunity: incomOpp,
             });
         } catch (error) {
@@ -629,11 +632,6 @@ const Reports = () => {
 
             const countSeries = counts?.map((item) => item?.count);
             const countLabels = counts?.map((item) => item?.name);
-
-            const labels = Object.keys(res?.lead_source_counts);
-            const data = Object.values(res?.lead_source_counts);
-            const checkArrayValues = data?.some((value) => value !== 0);
-            const incomLeads = countSeries?.some((value) => value !== 0);
 
             const incomLead = {
                 series: [
@@ -710,35 +708,34 @@ const Reports = () => {
                 },
             };
 
-            const leadSource: any = {
+            setState({ loading: false, incomLead: incomLead, isShowIncomLead: incomLead?.series?.length > 0 });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const reportLeadSource = async (filter = false) => {
+        try {
+            setState({ loading: true });
+            let body = {};
+            if (filter) {
+                if (filters()) {
+                    body = bodyData();
+                }
+            }
+            const res: any = await Models.report.reportLead(body);
+            const labels = Object.keys(res?.lead_source_counts);
+            const data = Object.values(res?.lead_source_counts);
+            const count = {
                 series: data,
                 options: {
                     chart: {
                         type: 'donut',
                         height: 460,
-                        fontFamily: 'Nunito, sans-serif',
                     },
-                    dataLabels: {
-                        enabled: false,
-                    },
-                    stroke: {
-                        show: true,
-                        width: 25,
-                        colors: '#fff',
-                    },
-                    colors: ['#e2a03f', '#5c1ac3', '#e7515a'],
-                    legend: {
-                        position: 'bottom',
-                        horizontalAlign: 'center',
-                        fontSize: '14px',
-                        markers: {
-                            width: 10,
-                            height: 10,
-                            offsetX: -2,
-                        },
-                        height: 50,
-                        offsetY: 20,
-                    },
+                    labels: labels,
                     plotOptions: {
                         pie: {
                             donut: {
@@ -775,25 +772,19 @@ const Reports = () => {
                             },
                         },
                     },
-                    labels: labels,
-                    states: {
-                        hover: {
-                            filter: {
-                                type: 'none',
-                                value: 0.15,
-                            },
-                        },
-                        active: {
-                            filter: {
-                                type: 'none',
-                                value: 0.15,
-                            },
-                        },
+                    dataLabels: {
+                        enabled: false,
                     },
+                    stroke: {
+                        show: true,
+                        width: 25,
+                        colors: ['#fff'],
+                    },
+                    colors: ['#e2bd3f', '#4c1ac3', '#e7605a', '#3ab3e2', '#7a42e3', '#91e51a'],
                 },
             };
-
-            setState({ leadSource, reportLead: res, loading: false, isShowLead: checkArrayValues, incomLead: incomLead, isShowIncomLead: incomLeads });
+           
+            setState({ leadSource:count, reportLead: res, loading: false, isShowLead: count?.series?.length > 0 });
         } catch (error) {
             setState({ loading: false });
 
@@ -853,11 +844,13 @@ const Reports = () => {
         });
         reportOpportunity();
         reportLead();
+        reportLeadSource()
         funnelChartCount();
         reportValue();
         reportIncomValue();
         reportRecurringValue();
     };
+
 
     return (
         <div className="p-2">
@@ -914,7 +907,7 @@ const Reports = () => {
                                         //     height={300}
                                         //     width={'100%'}
                                         // />
-                                        <ReactApexChart series={state.leadSource?.series} options={state.leadSource?.options} type="donut" height={460} width={'100%'} />
+                                        <ReactApexChart series={state.leadSource?.series} options={state.leadSource?.options} type="donut" height={400} width={'100%'} />
                                     ) : (
                                         <div className="flex items-center justify-center">No Data Found</div>
                                     )}
@@ -1030,6 +1023,7 @@ const Reports = () => {
                 submitOnClick={() => {
                     funnelChartCount(true);
                     reportLead(true);
+                    reportLeadSource(true)
                     reportOpportunity(true);
                     reportValue(true);
                     reportIncomValue(true);
