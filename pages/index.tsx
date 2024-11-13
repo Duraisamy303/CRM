@@ -421,7 +421,7 @@ const Index = () => {
                         />
                     </div>
 
-                    <button className="btn btn-primary lg:mt-0 w-full" onClick={() => setState({ isOpen: true })}>
+                    <button className="btn btn-primary w-full lg:mt-0 lg:w-auto" onClick={() => setState({ isOpen: true })}>
                         <IconFilter />
                     </button>
                 </div>
