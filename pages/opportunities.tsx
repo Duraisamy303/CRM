@@ -480,6 +480,18 @@ const Opportunity = () => {
         } catch (error) {}
     };
 
+    const getLeadOwnerByLeadId = async (e) => {
+        try {
+            if (e) {
+                const res: any = await Models.lead.details(e?.value);
+                let lead_owner = res?.lead_owner;
+                setState({ owner: { value: lead_owner?.id, label: lead_owner?.username } });
+            } else {
+                setState({ owner: '' });
+            }
+        } catch (error) {}
+    };
+    
     return (
         <div className="p-2">
             <div className="panel flex items-center justify-between gap-5 ">
@@ -628,7 +640,10 @@ const Opportunity = () => {
                         <CustomSelect
                             title="Lead "
                             value={state.createlead}
-                            onChange={(e) => setState({ createlead: e })}
+                            onChange={(e) => {
+                                getLeadOwnerByLeadId(e);
+                                setState({ createlead: e });
+                            }}
                             placeholder={'Lead '}
                             options={state.leadList}
                             error={state.errors?.lead}
@@ -637,10 +652,10 @@ const Opportunity = () => {
                         />
                         <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />
                         <CustomSelect
-                            title="Lead Owner"
+                            title="Opportunity Owner"
                             value={state.owner}
                             onChange={(e) => setState({ owner: e })}
-                            placeholder={'Lead Owner'}
+                            placeholder={'Opportunity Owner'}
                             options={state.ownerList}
                             error={state.errors?.owner}
                             required

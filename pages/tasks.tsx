@@ -87,7 +87,6 @@ const Tasks = () => {
         isOpen: false,
         createdByList: [],
         popupHeight: 'auto',
-
     });
 
     useEffect(() => {
@@ -213,10 +212,9 @@ const Tasks = () => {
     const employeeList = async (page = 1) => {
         try {
             setState({ subLoading: true });
-            const res: any = await Models.employee.list(page);
-            const dropdownList = Dropdown(res?.results, `first_name`);
-            const filter = dropdownList?.filter((item) => item?.label !== '');
-            setState({ employeeList: filter, subLoading: false });
+            const res = await Models.lead.dropdowns('assigned_to');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ employeeList: dropdownList, subLoading: false });
         } catch (error) {
             setState({ subLoading: false });
 
@@ -516,11 +514,7 @@ const Tasks = () => {
                                     {
                                         accessor: 'date',
 
-                                        render: (row: any) => (
-                                            <>
-                                                <div className="">{moment(row.task_date_time).format('YYYY-MM-DD HH:mm a')}</div>
-                                            </>
-                                        ),
+                                       
                                     },
 
                                     { accessor: 'assigned_to', title: 'Assigned to' },
@@ -633,7 +627,6 @@ const Tasks = () => {
                                 options={state.contactList}
                                 error={state.errors?.contact}
                                 required
-                                loadMore={() => leadListLoadMore()}
                             />
                         </div>
 
@@ -675,9 +668,7 @@ const Tasks = () => {
                                 options={state.employeeList}
                                 error={state.errors?.assigned_to}
                                 required
-                                loadMore={() => leadListLoadMore()}
                                 menuOpen={(isOpen) => setState({ popupHeight: isOpen ? 500 : 'auto' })}
-
                             />
                         </div>
 

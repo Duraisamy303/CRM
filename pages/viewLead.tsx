@@ -94,6 +94,7 @@ export default function ViewLead() {
         currencyList();
         stageList();
         ownerList();
+        getLeadOwnerByLeadId();
     }, [id]);
 
     const getDate = async () => {
@@ -470,6 +471,7 @@ export default function ViewLead() {
             errors: '',
             file: null,
         });
+        getLeadOwnerByLeadId();
     };
 
     const editOppData = async (row) => {
@@ -509,6 +511,14 @@ export default function ViewLead() {
         { label: 'Home', path: '/' },
         { label: 'Lead', path: '' },
     ];
+
+    const getLeadOwnerByLeadId = async () => {
+        try {
+            const res: any = await Models.lead.details(id);
+            let lead_owner = res?.lead_owner;
+            setState({ owner: { value: lead_owner?.id, label: lead_owner?.username } });
+        } catch (error) {}
+    };
 
     return state.loading ? (
         <CommonLoader />
@@ -832,10 +842,10 @@ export default function ViewLead() {
                         />
                         <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />
                         <CustomSelect
-                            title="Lead Owner"
+                            title="Opportunity Owner"
                             value={state.owner}
                             onChange={(e) => setState({ owner: e })}
-                            placeholder={'Lead '}
+                            placeholder={'Opportunity Owner '}
                             options={state.ownerList}
                             error={state.errors?.owner}
                             required

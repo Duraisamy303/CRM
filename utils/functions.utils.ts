@@ -227,7 +227,7 @@ export const generateTimeOptions = () => {
             options.push(timeString);
         }
     }
-    options.push('24:00'); 
+    options.push('24:00');
 };
 
 export const formatTime = (time) => {
@@ -292,9 +292,9 @@ export const showDeleteAlert = (onConfirm, onCancel, title) => {
         })
         .then((result) => {
             if (result.isConfirmed) {
-                onConfirm(); 
+                onConfirm();
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                onCancel(); 
+                onCancel();
             }
         });
 };
@@ -329,4 +329,8 @@ export const handleSort = (column: string, sortColumn, sortOrder, data) => {
         sortedData,
     };
     return body;
+};
+
+export const allValuesAreZero = (arr) => {
+    return arr?.every((value) => value === 0);
 };

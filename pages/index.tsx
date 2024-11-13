@@ -223,7 +223,7 @@ const Index = () => {
     const createdByList = async () => {
         try {
             setState({ loading: true });
-            const res = await Models.lead.dropdowns('created_by');
+            const res = await Models.lead.dropdowns('assigned_to');
             const dropdownList = Dropdown(res, 'username');
             setState({ createdByList: dropdownList, loading: false });
         } catch (error) {
@@ -582,7 +582,6 @@ const Index = () => {
                                     error={state.errors?.assigned_to}
                                     required
                                     isMulti
-                                    loadMore={() => leadListLoadMore()}
                                     menuOpen={(isOpen) => setState({ popupHeight: isOpen ? 500 : 'auto' })}
                                 />
                             </div>

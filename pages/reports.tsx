@@ -1,6 +1,6 @@
 import { Models, PrivateRouter } from '@/utils/imports.utils';
 import React, { useEffect, useState, Fragment } from 'react';
-import { Dropdown, Failure, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, Failure, allValuesAreZero, objIsEmpty, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import IconSearch from '@/components/Icon/IconSearch';
 import CustomSelect from '@/components/Select';
@@ -53,6 +53,14 @@ const Reports = () => {
         isShowIncomLead: false,
         incomLead: {},
         oppLoading: false,
+        oppCountZero: false,
+        oppValueZero: false,
+        oppRecZero: false,
+        oppIncZero: false,
+        leadIncomZero: false,
+        leadSourceZero: false,
+        createdByList: [],
+        assigned_to: '',
     });
 
     useEffect(() => {
@@ -61,40 +69,40 @@ const Reports = () => {
         ownerList();
         marketSegmentList();
         leadList();
+        createdByList();
     }, []);
 
     useEffect(() => {
-        // if (state.activeTab == 'Lead') {
+        if (state.activeTab == 'Lead') {
             reportLead();
-            reportLeadSource()
-        // } else if (state.activeTab == 'Sales') {
+            reportLeadSource();
+        } else if (state.activeTab == 'Sales') {
             funnelChartCount();
-        // } else {
+        } else {
             reportOpportunity();
             reportValue();
             reportIncomValue();
             reportRecurringValue();
-        // }
+        }
     }, []);
 
     useEffect(() => {
-        // if (state.activeTab == 'Lead') {
+        if (state.activeTab == 'Lead') {
             reportLead(true);
-            reportLeadSource(true)
-            
-        // } else if (state.activeTab == 'Sales') {
+            reportLeadSource(true);
+        } else if (state.activeTab == 'Sales') {
             funnelChartCount(true);
-        // } else {
+        } else {
             reportOpportunity(true);
             reportValue(true);
             reportIncomValue(true);
             reportRecurringValue(true);
-        // }
+        }
     }, [state.activeTab]);
 
     const filters = () => {
         let filter = false;
-        if (state.vertical || state.focus_segment || state.market_segment || state.country || state.state || state.owner || state.lead || state.from_date || state.to_date) {
+        if (state.vertical || state.focus_segment || state.market_segment || state.country || state.state || state.owner || state.lead || state.from_date || state.to_date || state.assigned_to) {
             filter = true;
         }
         return filter;
@@ -177,6 +185,19 @@ const Reports = () => {
         }
     };
 
+    const createdByList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('created_by');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ createdByList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
     const funnelChartCount = async (filter = false) => {
         try {
             setState({ loading: true });
@@ -233,6 +254,10 @@ const Reports = () => {
             body.end_date = moment(state.to_date).format('YYYY-MM-DD');
         }
 
+        if (state.assigned_to) {
+            body.assigned_to = state.assigned_to?.value;
+        }
+
         return body;
     };
 
@@ -261,6 +286,7 @@ const Reports = () => {
                 }));
 
             const countSeries = counts?.map((item) => item?.count);
+            const allValAreZero = allValuesAreZero(countSeries);
             const countLabels = counts?.map((item) => item?.name);
 
             const count = {
@@ -323,6 +349,7 @@ const Reports = () => {
                 oppoCount: count,
                 oppLoading: false,
                 isShowOppCount: count.series.length > 0,
+                oppCountZero: allValAreZero,
             });
         } catch (error) {
             setState({ oppLoading: false });
@@ -354,6 +381,8 @@ const Reports = () => {
                 }));
 
             const valueSeries = values?.map((item) => item?.value);
+            const allValAreZero = allValuesAreZero(valueSeries);
+
             const valueLabels = values?.map((item) => item?.name);
 
             const count = {
@@ -416,6 +445,7 @@ const Reports = () => {
                 oppoValue: count,
                 oppLoading: false,
                 isShowOppValue: count.series.length > 0,
+                oppValueZero: allValAreZero,
             });
         } catch (error) {
             setState({ oppLoading: false });
@@ -447,6 +477,8 @@ const Reports = () => {
                 }));
 
             const recurringValueSeries = recurringValues?.map((item) => item?.recurring_value);
+            const allValAreZero = allValuesAreZero(recurringValueSeries);
+
             const recurringValueLabels = recurringValues?.map((item) => item?.name);
 
             const count = {
@@ -509,6 +541,7 @@ const Reports = () => {
                 oppRecValue: count,
                 oppLoading: false,
                 isShowOppRec: count.series.length > 0,
+                oppRecZero: allValAreZero,
             });
         } catch (error) {
             setState({ oppLoading: false });
@@ -527,6 +560,8 @@ const Reports = () => {
 
             let res: any = await Models.report.reportOpportunity(body);
             const monthSeries = res?.monthly_data?.map((item) => item.count);
+            const allValAreZero = allValuesAreZero(monthSeries);
+
             const monthLabels = res?.monthly_data?.map((item) => item.month);
 
             const incomOpp = {
@@ -604,10 +639,13 @@ const Reports = () => {
                 },
             };
 
+            console.log('incomOpp: ', incomOpp);
+
             setState({
                 oppLoading: false,
                 isShowIncom: incomOpp?.series?.length > 0,
                 incommingOpportunity: incomOpp,
+                oppIncZero: allValAreZero,
             });
         } catch (error) {
             setState({ oppLoading: false });
@@ -631,7 +669,9 @@ const Reports = () => {
             }));
 
             const countSeries = counts?.map((item) => item?.count);
+
             const countLabels = counts?.map((item) => item?.name);
+            const allValAreZero = allValuesAreZero(countSeries);
 
             const incomLead = {
                 series: [
@@ -707,8 +747,9 @@ const Reports = () => {
                     },
                 },
             };
+            console.log('incomLead: ', incomLead);
 
-            setState({ loading: false, incomLead: incomLead, isShowIncomLead: incomLead?.series?.length > 0 });
+            setState({ loading: false, incomLead: incomLead, isShowIncomLead: incomLead?.series?.length > 0, leadIncomZero: allValAreZero });
         } catch (error) {
             setState({ loading: false });
 
@@ -728,6 +769,8 @@ const Reports = () => {
             const res: any = await Models.report.reportLead(body);
             const labels = Object.keys(res?.lead_source_counts);
             const data = Object.values(res?.lead_source_counts);
+            const allValAreZero = allValuesAreZero(data);
+
             const count = {
                 series: data,
                 options: {
@@ -783,8 +826,8 @@ const Reports = () => {
                     colors: ['#e2bd3f', '#4c1ac3', '#e7605a', '#3ab3e2', '#7a42e3', '#91e51a'],
                 },
             };
-           
-            setState({ leadSource:count, reportLead: res, loading: false, isShowLead: count?.series?.length > 0 });
+
+            setState({ leadSource: count, reportLead: res, loading: false, isShowLead: count?.series?.length > 0, leadSourceZero: allValAreZero });
         } catch (error) {
             setState({ loading: false });
 
@@ -805,26 +848,6 @@ const Reports = () => {
         }
     };
 
-    const leadListLoadMore = async () => {
-        try {
-            if (state.hasMoreLead) {
-                const res: any = await Models.lead.list(state.currentLeadPage + 1);
-                const newOptions = Dropdown(res?.results, 'name');
-                setState({
-                    leadList: [...state.leadList, ...newOptions],
-                    hasMoreLead: res.next,
-                    currentLeadPage: state.currentLeadPage + 1,
-                });
-            } else {
-                setState({
-                    leadList: state.leadList,
-                });
-            }
-        } catch (error) {
-            setState((prev) => ({ ...prev, loading: false }));
-        }
-    };
-
     const tabClassNames = (selected: boolean) =>
         `${selected ? ' text-lg !border-white-light !border-b-white text-primary !outline-none dark:!border-[#191e3a] dark:!border-b-black' : ''}
         -mb-[1px] block border border-transparent p-3.5 py-2 hover:text-primary dark:hover:border-b-black text-lg `;
@@ -841,16 +864,16 @@ const Reports = () => {
             from_date: null,
             to_date: null,
             lead: '',
+            assigned_to: '',
         });
         reportOpportunity();
         reportLead();
-        reportLeadSource()
+        reportLeadSource();
         funnelChartCount();
         reportValue();
         reportIncomValue();
         reportRecurringValue();
     };
-
 
     return (
         <div className="p-2">
@@ -898,7 +921,7 @@ const Reports = () => {
                                     <div className="mb-2 flex w-full items-center  gap-5">
                                         <h5 className="text-lg font-semibold dark:text-white-light">Lead Source</h5>
                                     </div>
-                                    {state.isShowLead ? (
+                                    {state.isShowLead && !state.leadSourceZero ? (
                                         // <ReactApexChart
                                         //     series={state.leadSource?.series}
                                         //     options={state.leadSource?.options}
@@ -917,7 +940,7 @@ const Reports = () => {
                                 <div className="mb-2 flex w-full items-center  gap-5">
                                     <h5 className="text-lg font-semibold dark:text-white-light">Incoming Lead</h5>
                                 </div>
-                                {state.isShowIncomLead ? (
+                                {state.isShowIncomLead && !state.leadIncomZero ? (
                                     <ReactApexChart series={state.incomLead?.series} options={state.incomLead?.options} type="area" height={400} width={'100%'} />
                                 ) : (
                                     <div className="flex items-center justify-center">No Data Found</div>
@@ -938,7 +961,7 @@ const Reports = () => {
                                 <div className="mb-2 flex w-full items-center  gap-5">
                                     <h5 className="text-lg font-semibold dark:text-white-light">Count</h5>
                                 </div>
-                                {state.isShowOppCount ? (
+                                {state.isShowOppCount && !state.oppCountZero ? (
                                     // <ReactApexChart
                                     //     series={state.oppoCount.series}
                                     //     options={state.oppoCount.options}
@@ -957,7 +980,7 @@ const Reports = () => {
                                 <div className="mb-2 flex w-full items-center  gap-5">
                                     <h5 className="text-lg font-semibold dark:text-white-light">Value</h5>
                                 </div>
-                                {state.isShowOppValue ? (
+                                {state.isShowOppValue && !state.oppValueZero ? (
                                     // <ReactApexChart
                                     //     series={state.oppoValue?.series}
                                     //     options={state.oppoValue?.options}
@@ -976,7 +999,7 @@ const Reports = () => {
                                 <div className="mb-2 flex w-full items-center  gap-5">
                                     <h5 className="text-lg font-semibold dark:text-white-light">Recurring Value</h5>
                                 </div>
-                                {state.isShowOppRec ? (
+                                {state.isShowOppRec && !state.oppRecZero ? (
                                     // <ReactApexChart
                                     //     series={state.oppRecValue?.series}
                                     //     options={state.oppRecValue?.options}
@@ -995,7 +1018,7 @@ const Reports = () => {
                             <div className="mb-2 flex w-full items-center  gap-5">
                                 <h5 className="text-lg font-semibold dark:text-white-light">Incoming Opportunity</h5>
                             </div>
-                            {state.isShowIncom ? (
+                            {state.isShowIncom && !state.oppIncZero ? (
                                 <ReactApexChart series={state.incommingOpportunity?.series} options={state.incommingOpportunity?.options} type="area" height={325} width={'100%'} />
                             ) : (
                                 <div className="flex items-center justify-center">No Data Found</div>
@@ -1023,7 +1046,7 @@ const Reports = () => {
                 submitOnClick={() => {
                     funnelChartCount(true);
                     reportLead(true);
-                    reportLeadSource(true)
+                    reportLeadSource(true);
                     reportOpportunity(true);
                     reportValue(true);
                     reportIncomValue(true);
@@ -1067,6 +1090,7 @@ const Reports = () => {
                             placeholder={'Market Segment'}
                             title={'Market Segment'}
                         />
+                        <CustomSelect title="Assigned To" value={state.assigned_to} onChange={(e) => setState({ assigned_to: e })} placeholder={'Assigned To'} options={state.createdByList} />
                         <CustomSelect
                             value={state.country}
                             onChange={(e) => {
