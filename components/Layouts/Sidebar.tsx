@@ -37,13 +37,16 @@ import IconReport from '../Icon/IconReport';
 import IconOpportunity from '../Icon/IconOpportunity';
 import IconLeads from '../Icon/IconLead';
 import IconTask from '../Icon/IconTask';
+import Models from '@/imports/models.import';
 
 const Sidebar = () => {
     const router = useRouter();
     const [currentMenu, setCurrentMenu] = useState<string>('');
+    const [role, setRole] = useState('');
     const [errorSubMenu, setErrorSubMenu] = useState(false);
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const semidark = useSelector((state: IRootState) => state.themeConfig.semidark);
+
     const toggleMenu = (value: string) => {
         setCurrentMenu((oldValue) => {
             return oldValue === value ? '' : value;
@@ -72,7 +75,17 @@ const Sidebar = () => {
         if (window.innerWidth < 1024 && themeConfig.sidebar) {
             dispatch(toggleSidebar());
         }
+        getUserDetails();
     }, [router.pathname]);
+
+    const getUserDetails = async () => {
+        try {
+            const res: any = await Models.auth.userDetails();
+            setRole(res?.designation);
+        } catch (error) {
+            console.log('error: ', error);
+        }
+    };
 
     const setActiveRoute = () => {
         let allLinks = document.querySelectorAll('.sidebar ul a.active');
@@ -96,7 +109,7 @@ const Sidebar = () => {
                     <div className="flex items-center justify-between px-4 py-3">
                         <Link href="/" className="main-logo flex shrink-0 items-center">
                             <img className="ml-[5px] w-8 flex-none" src="/assets/images/repute_logo.jpeg" alt="logo" />
-                            <span className="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline text-red-600">{t('REPUTE')}</span>
+                            <span className="align-middle text-2xl font-semibold text-red-600 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline">{t('REPUTE')}</span>
                         </Link>
 
                         <button
@@ -170,14 +183,16 @@ const Sidebar = () => {
                                             </div>
                                         </Link>
                                     </li>
-                                    <li className="nav-item">
-                                        <Link href="/reports" className="group">
-                                            <div className="flex items-center">
-                                                <IconReport className="shrink-0 group-hover:!text-primary" />
-                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('Reports')}</span>
-                                            </div>
-                                        </Link>
-                                    </li>
+                                    {(role == 'BDM' || role == 'ADMIN') && (
+                                        <li className="nav-item">
+                                            <Link href="/reports" className="group">
+                                                <div className="flex items-center">
+                                                    <IconReport className="shrink-0 group-hover:!text-primary" />
+                                                    <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('Reports')}</span>
+                                                </div>
+                                            </Link>
+                                        </li>
+                                    )}
                                     {/* <li className="nav-item">
                                         <Link href="/settings" className="group">
                                             <div className="flex items-center">

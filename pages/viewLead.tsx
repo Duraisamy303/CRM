@@ -566,7 +566,7 @@ export default function ViewLead() {
                                 {state.data?.company_email && <ViewLabel label="Company Email" value={state.data?.company_email} />}
                                 {state.data?.company_website && <ViewLabel label="Company Website" value={state.data?.company_website} />}
                                 {state.data?.company_number && <ViewLabel label="Company Number" value={state.data?.company_number} />}
-                                {state.data?.annual_revenue && <ViewLabel label="Annual Revenue" value={roundOff(state.data?.annual_revenue)} />}
+                                {<ViewLabel label="Annual Revenue" value={roundOff(state.data?.annual_revenue)} />}
                                 {state.data?.focus_segment && <ViewLabel label="Focus Segment" value={state.data?.focus_segment?.focus_segment} />}
                                 {state.data?.market_segment && <ViewLabel label="Market Segment" value={state.data?.market_segment?.market_segment} />}
                                 {state.data?.tags?.length > 0 && <ViewLabel label="Tags" value={state.data.tags.map((item) => item?.tag).join(', ')} />}
@@ -631,7 +631,7 @@ export default function ViewLead() {
                             label2="Lead Owner"
                             value2={state.data?.lead_owner?.username}
                             label3="Annual Revenue"
-                            value3={roundOff(state.data?.annual_revenue)}
+                            value3={state.data?.annual_revenue ? roundOff(state.data?.annual_revenue) : 0}
                         />
                         <OppLabel
                             label1="Company Website"
@@ -653,7 +653,7 @@ export default function ViewLead() {
                             label1="Tags"
                             value1={state.data.tags?.length > 0 ? state.data.tags.map((item) => item?.tag).join(', ') : ''}
                             label2="Fax"
-                            value2={Number(state.data?.fax)}
+                            value2={state.data?.fax}
                             label3="Country"
                             value3={state.data?.country?.country_name}
                         />

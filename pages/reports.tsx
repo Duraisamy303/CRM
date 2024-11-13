@@ -61,6 +61,7 @@ const Reports = () => {
         leadSourceZero: false,
         createdByList: [],
         assigned_to: '',
+        role: '',
     });
 
     useEffect(() => {
@@ -70,6 +71,7 @@ const Reports = () => {
         marketSegmentList();
         leadList();
         createdByList();
+        getUserDetails();
     }, []);
 
     useEffect(() => {
@@ -99,6 +101,15 @@ const Reports = () => {
             reportRecurringValue(true);
         }
     }, [state.activeTab]);
+
+    const getUserDetails = async () => {
+        try {
+            const res: any = await Models.auth.userDetails();
+            setState({ role: res?.designation });
+        } catch (error) {
+            console.log('error: ', error);
+        }
+    };
 
     const filters = () => {
         let filter = false;
@@ -639,8 +650,6 @@ const Reports = () => {
                 },
             };
 
-            console.log('incomOpp: ', incomOpp);
-
             setState({
                 oppLoading: false,
                 isShowIncom: incomOpp?.series?.length > 0,
@@ -747,7 +756,6 @@ const Reports = () => {
                     },
                 },
             };
-            console.log('incomLead: ', incomLead);
 
             setState({ loading: false, incomLead: incomLead, isShowIncomLead: incomLead?.series?.length > 0, leadIncomZero: allValAreZero });
         } catch (error) {
@@ -941,7 +949,7 @@ const Reports = () => {
                                     <h5 className="text-lg font-semibold dark:text-white-light">Incoming Lead</h5>
                                 </div>
                                 {state.isShowIncomLead && !state.leadIncomZero ? (
-                                    <ReactApexChart series={state.incomLead?.series} options={state.incomLead?.options} type="area" height={400} width={'100%'} />
+                                    <ReactApexChart key={state.leadSourceKey} series={state.incomLead?.series} options={state.incomLead?.options} type="area" height={400} width={'100%'} />
                                 ) : (
                                     <div className="flex items-center justify-center">No Data Found</div>
                                 )}
@@ -1019,7 +1027,7 @@ const Reports = () => {
                                 <h5 className="text-lg font-semibold dark:text-white-light">Incoming Opportunity</h5>
                             </div>
                             {state.isShowIncom && !state.oppIncZero ? (
-                                <ReactApexChart series={state.incommingOpportunity?.series} options={state.incommingOpportunity?.options} type="area" height={325} width={'100%'} />
+                                <ReactApexChart key={state.oppKey} series={state.incommingOpportunity?.series} options={state.incommingOpportunity?.options} type="area" height={325} width={'100%'} />
                             ) : (
                                 <div className="flex items-center justify-center">No Data Found</div>
                             )}
@@ -1058,7 +1066,9 @@ const Reports = () => {
                 renderComponent={() => (
                     <div className=" flex flex-col gap-5">
                         {/* <CustomSelect title="Lead " value={state.lead} onChange={(e) => setState({ lead: e })} placeholder={'Lead'} options={state.leadList} loadMore={() => leadListLoadMore()} /> */}
-                        <CustomSelect options={state.ownerList} value={state.owner} onChange={(e) => setState({ owner: e })} isMulti={false} placeholder={'Owner'} title={'Owner'} />
+                        {state.role == 'ADMIN' && (
+                            <CustomSelect options={state.ownerList} value={state.owner} onChange={(e) => setState({ owner: e })} isMulti={false} placeholder={'Owner'} title={'Owner'} />
+                        )}
                         <CustomSelect
                             value={state.vertical}
                             onChange={(e) => {
