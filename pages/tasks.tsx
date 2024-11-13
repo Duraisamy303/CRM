@@ -465,24 +465,27 @@ const Tasks = () => {
                     </button>
                 </div>
             </div>
-            <div className="panel  mt-2 flex items-center justify-between gap-5 ">
-                <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
-                    <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
-                        <IconSearch className="h-6 w-6 font-bold" /> {/* Icon size slightly reduced */}
+            <div className="panel mt-2 flex flex-col items-center justify-between gap-5 lg:flex-row">
+                <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30 lg:w-1/3">
+                    <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary">
+                        <IconSearch className="h-6 w-6 font-bold" />
                     </button>
                     <input
                         type="text"
                         value={state.search}
                         onChange={(e) => setState({ search: e.target.value })}
                         placeholder="Search"
-                        className="form-input w-full  rounded-r-full border-0 bg-white py-1.5 pl-3 pr-8 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
+                        className="form-input w-full rounded-r-full border-0 bg-white py-1.5 pl-0 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
                     />
                 </div>
-                <CustomeDatePicker value={state.start_date} placeholder="From Date" onChange={(e) => setState({ start_date: e, to_date: null })} />
-                <CustomeDatePicker value={state.end_date} placeholder="To Date" onChange={(e) => setState({ end_date: e })} />
-                <button className="btn btn-primary " onClick={() => setState({ isOpen: true })}>
-                    <IconFilter />
-                </button>
+
+                <div className="flex w-full flex-col gap-4 lg:w-2/3 lg:flex-row">
+                    <CustomeDatePicker value={state.start_date} placeholder="From Date" onChange={(e) => setState({ start_date: e, to_date: null })} className="w-full lg:w-1/3" />
+                    <CustomeDatePicker value={state.end_date} placeholder="To Date" onChange={(e) => setState({ end_date: e })} className="w-full lg:w-1/3" />
+                    <button className="btn btn-primary lg:mt-0" onClick={() => setState({ isOpen: true })}>
+                        <IconFilter />
+                    </button>
+                </div>
             </div>
 
             <div className=" mt-2 grid grid-cols-12  gap-4">
@@ -513,8 +516,6 @@ const Tasks = () => {
                                     },
                                     {
                                         accessor: 'date',
-
-                                       
                                     },
 
                                     { accessor: 'assigned_to', title: 'Assigned to' },

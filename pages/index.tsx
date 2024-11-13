@@ -408,23 +408,16 @@ const Index = () => {
                             options={state.verticalList}
                             required
                             error={state.errors?.vertical}
-                            className="w-full lg:w-64" // Make the width responsive
+                            className="w-full lg:w-64"
                         />
-                        <CustomSelect
-                            options={state.focusList}
-                            value={state.focus}
-                            onChange={(e) => setState({ focus: e })}
-                            isMulti={false}
-                            placeholder={'Focus Segment'}
-                            className="w-full lg:w-64" // Make the width responsive
-                        />
+                        <CustomSelect options={state.focusList} value={state.focus} onChange={(e) => setState({ focus: e })} isMulti={false} placeholder={'Focus Segment'} className="w-full lg:w-64" />
                         <CustomSelect
                             options={state.marketList}
                             value={state.market}
                             onChange={(e) => setState({ market: e })}
                             isMulti={false}
                             placeholder={'Market Segment'}
-                            className="w-full lg:w-64" // Make the width responsive
+                            className="w-full lg:w-64"
                         />
                     </div>
 

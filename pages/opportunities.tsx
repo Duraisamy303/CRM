@@ -102,7 +102,7 @@ const Opportunity = () => {
 
     useEffect(() => {
         setState({ currentPage: 1 });
-    }, [ debouncedSearch, state.vertical, state.focus, state.lead, state.stage]);
+    }, [debouncedSearch, state.vertical, state.focus, state.lead, state.stage]);
 
     const getData = async (page = 1) => {
         try {
@@ -491,7 +491,7 @@ const Opportunity = () => {
             }
         } catch (error) {}
     };
-    
+
     return (
         <div className="p-2">
             <div className="panel flex items-center justify-between gap-5 ">
@@ -504,7 +504,7 @@ const Opportunity = () => {
                     </button>
                 </div>
             </div>
-            <div className="panel mt-2 flex items-center justify-between gap-5 ">
+            <div className="panel mt-2 flex flex-col items-center justify-between gap-5 lg:flex-row">
                 <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30">
                     <button type="submit" className="m-auto flex items-center justify-center px-3 py-2 text-primary ">
                         <IconSearch className="h-6 w-6 font-bold" /> {/* Icon size slightly reduced */}
@@ -514,32 +514,35 @@ const Opportunity = () => {
                         value={state.search}
                         onChange={(e) => setState({ search: e.target.value })}
                         placeholder="Search"
-                        className="form-input w-full rounded-r-full  border-0 bg-white py-1.5 pl-0  text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
+                        className="form-input w-full rounded-r-full border-0 bg-white py-1.5 pl-0 text-sm placeholder:tracking-wide focus:shadow-lg focus:outline-none dark:bg-gray-800 dark:shadow-[#1b2e4b] dark:placeholder:text-gray-400"
                     />
                 </div>
-                <CustomSelect value={state.stage} onChange={(e) => setState({ stage: e })} placeholder={'Stage'} options={state.stageList} error={state.errors?.stage} />
 
-                <CustomSelect options={state.leadList} value={state.lead} onChange={(e) => setState({ lead: e })} isMulti={false} placeholder={'Lead'} />
+                <div className="flex w-full flex-col gap-4 lg:w-auto lg:flex-row">
+                    <CustomSelect value={state.stage} onChange={(e) => setState({ stage: e })} placeholder={'Stage'} options={state.stageList} error={state.errors?.stage} className="w-full lg:w-64" />
 
-                <CustomSelect
-                    options={state.focusList}
-                    value={state.focus}
-                    onChange={(e) => {
-                        if (e) {
-                            setState({ focus: e });
-                            verticalList(e);
-                        } else {
-                            setState({ focus: '', verticalList: [], vertical: '' });
-                        }
-                    }}
-                    isMulti={false}
-                    placeholder={'Focus Segment'}
-                />
-                {/* <CustomSelect options={state.verticalList} value={state.vertical} onChange={(e) => setState({ vertical: e })} isMulti={false} placeholder={'Vertical'} /> */}
+                    <CustomSelect options={state.leadList} value={state.lead} onChange={(e) => setState({ lead: e })} isMulti={false} placeholder={'Lead'}className="w-full lg:w-64" />
 
-                <button className="btn btn-primary" onClick={() => setState({ isOpen: true })}>
-                    <IconFilter />
-                </button>
+                    <CustomSelect
+                        options={state.focusList}
+                        value={state.focus}
+                        onChange={(e) => {
+                            if (e) {
+                                setState({ focus: e });
+                                verticalList(e);
+                            } else {
+                                setState({ focus: '', verticalList: [], vertical: '' });
+                            }
+                        }}
+                        isMulti={false}
+                        placeholder={'Focus Segment'}
+                        className="w-full lg:w-64"
+                    />
+
+                    <button className="btn btn-primary lg:mt-0" onClick={() => setState({ isOpen: true })}>
+                        <IconFilter />
+                    </button>
+                </div>
             </div>
 
             <div className="  mt-2 grid  grid-cols-12 gap-4">
