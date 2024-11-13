@@ -130,7 +130,7 @@ const Tasks = () => {
                 loading: false,
                 totalRecords: response.count,
                 next: response.next,
-                previous: response.prev,
+                previous: response.previous,
             });
         } catch (error) {
             setState({ loading: false });
