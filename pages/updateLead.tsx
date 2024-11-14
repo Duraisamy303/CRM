@@ -204,7 +204,7 @@ const UpdateLead = () => {
                 annual_revenue: state.annual_revenue,
                 tags: tags,
                 market_segment: state.market_segment?.value,
-                is_active: state.is_active,
+                is_active:true,
                 vertical: state.vertical?.value,
             };
             await Validation.createLeadValidation.validate(body, { abortEarly: false });

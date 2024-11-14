@@ -175,7 +175,7 @@ const CreateLead = () => {
                 annual_revenue: state.annual_revenue ? Number(state.annual_revenue) : null,
                 tags: tags,
                 market_segment: state.market_segment?.value,
-                is_active: state.is_active,
+                is_active: true,
                 vertical: state.vertical?.value,
             };
 
