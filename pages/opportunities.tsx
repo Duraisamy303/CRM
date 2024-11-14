@@ -520,9 +520,16 @@ const Opportunity = () => {
 
                 <div className="flex w-full flex-col gap-4 lg:w-auto lg:flex-row">
                     <CustomSelect value={state.stage} onChange={(e) => setState({ stage: e })} placeholder={'Stage'} options={state.stageList} error={state.errors?.stage} className="w-full lg:w-64" />
-
-                    <CustomSelect options={state.leadList} value={state.lead} onChange={(e) => setState({ lead: e })} isMulti={false} placeholder={'Lead'}className="w-full lg:w-64" />
-
+                    <CustomSelect
+                        value={state.lead}
+                        onChange={(e) => setState({ lead: e })}
+                        placeholder={'Lead '}
+                        options={state.leadList}
+                        error={state.errors?.lead}
+                        required
+                        className="w-full lg:w-64"
+                        loadMore={() => leadListLoadMore()}
+                    />
                     <CustomSelect
                         options={state.focusList}
                         value={state.focus}
