@@ -222,8 +222,8 @@ const Reports = () => {
             const data = [
                 { name: 'Lead', value: res?.leads_count },
                 { name: 'Opportunity', value: res?.opportunities_count },
-                { name: 'S2C', value: res?.s2c_count },
-                { name: 'Win', value: res?.win_count },
+                { name: 'Negotiation & Commitment Count', value: res?.Negotiation_and_commitment_count },
+                { name: 'Won', value: res?.won_count },
             ];
             setState({ funnelData: data, loading: false });
         } catch (error) {

@@ -9,3 +9,8 @@
 .react-datepicker-popper{
     z-index: 9999 !important;
 }
+.funnel-pipeline-chart .funnel-pipeline-chart-row .funnel-pipeline-chart-title{
+   font-size: 1rem !important;
+   padding-bottom: 0px !important;
+   font-weight: bold !important;
+}

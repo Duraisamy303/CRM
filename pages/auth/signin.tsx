@@ -35,7 +35,7 @@ const LoginBoxed = () => {
     });
 
     const validationSchema = Yup.object().shape({
-        email: Yup.string().email('Invalid email address').required('Email is required'),
+        email: Yup.string().required('Email is required'),
         password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
     });
 
@@ -96,7 +96,7 @@ const LoginBoxed = () => {
                                         <input
                                             id="Email"
                                             name="email"
-                                            type="email"
+                                            type="text"
                                             placeholder="Enter Email"
                                             className="form-input ps-10 placeholder:text-white-dark"
                                             value={state.email}
