@@ -354,7 +354,6 @@ const Opportunity = () => {
                 currency_type: state.currency_type?.value,
                 closing_date: state.opp_closing_date ? moment(state.opp_closing_date).format('YYYY-MM-DD') : '',
                 probability_in_percentage: state.probability_in_percentage,
-                lead: state.createlead?.value,
             };
 
             const formData = new FormData();
@@ -656,8 +655,6 @@ const Opportunity = () => {
                             }}
                             placeholder={'Lead '}
                             options={state.leadList}
-                            error={state.errors?.lead}
-                            required
                             loadMore={() => leadListLoadMore()}
                         />
                         <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />

@@ -172,7 +172,7 @@ export default function ViewLead() {
     };
 
     const tableData = (res: any) => {
-        const data = res?.map((item) => {
+        const data = res?.results?.map((item) => {
             return {
                 ...item,
                 name: item?.name,

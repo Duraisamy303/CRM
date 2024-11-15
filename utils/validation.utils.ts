@@ -18,7 +18,7 @@ export const createLeadValidation = Yup.object().shape({
 });
 
 export const createOppValidation = Yup.object().shape({
-    lead: Yup.string().required('Lead is required'),
+    // lead: Yup.string().required('Lead is required'),
     opp_name: Yup.string().required('Name is required'),
     owner: Yup.string().required('Owner is required'),
     opp_stage: Yup.string().required('Stage is required'),
