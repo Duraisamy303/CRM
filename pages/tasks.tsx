@@ -87,6 +87,7 @@ const Tasks = () => {
         isOpen: false,
         createdByList: [],
         popupHeight: 'auto',
+        task_date_time: null,
     });
 
     useEffect(() => {
@@ -384,7 +385,7 @@ const Tasks = () => {
             lead: row?.leadData,
             contact: row?.contactData,
             details: row?.task_detail,
-            task_date_time: row?.task_date_time,
+            task_date_time: new Date(row?.task_date_time),
         });
     };
 
