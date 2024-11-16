@@ -635,6 +635,7 @@ const Tasks = () => {
                             value={state.task_date_time}
                             placeholder="Task Date"
                             title="Task Date"
+                            required
                             onChange={(e) => setState({ task_date_time: e })}
                             error={state.errors?.task_date_time}
                         />
