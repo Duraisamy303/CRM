@@ -566,10 +566,10 @@ export default function ViewLead() {
                                 {state.data?.company_email && <ViewLabel label="Company Email" value={state.data?.company_email} />}
                                 {state.data?.company_website && <ViewLabel label="Company Website" value={state.data?.company_website} />}
                                 {state.data?.company_number && <ViewLabel label="Company Number" value={state.data?.company_number} />}
-                                {<ViewLabel label="Annual Revenue" value={roundOff(state.data?.annual_revenue)} />}
+                                {state.data?.annual_revenue && <ViewLabel label="Annual Revenue" value={roundOff(state.data?.annual_revenue)} />}
                                 {state.data?.focus_segment && <ViewLabel label="Focus Segment" value={state.data?.focus_segment?.focus_segment} />}
                                 {state.data?.market_segment && <ViewLabel label="Market Segment" value={state.data?.market_segment?.market_segment} />}
-                                {state.data?.tags?.length > 0 && <ViewLabel label="Tags" value={state.data.tags.map((item) => item?.tag).join(', ')} />}
+                                {state.data?.tags?.length > 0 && <ViewLabel label="Tags" value={state.data?.tags?.map((item) => item?.tag).join(', ')} />}
                                 {state.data?.fax && <ViewLabel label="Fax" value={Number(state.data?.fax)} />}
                                 {state.data?.country && <ViewLabel label="Country" value={state.data?.country?.country_name} />}
                                 {state.data?.state && <ViewLabel label="State" value={state.data?.state?.state_name} />}
