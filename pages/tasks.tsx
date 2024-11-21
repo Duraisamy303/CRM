@@ -1,9 +1,9 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
-import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import React, { useEffect, useState } from 'react';
+import { Dropdown, Failure, Success, objIsEmpty, sortData, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
-import { DataTable } from 'mantine-datatable';
+import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import IconEdit from '@/components/Icon/IconEdit';
 import IconEye from '@/components/Icon/IconEye';
 import { useRouter } from 'next/router';
@@ -37,6 +37,10 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
 
 const Tasks = () => {
     const router = useRouter();
+    const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+        columnAccessor: 'name',
+        direction: 'asc',
+    });
 
     const [state, setState] = useSetState({
         data: [],
@@ -113,6 +117,13 @@ const Tasks = () => {
     useEffect(() => {
         setState({ currentPage: 1 });
     }, [debouncedSearch, state.start_date, state.end_date]);
+
+    useEffect(() => {
+        if (state.data?.length > 0) {
+            const sortedData = sortData(state.data, sortStatus.columnAccessor, sortStatus.direction);
+            setState({ data: sortedData });
+        }
+    }, [sortStatus]);
 
     const getData = async (page = 1) => {
         try {
@@ -509,19 +520,23 @@ const Tasks = () => {
                                     {
                                         accessor: 'leadName',
                                         title: 'Lead Name',
+                                        sortable: true,
                                     },
                                     ,
                                     {
                                         accessor: 'contact',
                                         title: 'Contact Person',
+                                        sortable: true,
                                     },
                                     {
                                         accessor: 'date',
+                                        sortable: true,
                                     },
 
-                                    { accessor: 'assigned_to', title: 'Assigned to' },
+                                    { accessor: 'assigned_to', title: 'Assigned to', sortable: true },
                                     {
                                         accessor: 'category',
+                                        sortable: true,
 
                                         render: (row) => (
                                             <div
@@ -579,6 +594,8 @@ const Tasks = () => {
                                 page={null}
                                 onPageChange={(p) => {}}
                                 withBorder={true}
+                                sortStatus={sortStatus}
+                                onSortStatusChange={setSortStatus}
                                 // selectedRecords={state.selectedRecords}
                                 // onSelectedRecordsChange={(val) => {
                                 //     setState({ selectedRecords: val });

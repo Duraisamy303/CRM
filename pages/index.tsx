@@ -1,9 +1,9 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
-import React, { useEffect } from 'react';
-import { Dropdown, Success, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
+import React, { useEffect, useState } from 'react';
+import { Dropdown, Success, objIsEmpty, roundOff, sortData, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
-import { DataTable } from 'mantine-datatable';
+import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import IconEdit from '@/components/Icon/IconEdit';
 import IconEye from '@/components/Icon/IconEye';
 import { useRouter } from 'next/router';
@@ -34,6 +34,11 @@ const ReactApexChart = dynamic(() => import('react-apexcharts'), {
 
 const Index = () => {
     const router = useRouter();
+
+    const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+        columnAccessor: 'name',
+        direction: 'asc',
+    });
 
     const [state, setState] = useSetState({
         data: [],
@@ -88,6 +93,13 @@ const Index = () => {
     useEffect(() => {
         setState({ currentPage: 1 });
     }, [debouncedSearch, state.vertical, state.focus, state.market]);
+
+    useEffect(() => {
+        if (state.data?.length > 0) {
+            const sortedData = sortData(state.data, sortStatus.columnAccessor, sortStatus.direction);
+            setState({ data: sortedData });
+        }
+    }, [sortStatus]);
 
     const getData = async (page = 1) => {
         try {
@@ -448,23 +460,12 @@ const Index = () => {
                                         {
                                             accessor: 'name',
                                             width: 130,
-                                            // render: (row, index) => (
-                                            //     <>
-                                            //         <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', overflow: 'hidden' }}>{row?.name}</div>
-                                            //          {row.tags?.length > 0 &&
-                                            //             row.tags?.map((item) => (
-                                            //                 <div className="flex gap-2 p-0.5">
-                                            //                     <div>
-                                            //                         <Chip label={item.tag} />
-                                            //                     </div>
-                                            //                 </div>
-                                            //             ))}
-                                            //     </>
-                                            // ),
+                                            sortable: true,
                                         },
                                         {
                                             accessor: 'Tags',
                                             width: 150,
+                                            sortable: true,
 
                                             render: (row, index) => (
                                                 <>
@@ -486,20 +487,27 @@ const Index = () => {
                                                 </>
                                             ),
                                         },
-                                        { accessor: 'vertical' },
+                                        { accessor: 'vertical', sortable: true },
                                         {
                                             accessor: 'focus_segment',
                                             title: 'Focus Segment',
+                                            sortable: true,
                                         },
 
                                         {
                                             accessor: 'annual_revenue',
+                                            sortable: true,
 
                                             title: 'Annual Revenue',
                                         },
-                                        { accessor: 'lead_owner', title: 'Lead Owner' },
-                                        { accessor: 'country', width: '120px' },
-                                        { accessor: 'state', title: 'State' },
+                                        {
+                                            accessor: 'lead_owner',
+                                            title: 'Lead Owner',
+
+                                            sortable: true,
+                                        },
+                                        { accessor: 'country', width: '120px', sortable: true },
+                                        { accessor: 'state', title: 'State', sortable: true },
                                         {
                                             accessor: 'created_on',
                                             title: 'Date',
@@ -523,15 +531,13 @@ const Index = () => {
                                                         <button className="flex hover:text-info" onClick={() => router.push(`/updateLead?id=${row.id}`)}>
                                                             <IconEdit className="h-4.5 w-4.5" />
                                                         </button>
-
-                                                        {/* <button type="button" className="flex hover:text-danger" onClick={() => {}}>
-                                            <IconTrashLines />
-                                        </button> */}
                                                     </div>
                                                 </>
                                             ),
                                         },
                                     ]}
+                                    sortStatus={sortStatus}
+                                    onSortStatusChange={setSortStatus}
                                     highlightOnHover
                                     totalRecords={state.data?.length}
                                     recordsPerPage={state.pageSize}
@@ -539,10 +545,6 @@ const Index = () => {
                                     page={null}
                                     onPageChange={(p) => {}}
                                     withBorder={true}
-                                    // selectedRecords={state.selectedRecords}
-                                    // onSelectedRecordsChange={(val) => {
-                                    //     setState({ selectedRecords: val });
-                                    // }}
                                     paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
                                 />
                             </div>

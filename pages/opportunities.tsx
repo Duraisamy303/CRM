@@ -1,9 +1,9 @@
 import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
-import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, convertUrlToFile, getFileNameFromUrl, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
+import React, { useEffect, useState } from 'react';
+import { Dropdown, Failure, Success, convertUrlToFile, getFileNameFromUrl, objIsEmpty, roundOff, sortData, useSetState } from '@/utils/functions.utils';
 import CommonLoader from './elements/commonLoader';
 import dynamic from 'next/dynamic';
-import { DataTable } from 'mantine-datatable';
+import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import IconEdit from '@/components/Icon/IconEdit';
 import IconEye from '@/components/Icon/IconEye';
 import { useRouter } from 'next/router';
@@ -39,6 +39,11 @@ const Opportunity = () => {
     const router = useRouter();
 
     const dispatch = useDispatch();
+
+    const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+        columnAccessor: 'name',
+        direction: 'asc',
+    });
 
     const [state, setState] = useSetState({
         data: [],
@@ -103,6 +108,13 @@ const Opportunity = () => {
     useEffect(() => {
         setState({ currentPage: 1 });
     }, [debouncedSearch, state.vertical, state.focus, state.lead, state.stage]);
+
+    useEffect(() => {
+        if (state.data?.length > 0) {
+            const sortedData = sortData(state.data, sortStatus.columnAccessor, sortStatus.direction);
+            setState({ data: sortedData });
+        }
+    }, [sortStatus]);
 
     const getData = async (page = 1) => {
         try {
@@ -569,18 +581,20 @@ const Opportunity = () => {
                             columns={[
                                 {
                                     accessor: 'name',
+                                    sortable: true,
                                 },
-                                { accessor: 'opportunity_value', title: 'Opportunity', render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
-                                { accessor: 'probability_in_percentage', title: 'Probability (%)' },
+                                { accessor: 'opportunity_value', title: 'Opportunity', sortable: true, render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
+                                { accessor: 'probability_in_percentage', title: 'Probability (%)', sortable: true },
                                 {
                                     accessor: 'recurring_value_per_year',
                                     title: 'Recurring Value',
+                                    sortable: true,
 
                                     render: (row: any) => <div>{roundOff(row?.recurring_value_per_year)}</div>,
                                 },
-                                { accessor: 'stages', title: 'Stage' },
-                                { accessor: 'currency', title: 'Currency' },
-                                { accessor: 'closing_date', title: 'Closing Date' },
+                                { accessor: 'stages', title: 'Stage', sortable: true },
+                                { accessor: 'currency', title: 'Currency', sortable: true },
+                                { accessor: 'closing_date', title: 'Closing Date', sortable: true },
                                 {
                                     accessor: 'actions',
                                     title: 'Actions',
@@ -608,6 +622,8 @@ const Opportunity = () => {
                                 },
                             ]}
                             highlightOnHover
+                            sortStatus={sortStatus}
+                            onSortStatusChange={setSortStatus}
                             totalRecords={state.data?.length}
                             recordsPerPage={state.pageSize}
                             minHeight={200}

@@ -334,3 +334,14 @@ export const handleSort = (column: string, sortColumn, sortOrder, data) => {
 export const allValuesAreZero = (arr) => {
     return arr?.every((value) => value === 0);
 };
+
+export const sortData = (data, sortBy, sortOrder) => {
+    return [...data].sort((a, b) => {
+        const valueA = a[sortBy]?.toString()?.toLowerCase?.() || a[sortBy];
+        const valueB = b[sortBy]?.toString()?.toLowerCase?.() || b[sortBy];
+        if (sortOrder === 'asc') {
+            return valueA > valueB ? 1 : -1;
+        }
+        return valueA < valueB ? 1 : -1;
+    });
+};

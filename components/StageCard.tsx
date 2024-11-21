@@ -24,7 +24,7 @@ const Timeline = (props: any) => {
                                     </p>
 
                                     <p className="text-sm">
-                                    <strong>Date:</strong> {moment(item?.date).format('MMMM DD, YYYY, h:mm A')}
+                                    <strong>Date:</strong> {moment(item?.date).format('MMMM DD, YYYY, h:mm a')}<br />
                                        <strong>Follow-up Date:</strong> {moment(item.follow_up_date_time).format('MMMM DD, YYYY')}
                                     </p>
                                    
