@@ -164,6 +164,7 @@ const Index = () => {
         if (state.vertical) {
             body.vertical_id = [state.vertical?.value];
         }
+        
         if (state.focus) {
             body.focus_segment = [state.focus?.value];
         }
