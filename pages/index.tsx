@@ -177,7 +177,7 @@ const Index = () => {
             body.state_id = [state.state?.value];
         }
         if (state.range[0] > 0 || state.range[1] != state.maxPrice) {
-            body.annual_revenue = [state.range[0], state.range[1]];
+            (body.min_revenue = state.range[0]), (body.max_revenue = state.range[1]);
         }
         if (state.tags?.length > 0) {
             body.tags = state.tags?.map((item) => item?.value);
