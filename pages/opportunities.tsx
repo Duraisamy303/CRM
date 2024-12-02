@@ -30,6 +30,7 @@ import YearPicker from '@/common_component/yearPicker';
 import CustomYearSelect from '@/common_component/yearPicker';
 import { useDispatch } from 'react-redux';
 import { leadId, oppId } from '@/store/crmConfigSlice';
+import { ROLE } from '@/utils/constant.utils';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -83,6 +84,9 @@ const Opportunity = () => {
         end_date: '',
         file: null,
         recurring_value_per_year: '',
+        columns: [],
+        role: '',
+        subLoading:false
     });
 
     useEffect(() => {
@@ -120,7 +124,9 @@ const Opportunity = () => {
         try {
             setState({ loading: true });
             const response: any = await Models.opportunity.allList(page);
-            tableData(response?.results);
+            const res: any = await Models.auth.userDetails();
+            setState({ role: res?.designation });
+            tableData(response?.results, res?.designation);
 
             setState({
                 loading: false,
@@ -147,7 +153,7 @@ const Opportunity = () => {
             let body = bodyData();
             if (!objIsEmpty(body)) {
                 const response: any = await Models.opportunity.filter(body, page);
-                tableData(response?.results);
+                tableData(response?.results, state.role);
                 setState({
                     loading: false,
                     totalRecords: response.count,
@@ -215,12 +221,12 @@ const Opportunity = () => {
 
     const stageList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.opportunity.oppDropdowns('stage');
             const dropdownList = Dropdown(res, 'stage');
-            setState({ stageList: dropdownList, loading: false });
+            setState({ stageList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -228,13 +234,13 @@ const Opportunity = () => {
 
     const currencyList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.opportunity.oppDropdowns('currency_type');
 
             const dropdownList = Dropdown(res, 'currency_short');
-            setState({ currencyList: dropdownList, loading: false });
+            setState({ currencyList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -242,12 +248,12 @@ const Opportunity = () => {
 
     const ownerList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res = await Models.lead.dropdowns('owner');
             const dropdownList = Dropdown(res, 'username');
-            setState({ ownerList: dropdownList, loading: false });
+            setState({ ownerList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -255,13 +261,13 @@ const Opportunity = () => {
 
     const leadList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.lead.list(state.currentLeadPage);
             const dropdownList = Dropdown(res?.results, 'name');
 
-            setState({ leadList: dropdownList, loading: false, hasMoreLead: res.next });
+            setState({ leadList: dropdownList, subLoading: false, hasMoreLead: res.next });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
 
             console.log('error: ', error);
         }
@@ -269,29 +275,29 @@ const Opportunity = () => {
 
     const getFocusSegmentList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.lead.dropdowns('focus_segment');
             const dropdownList = Dropdown(res, 'focus_segment');
-            setState({ focusList: dropdownList, loading: false });
+            setState({ focusList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
         }
     };
 
     const getMarketSegmentList = async () => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res = await Models.lead.dropdowns('market_segment');
             const dropdownList = Dropdown(res, 'market_segment');
-            setState({ marketList: dropdownList, loading: false });
+            setState({ marketList: dropdownList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
         }
     };
 
     const verticalList = async (focusData: any) => {
         try {
-            setState({ loading: true });
+            setState({ subLoading: true });
             const res: any = await Models.lead.focusIdBasedVericalList(focusData.value);
             let vericalList: [];
             if (res?.length > 0) {
@@ -299,13 +305,13 @@ const Opportunity = () => {
             }
 
             // const dropdownList = Dropdown(res, 'vertical');
-            setState({ verticalList: vericalList, loading: false });
+            setState({ verticalList: vericalList, subLoading: false });
         } catch (error) {
-            setState({ loading: false });
+            setState({ subLoading: false });
         }
     };
 
-    const tableData = (res: any) => {
+    const tableData = (res: any, role: string) => {
         const data = res?.map((item) => {
             return {
                 ...item,
@@ -318,8 +324,77 @@ const Opportunity = () => {
                 closing_date: item.closing_date,
             };
         });
+        let columns = [];
+        switch (role) {
+            case ROLE.ADMIN:
+                columns = [
+                    { accessor: 'name', sortable: true, title: 'Name' },
+                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity', render: (row: any) => roundOff(row?.opportunity_value) },
+                    { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
+                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value', render: (row: any) => roundOff(row?.recurring_value_per_year) },
+                    { accessor: 'stages', sortable: true, title: 'Stage' },
+                    { accessor: 'currency', sortable: true, title: 'Currency' },
+                    { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <div className="mx-auto flex w-max items-center gap-4">
+                                <button
+                                    type="button"
+                                    className="flex hover:text-primary"
+                                    onClick={() => {
+                                        dispatch(leadId(''));
+                                        dispatch(oppId(row.id));
+                                        router.push(`/viewOpportunity?id=${row.id}`);
+                                    }}
+                                >
+                                    <IconEye />
+                                </button>
+                                <button className="flex hover:text-info" onClick={() => editOppData(row)}>
+                                    <IconEdit className="h-4.5 w-4.5" />
+                                </button>
+                            </div>
+                        ),
+                    },
+                ];
+                break;
+            case ROLE.BDM:
+                columns = [
+                    { accessor: 'name', sortable: true, title: 'Name' },
+                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity', render: (row: any) => roundOff(row?.opportunity_value) },
+                    { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
+                    { accessor: 'stages', sortable: true, title: 'Stage' },
+                    { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
+                ];
+                break;
 
-        setState({ data: data });
+            case ROLE.BDE:
+                columns = [
+                    { accessor: 'name', sortable: true, title: 'Name' },
+                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity', render: (row: any) => roundOff(row?.opportunity_value) },
+                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value', render: (row: any) => roundOff(row?.recurring_value_per_year) },
+                    { accessor: 'stages', sortable: true, title: 'Stage' },
+                    { accessor: 'currency', sortable: true, title: 'Currency' },
+                ];
+                break;
+
+            case ROLE.TM:
+                columns = [
+                    { accessor: 'name', sortable: true, title: 'Name' },
+                    { accessor: 'stages', sortable: true, title: 'Stage' },
+                ];
+                break;
+
+            case ROLE.DM:
+                columns = [
+                    { accessor: 'name', sortable: true, title: 'Name' },
+                    { accessor: 'currency', sortable: true, title: 'Currency' },
+                ];
+                break;
+        }
+
+        setState({ data: data, columns });
     };
 
     const handleNextPage = () => {
@@ -578,49 +653,7 @@ const Opportunity = () => {
                         <DataTable
                             className="table-responsive"
                             records={state.data}
-                            columns={[
-                                {
-                                    accessor: 'name',
-                                    sortable: true,
-                                },
-                                { accessor: 'opportunity_value', title: 'Opportunity', sortable: true, render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
-                                { accessor: 'probability_in_percentage', title: 'Probability (%)', sortable: true },
-                                {
-                                    accessor: 'recurring_value_per_year',
-                                    title: 'Recurring Value',
-                                    sortable: true,
-
-                                    render: (row: any) => <div>{roundOff(row?.recurring_value_per_year)}</div>,
-                                },
-                                { accessor: 'stages', title: 'Stage', sortable: true },
-                                { accessor: 'currency', title: 'Currency', sortable: true },
-                                { accessor: 'closing_date', title: 'Closing Date', sortable: true },
-                                {
-                                    accessor: 'actions',
-                                    title: 'Actions',
-                                    render: (row: any) => (
-                                        <>
-                                            <div className="mx-auto flex w-max items-center gap-4">
-                                                <button
-                                                    type="button"
-                                                    className="flex hover:text-primary"
-                                                    onClick={() => {
-                                                        dispatch(leadId(''));
-                                                        dispatch(oppId(row.id));
-
-                                                        router.push(`/viewOpportunity?id=${row.id}`);
-                                                    }}
-                                                >
-                                                    <IconEye />
-                                                </button>
-                                                <button className="flex hover:text-info" onClick={() => editOppData(row)}>
-                                                    <IconEdit className="h-4.5 w-4.5" />
-                                                </button>
-                                            </div>
-                                        </>
-                                    ),
-                                },
-                            ]}
+                            columns={state.columns}
                             highlightOnHover
                             sortStatus={sortStatus}
                             onSortStatusChange={setSortStatus}
@@ -803,7 +836,7 @@ const Opportunity = () => {
 
                             <CustomSelect
                                 title="Currency Type"
-                                value={state.currency_type}
+                                value={state.currency}
                                 onChange={(e) => setState({ currency: e })}
                                 placeholder={'Currency Type'}
                                 options={state.currencyList}
