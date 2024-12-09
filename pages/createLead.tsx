@@ -91,7 +91,8 @@ const CreateLead = () => {
             setState({ loading: false });
         }
     };
-    const getMarketSegmentList = async () => {
+    
+    const  userList = async () => {
         try {
             setState({ loading: true });
             const res = await Models.lead.dropdowns('assigned_to');
@@ -104,7 +105,7 @@ const CreateLead = () => {
         }
     };
 
-    const userList = async () => {
+    const getMarketSegmentList = async () => {
         try {
             setState({ loading: true });
             const res = await Models.lead.dropdowns('market_segment');
@@ -233,7 +234,7 @@ const CreateLead = () => {
                 assignTo: state.assignTo?.value,
                 source: state.source?.value,
                 source_from: state.source_from?.value,
-                lead_type: 'Digital Lead',
+                lead_type: state.lead_type?.value,
                 assigned_to: state.assigned_to?.value,
                 lead_source: state.lead_source?.value,
                 lead_source_from: state.lead_source_from?.value,

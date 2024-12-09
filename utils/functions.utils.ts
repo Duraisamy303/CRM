@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Swal from 'sweetalert2';
 import XLSX from 'sheetjs-style';
 import * as FileSaver from 'file-saver';
+import moment from 'moment';
 
 const NumberPattern = /^\d{10}$/;
 const PassWordPattern = '"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})';
@@ -269,6 +270,10 @@ export const roundOff = (price: any) => {
     return roundedPrice;
 };
 
+export const isEmptyObject = (obj: any) => {
+    return Object.values(obj).every((value) => value === '');
+};
+
 export const showDeleteAlert = (onConfirm, onCancel, title) => {
     const swalWithBootstrapButtons = Swal.mixin({
         customClass: {
@@ -344,4 +349,61 @@ export const sortData = (data, sortBy, sortOrder) => {
         }
         return valueA < valueB ? 1 : -1;
     });
+};
+
+export const getDateRange = (rangeType) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    let startDate, endDate;
+
+    if (rangeType === 'thisMonth') {
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = today;
+    } else if (rangeType === 'lastMonth') {
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+    } else if (rangeType === 'last7Days') {
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - 6);
+        endDate = today;
+    } else if (rangeType === 'Year') {
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = today;
+    } else {
+        throw new Error("Invalid rangeType. Use 'thisMonth', 'lastMonth', 'last7Days', or 'lastYear'.");
+    }
+
+    const start = moment(startDate).format('YYYY-MM-DD');
+    const end = moment(endDate).format('YYYY-MM-DD');
+
+    return { start, end };
+};
+
+export const filterByDates = (filter: any, fromDate: any, toDate: any) => {
+    let startDate: any, endDate: any;
+
+    if (filter == 'Last 7 Days') {
+        const { start, end } = getDateRange('last7Days');
+        (startDate = start), (endDate = end);
+    }
+
+    if (filter == 'This Month') {
+        const { start, end } = getDateRange('thisMonth');
+        (startDate = start), (endDate = end);
+    }
+
+    if (filter == 'Last Month') {
+        const { start, end } = getDateRange('lastMonth');
+        (startDate = start), (endDate = end);
+    }
+    if (filter == 'Year') {
+        const { start, end } = getDateRange('Year');
+        (startDate = start), (endDate = end);
+    }
+
+    if (filter == 'Custome') {
+        (startDate = moment(fromDate).format('YYYY-MM-DD')), (endDate = moment(toDate).format('YYYY-MM-DD'));
+    }
+    return { startDate, endDate };
 };

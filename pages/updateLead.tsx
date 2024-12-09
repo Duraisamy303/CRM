@@ -17,6 +17,7 @@ import IconLoader from '@/components/Icon/IconLoader';
 import * as Yup from 'yup';
 import { PrivateRouter, Validation } from '@/utils/imports.utils';
 import Breadcrumb from '@/common_component/breadcrumb';
+import { LEADTYPE } from '@/utils/constant.utils';
 
 const UpdateLead = () => {
     const dispatch = useDispatch();
@@ -64,12 +65,15 @@ const UpdateLead = () => {
         tagList();
         ownerList();
         createdByList();
+        sourceList();
+        userList();
     }, [id]);
 
     const getDate = async () => {
         try {
             setState({ loading: true });
             const res: any = await Models.lead.details(id);
+            console.log('res: ', res);
             setState({
                 loading: false,
                 ...res,
@@ -82,6 +86,10 @@ const UpdateLead = () => {
                 is_active: res.is_active ?? false,
                 created_by: { value: res.created_by?.id, label: res.created_by?.username } || null,
                 vertical: { value: res.focus_segment?.vertical?.id, label: res.focus_segment?.vertical?.vertical },
+                lead_type: { value: res.lead_type, label: res.lead_type },
+                lead_source: { value: res.lead_source?.id, label: res.lead_source?.source },
+                lead_source_from: { value: res.lead_source_from?.id, label: res.lead_source_from?.source_from },
+                assigned_to: { value: res.assigned_to?.id, label: res.assigned_to?.username },
             });
             getFocusSegmentList({ value: res.focus_segment?.vertical?.id });
             stateList({ value: res.country?.id });
@@ -144,12 +152,38 @@ const UpdateLead = () => {
         }
     };
 
+    const userList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('assigned_to');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ assignList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
     const ownerList = async () => {
         try {
             setState({ loading: true });
             const res = await Models.lead.dropdowns('owner');
             const dropdownList = Dropdown(res, 'username');
             setState({ ownerList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const sourceList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.sourceList();
+            const dropdownList = Dropdown(res, 'source');
+            setState({ sourceList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -181,6 +215,18 @@ const UpdateLead = () => {
         }
     };
 
+    const sourceFromList = async (source) => {
+        try {
+            const res = await Models.lead.sourceFromList(source?.value);
+            const dropdownList = Dropdown(res, 'source_from');
+            setState({ sourceFromList: dropdownList });
+        } catch (error) {
+            // setState({ stateLoading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
     const handleSubmit = async () => {
         try {
             setState({ submitLoad: true });
@@ -204,14 +250,20 @@ const UpdateLead = () => {
                 market_segment: state.market_segment?.value,
                 is_active: true,
                 vertical: state.vertical?.value,
+                assignTo: state.assignTo?.value,
+                lead_type: state.lead_type?.value,
+                assigned_to: state.assigned_to?.value,
+                lead_source: state.lead_source?.value,
+                lead_source_from: state.lead_source_from?.value,
             };
+
             await Validation.createLeadValidation.validate(body, { abortEarly: false });
 
             const res: any = await Models.lead.update(body, id);
             setState({ submitLoad: false });
             Success(res?.message);
             if (typeof window !== 'undefined') {
-                window.history.back(); // Go back to the previous page
+                window.history.back();
             }
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
@@ -312,13 +364,20 @@ const UpdateLead = () => {
                                 <IconUser className="text-[#fe70f2]" />
                             </div>
                             <div className=" " style={{ fontSize: '20px' }}>
-                                Company Information
+                                Contact Information
                             </div>
                         </div>
 
-                        <TextInput title="Company Email" value={state.company_email} onChange={(e) => setState({ company_email: e })} placeholder={'Company Email'} />
-                        <TextInput title="Company Website" value={state.company_website} onChange={(e) => setState({ company_website: e })} placeholder={'Company Website'} />
-                        <TextInput title="Company Number" value={state.company_number} onChange={(e) => setState({ company_number: e })} placeholder={'Company Number'} />
+                        <TextInput title="Email" value={state.company_email} onChange={(e) => setState({ company_email: e })} placeholder={'Email'} required error={state.errors?.company_email} />
+                        <TextInput title="Number" value={state.company_number} onChange={(e) => setState({ company_number: e })} placeholder={'Number'} required error={state.errors?.company_number} />
+                        <TextInput
+                            title="Website"
+                            value={state.company_website}
+                            onChange={(e) => setState({ company_website: e })}
+                            placeholder={'Website'}
+                            required
+                            error={state.errors?.company_website}
+                        />
                     </div>
                 </div>
 
@@ -406,6 +465,31 @@ const UpdateLead = () => {
                             />
                         </div>
                     </div>
+                    <div className=" flex w-full gap-3">
+                        <div className=" flex  w-[50%]">
+                            <CustomSelect
+                                title="Assign To"
+                                value={state.assigned_to}
+                                onChange={(e) => setState({ assigned_to: e })}
+                                placeholder={'Assign To'}
+                                options={state.assignList}
+                                error={state.errors?.assigned_to}
+                                required
+                            />
+                        </div>
+
+                        <div className="flex w-[50%]">
+                            <CustomSelect
+                                title="Lead Type"
+                                value={state.lead_type}
+                                onChange={(e) => setState({ lead_type: e })}
+                                placeholder={'Lead Type'}
+                                options={LEADTYPE}
+                                error={state.errors?.lead_type}
+                                required
+                            />
+                        </div>
+                    </div>
 
                     <div className=" flex w-full gap-3">
                         <div className=" flex  w-[50%]">
@@ -437,40 +521,50 @@ const UpdateLead = () => {
                         </div>
                     </div>
 
-                    <div className=" flex w-full gap-3">
-                        <div className=" flex  w-[50%]">
+                    <div className=" flex w-full items-center  gap-3 ">
+                        <div className="flex w-[50%] ">
                             <CustomSelect
-                                title="Remainder"
-                                value={state.remainder}
-                                onChange={(e) => setState({ remainder: e })}
-                                placeholder={'Remainder'}
-                                options={remainder}
-                                error={state.errors?.country}
+                                title="Source"
+                                value={state.lead_source}
+                                onChange={(e) => {
+                                    if (e) {
+                                        sourceFromList(e);
+                                    }
+                                    setState({ lead_source: e, lead_source_from: '' });
+                                }}
+                                placeholder={'Source'}
+                                options={state.sourceList}
+                                error={state.errors?.lead_source}
+                                required
                             />
                         </div>
-                        <div className="flex w-[50%]">
-                            <CustomSelect title="Source" value={state.source} onChange={(e) => setState({ source: e })} placeholder={'Source'} options={source} error={state.errors?.state} />
-                        </div>
+                        {state.lead_source && (
+                            <div className=" flex w-[50%]">
+                                <CustomSelect
+                                    title="Source From"
+                                    value={state.lead_source_from}
+                                    onChange={(e) => setState({ lead_source_from: e })}
+                                    placeholder={'Source From'}
+                                    error={state.errors?.lead_source_from}
+                                    options={state.sourceFromList}
+                                    required
+                                />
+                            </div>
+                        )}
                     </div>
-                    {state.source && (
-                        <div className=" flex w-full gap-3">
-                            <TextInput title="Source From" value={state.source_from} onChange={(e) => setState({ source_from: e })} placeholder={'Source From'} />
-                        </div>
-                    )}
 
-                    {/* <div className="  w-full">
-                        <div className="">
-                            <label className="block text-sm font-medium text-gray-700">Status</label>
-                            <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
-                        </div>
-                    </div> */}
                     <div className=" flex items-center justify-end gap-3">
+                        {/* <CheckboxInput checked={state.remainder} onChange={() => setState({ isOpenTask: !state.isOpenTask, remainder: !state.remainder })} label="Remainder" /> */}
+
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel
                         </button>
                         <button type="button" className="btn btn-primary" onClick={() => handleSubmit()}>
-                            {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
+                            {state.submitLoad ? <IconLoader className=" h-4  w-4 animate-spin" /> : 'Submit'}
                         </button>
+                        {/* <button type="button" className="btn btn-primary" onClick={() => setState({ isOpen: true })}>
+                            {state.submitLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit and Add Opportunity'}
+                        </button> */}
                     </div>
                 </div>
             </div>
