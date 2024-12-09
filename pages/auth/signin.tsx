@@ -57,7 +57,7 @@ const LoginBoxed = () => {
                 localStorage.setItem('crmToken', res.access);
                 localStorage.setItem('crmUser', JSON.stringify(res.user));
                 setState({ loading: false, error: {} });
-                router.replace('/');
+                router.replace('/dashboards');
                 Success('Login Sucessfully');
             }
         } catch (error) {

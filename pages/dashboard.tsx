@@ -417,7 +417,7 @@ const Index = () => {
                         </Link>
                     </li>
                     <li className="before:content-['/'] ltr:before:mr-2 rtl:before:ml-2">
-                        <span>Sales</span>
+                        <span>Lead</span>
                     </li>
                 </ul>
 
@@ -425,12 +425,12 @@ const Index = () => {
                     <div className="mb-6 grid gap-6 xl:grid-cols-3">
                         <div className="panel h-full xl:col-span-2">
                             <div className="mb-5 flex items-center justify-between dark:text-white-light">
-                                <h5 className="text-lg font-semibold">Revenue</h5>
+                                <h5 className="text-lg font-semibold">Incoming lead </h5>
                                 <div className="dropdown">
                                     <Dropdown
                                         offset={[0, 1]}
                                         placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                        button={<IconHorizontalDots className="text-black/70 dark:text-white/70 hover:!text-primary" />}
+                                        button={<IconHorizontalDots className="text-black/70 hover:!text-primary dark:text-white/70" />}
                                     >
                                         <ul>
                                             <li>
@@ -446,9 +446,9 @@ const Index = () => {
                                     </Dropdown>
                                 </div>
                             </div>
-                            <p className="text-lg dark:text-white-light/90">
+                            {/* <p className="text-lg dark:text-white-light/90">
                                 Total Profit <span className="ml-2 text-primary">$10,840</span>
-                            </p>
+                            </p> */}
                             <div className="relative">
                                 <div className="rounded-lg bg-white dark:bg-black">
                                     {isMounted ? (
@@ -464,8 +464,9 @@ const Index = () => {
 
                         <div className="panel h-full">
                             <div className="mb-5 flex items-center">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Sales By Category</h5>
+                                <h5 className="text-lg font-semibold dark:text-white-light">Lead source</h5>
                             </div>
+                            
                             <div>
                                 <div className="rounded-lg bg-white dark:bg-black">
                                     {isMounted ? (
@@ -484,7 +485,7 @@ const Index = () => {
                         <div className="panel h-full sm:col-span-2 xl:col-span-1">
                             <div className="mb-5 flex items-center">
                                 <h5 className="text-lg font-semibold dark:text-white-light">
-                                    Daily Sales
+                                    Customer satisfaction
                                     <span className="block text-sm font-normal text-white-dark">Go to columns for details.</span>
                                 </h5>
                                 <div className="relative ltr:ml-auto rtl:mr-auto">
@@ -507,11 +508,11 @@ const Index = () => {
                         </div>
                         <div className="panel h-full">
                             <div className="mb-5 flex items-center justify-between dark:text-white-light">
-                                <h5 className="text-lg font-semibold">Summary</h5>
+                                <h5 className="text-lg font-semibold">Sales</h5>
                                 <div className="dropdown">
                                     <Dropdown
                                         placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                        button={<IconHorizontalDots className="w-5 h-5 text-black/70 dark:text-white/70 hover:!text-primary" />}
+                                        button={<IconHorizontalDots className="h-5 w-5 text-black/70 hover:!text-primary dark:text-white/70" />}
                                     >
                                         <ul>
                                             <li>
@@ -588,7 +589,7 @@ const Index = () => {
                                 </div>
                                 <h5 className="text-2xl font-semibold ltr:text-right rtl:text-left dark:text-white-light">
                                     3,192
-                                    <span className="block text-sm font-normal">Total Orders</span>
+                                    <span className="block text-sm font-normal">Recurring Value</span>
                                 </h5>
                             </div>
                             <div className="rounded-lg bg-transparent">
@@ -603,9 +604,9 @@ const Index = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="mb-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {/* <div className="mb-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                         <div className="panel h-full pb-0 sm:col-span-2 xl:col-span-1">
-                            <h5 className="mb-5 text-lg font-semibold dark:text-white-light">Recent Activities</h5>
+                            <h5 className="mb-5 text-lg font-semibold dark:text-white-light">Log History</h5>
                             <PerfectScrollbar className="relative mb-4 h-[290px] ltr:-mr-3 ltr:pr-3 rtl:-ml-3 rtl:pl-3" options={{suppressScrollX: true}}>
                                 <div className="cursor-pointer text-sm">
                                     <div className="group relative flex items-center py-1.5">
@@ -893,103 +894,104 @@ const Index = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <div className="panel h-full w-full">
                             <div className="mb-5 flex items-center justify-between">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Recent Orders</h5>
+                                <h5 className="text-lg font-semibold dark:text-white-light">Opportunity</h5>
                             </div>
                             <div className="table-responsive">
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th className="ltr:rounded-l-md rtl:rounded-r-md">Customer</th>
-                                            <th>Product</th>
-                                            <th>Invoice</th>
-                                            <th>Price</th>
-                                            <th className="ltr:rounded-r-md rtl:rounded-l-md">Status</th>
+                                            <th className="ltr:rounded-l-md rtl:rounded-r-md">Opportunity</th>
+                                            <th>Owner</th>
+                                            <th>Source</th>
+                                            <th>Amount</th>
+                                            <th className="ltr:rounded-r-md rtl:rounded-l-md">Stage</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
-                                            <td className="min-w-[150px] text-black dark:text-white">
+                                            <td className="text-primary">Website</td>
+                                            <td className="min-w-[100px] text-black dark:text-white">
                                                 <div className="flex items-center">
                                                     <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-6.jpeg" alt="avatar" />
-                                                    <span className="whitespace-nowrap">Luke Ivory</span>
+                                                    <span className="whitespace-nowrap">Johnson</span>
                                                 </div>
                                             </td>
-                                            <td className="text-primary">Headphone</td>
                                             <td>
-                                                <Link href="/apps/invoice/preview">#46894</Link>
+                                                <Link href="/apps/invoice/preview">Email</Link>
                                             </td>
                                             <td>$56.07</td>
                                             <td>
-                                                <span className="badge bg-success shadow-md dark:group-hover:bg-transparent">Paid</span>
+                                                <span className="badge bg-info shadow-md dark:group-hover:bg-transparent">Proposal</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                            <td className="text-primary">Logo Design</td>
+                                            <td className="min-w-[100px] text-black dark:text-white">
+                                                <div className="flex items-center">
+                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-6.jpeg" alt="avatar" />
+                                                    <span className="whitespace-nowrap"> Williams</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <Link href="/apps/invoice/preview">Advertisement</Link>
+                                            </td>
+                                            <td>$36.07</td>
+                                            <td>
+                                                <span className="badge bg-success shadow-md dark:group-hover:bg-transparent">Won</span>
                                             </td>
                                         </tr>
                                         <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
-                                            <td className="text-black dark:text-white">
+                                            <td className="text-primary">Application</td>
+                                            <td className="min-w-[100px] text-black dark:text-white">
                                                 <div className="flex items-center">
-                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-7.jpeg" alt="avatar" />
-                                                    <span className="whitespace-nowrap">Andy King</span>
+                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-6.jpeg" alt="avatar" />
+                                                    <span className="whitespace-nowrap"> Alan White</span>
                                                 </div>
                                             </td>
-                                            <td className="text-info">Nike Sport</td>
                                             <td>
-                                                <Link href="/apps/invoice/preview">#76894</Link>
+                                                <Link href="/apps/invoice/preview">Other</Link>
                                             </td>
-                                            <td>$126.04</td>
+                                            <td>$90.07</td>
                                             <td>
-                                                <span className="badge bg-secondary shadow-md dark:group-hover:bg-transparent">Shipped</span>
+                                                <span className="badge bg-primary shadow-md dark:group-hover:bg-transparent">Follow-Up</span>
                                             </td>
                                         </tr>
                                         <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
-                                            <td className="text-black dark:text-white">
+                                            <td className="text-primary">Marketing</td>
+                                            <td className="min-w-[100px] text-black dark:text-white">
                                                 <div className="flex items-center">
-                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-8.jpeg" alt="avatar" />
-                                                    <span className="whitespace-nowrap">Laurie Fox</span>
+                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-6.jpeg" alt="avatar" />
+                                                    <span className="whitespace-nowrap"> Harry Gump</span>
                                                 </div>
                                             </td>
-                                            <td className="text-warning">Sunglasses</td>
                                             <td>
-                                                <Link href="/apps/invoice/preview">#66894</Link>
+                                                <Link href="/apps/invoice/preview">Web</Link>
                                             </td>
-                                            <td>$56.07</td>
+                                            <td>$86.07</td>
                                             <td>
-                                                <span className="badge bg-success shadow-md dark:group-hover:bg-transparent">Paid</span>
+                                                <span className="badge bg-warning shadow-md dark:group-hover:bg-transparent">Disqualified</span>
                                             </td>
                                         </tr>
                                         <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
-                                            <td className="text-black dark:text-white">
+                                            <td className="text-primary">SEO</td>
+                                            <td className="min-w-[100px] text-black dark:text-white">
                                                 <div className="flex items-center">
-                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-9.jpeg" alt="avatar" />
-                                                    <span className="whitespace-nowrap">Ryan Collins</span>
+                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-6.jpeg" alt="avatar" />
+                                                    <span className="whitespace-nowrap"> Kelly White</span>
                                                 </div>
                                             </td>
-                                            <td className="text-danger">Sport</td>
                                             <td>
-                                                <button type="button">#75844</button>
+                                                <Link href="/apps/invoice/preview">Phone</Link>
                                             </td>
-                                            <td>$110.00</td>
+                                            <td>$36.07</td>
                                             <td>
-                                                <span className="badge bg-secondary shadow-md dark:group-hover:bg-transparent">Shipped</span>
-                                            </td>
-                                        </tr>
-                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
-                                            <td className="text-black dark:text-white">
-                                                <div className="flex items-center">
-                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/profile-10.jpeg" alt="avatar" />
-                                                    <span className="whitespace-nowrap">Irene Collins</span>
-                                                </div>
-                                            </td>
-                                            <td className="text-secondary">Speakers</td>
-                                            <td>
-                                                <Link href="/apps/invoice/preview">#46894</Link>
-                                            </td>
-                                            <td>$56.07</td>
-                                            <td>
-                                                <span className="badge bg-success shadow-md dark:group-hover:bg-transparent">Paid</span>
+                                                <span className="badge bg-lime-400 shadow-md dark:group-hover:bg-transparent">Qualified</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -999,41 +1001,110 @@ const Index = () => {
 
                         <div className="panel h-full w-full">
                             <div className="mb-5 flex items-center justify-between">
-                                <h5 className="text-lg font-semibold dark:text-white-light">Top Selling Product</h5>
+                                <h5 className="text-lg font-semibold dark:text-white-light">Task</h5>
                             </div>
                             <div className="table-responsive">
                                 <table>
                                     <thead>
                                         <tr className="border-b-0">
-                                            <th className="ltr:rounded-l-md rtl:rounded-r-md">Product</th>
-                                            <th>Price</th>
-                                            <th>Discount</th>
-                                            <th>Sold</th>
-                                            <th className="ltr:rounded-r-md rtl:rounded-l-md">Source</th>
+                                            <th>Name</th>
+
+                                            <th>Date</th>
+                                            <th className="ltr:rounded-l-md rtl:rounded-r-md">Priority</th>
+
+                                            <th>Type</th>
+                                            <th className="ltr:rounded-r-md rtl:rounded-l-md">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
-                                            <td className="min-w-[150px] text-black dark:text-white">
-                                                <div className="flex">
-                                                    <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/product-headphones.jpg" alt="avatar" />
-                                                    <p className="whitespace-nowrap">
-                                                        Headphone
-                                                        <span className="block text-xs text-primary">Digital</span>
-                                                    </p>
-                                                </div>
+                                            <td>Bob Brown</td>
+                                            <td>22-03-2024</td>
+                                            <td>
+                                                <span className="badge bg-warning shadow-md dark:group-hover:bg-transparent">High</span>
                                             </td>
-                                            <td>$168.09</td>
-                                            <td>$60.09</td>
-                                            <td>170</td>
                                             <td>
                                                 <button type="button" className="flex items-center text-danger">
-                                                    <IconMultipleForwardRight className="rtl:rotate-180 ltr:mr-1 rtl:ml-1" />
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
                                                     Direct
                                                 </button>
                                             </td>
+                                            <td>In Progress</td>
                                         </tr>
                                         <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                            <td>TEF</td>
+                                            <td>12-10-2024</td>
+                                            <td>
+                                                <span className="badge bg-primary shadow-md dark:group-hover:bg-transparent">Mid</span>
+                                            </td>
+                                            <td>
+                                                <button type="button" className="flex items-center text-success">
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
+                                                    Call
+                                                </button>
+                                            </td>
+                                            <td>Waiting</td>
+                                        </tr>
+
+                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                            <td>Living Science</td>
+                                            <td>12-10-2024</td>
+                                            <td>
+                                                <span className="badge bg-red-600 shadow-md dark:group-hover:bg-transparent">Urgent</span>
+                                            </td>
+                                            <td>
+                                                <button type="button" className="flex items-center text-warning">
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
+                                                    Google
+                                                </button>
+                                            </td>
+                                            <td>Started</td>
+                                        </tr>
+
+                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                            <td>Kaira Parker</td>
+                                            <td>02-08-2024</td>
+                                            <td>
+                                                <span className="badge bg-primary shadow-md dark:group-hover:bg-transparent">Mid</span>
+                                            </td>
+                                            <td>
+                                                <button type="button" className="flex items-center text-secondary">
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
+                                                    Email
+                                                </button>
+                                            </td>
+                                            <td>Waiting</td>
+                                        </tr>
+
+                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                            <td>Rick Reynolds</td>
+                                            <td>02-04-2024</td>
+                                            <td>
+                                                <span className="badge bg-warning shadow-md dark:group-hover:bg-transparent">High</span>
+                                            </td>
+                                            <td>
+                                                <button type="button" className="flex items-center text-success">
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
+                                                    Phone
+                                                </button>
+                                            </td>
+                                            <td>Not Started</td>
+                                        </tr>
+                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                            <td>Liu Chang</td>
+                                            <td>12-12-2024</td>
+                                            <td>
+                                                <span className="badge bg-primary shadow-md dark:group-hover:bg-transparent">Mid</span>
+                                            </td>
+                                            <td>
+                                                <button type="button" className="flex items-center text-warning">
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
+                                                    Ads
+                                                </button>
+                                            </td>
+                                            <td>In Progress</td>
+                                        </tr>
+                                        {/* <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
                                             <td className="text-black dark:text-white">
                                                 <div className="flex">
                                                     <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/product-shoes.jpg" alt="avatar" />
@@ -1047,7 +1118,7 @@ const Index = () => {
                                             <td>130</td>
                                             <td>
                                                 <button type="button" className="flex items-center text-success">
-                                                    <IconMultipleForwardRight className="rtl:rotate-180 ltr:mr-1 rtl:ml-1" />
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
                                                     Google
                                                 </button>
                                             </td>
@@ -1066,7 +1137,7 @@ const Index = () => {
                                             <td>66</td>
                                             <td>
                                                 <button type="button" className="flex items-center text-warning">
-                                                    <IconMultipleForwardRight className="rtl:rotate-180 ltr:mr-1 rtl:ml-1" />
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
                                                     Ads
                                                 </button>
                                             </td>
@@ -1085,12 +1156,12 @@ const Index = () => {
                                             <td>35</td>
                                             <td>
                                                 <button type="button" className="flex items-center text-secondary">
-                                                    <IconMultipleForwardRight className="rtl:rotate-180 ltr:mr-1 rtl:ml-1" />
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
                                                     Email
                                                 </button>
                                             </td>
-                                        </tr>
-                                        <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
+                                        </tr> */}
+                                        {/* <tr className="group text-white-dark hover:text-black dark:hover:text-white-light/90">
                                             <td className="text-black dark:text-white">
                                                 <div className="flex">
                                                     <img className="h-8 w-8 rounded-md object-cover ltr:mr-3 rtl:ml-3" src="/assets/images/product-camera.jpg" alt="avatar" />
@@ -1104,11 +1175,11 @@ const Index = () => {
                                             <td>30</td>
                                             <td>
                                                 <button type="button" className="flex items-center text-primary">
-                                                    <IconMultipleForwardRight className="rtl:rotate-180 ltr:mr-1 rtl:ml-1" />
+                                                    <IconMultipleForwardRight className="ltr:mr-1 rtl:ml-1 rtl:rotate-180" />
                                                     Referral
                                                 </button>
                                             </td>
-                                        </tr>
+                                        </tr> */}
                                     </tbody>
                                 </table>
                             </div>

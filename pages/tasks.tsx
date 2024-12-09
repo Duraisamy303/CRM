@@ -30,6 +30,7 @@ import Tippy from '@tippyjs/react';
 import IconUserPlus from '@/components/Icon/IconUserPlus';
 import ReadMore from '@/common_component/readMore';
 import IconRefresh from '@/components/Icon/IconRefresh';
+import { ROLE } from '@/utils/constant.utils';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -92,6 +93,8 @@ const Tasks = () => {
         createdByList: [],
         popupHeight: 'auto',
         task_date_time: null,
+        columns: [],
+        role: '',
     });
 
     useEffect(() => {
@@ -136,7 +139,9 @@ const Tasks = () => {
             };
 
             const response: any = await Models.task.list(body, page);
-            tableData(response?.results);
+            const res: any = await Models.auth.userDetails();
+            setState({ role: res?.designation });
+            tableData(response?.results, res?.designation);
 
             setState({
                 loading: false,
@@ -164,7 +169,7 @@ const Tasks = () => {
             if (!objIsEmpty(body)) {
                 const response: any = await Models.task.list(body, page);
 
-                tableData(response?.results);
+                tableData(response?.results, state.role);
 
                 setState({
                     loading: false,
@@ -294,7 +299,7 @@ const Tasks = () => {
         return body;
     };
 
-    const tableData = (res: any) => {
+    const tableData = (res: any, role: string) => {
         const data = res?.map((item) => {
             return {
                 ...item,
@@ -310,9 +315,76 @@ const Tasks = () => {
                 assigned_to: item?.assigned_to?.length > 0 ? item?.assigned_to?.map((item) => item?.username).join(', ') : item.created_by?.username,
             };
         });
+        let columns = [];
+        switch (role) {
+            case ROLE.ADMIN:
+                columns = [
+                    { accessor: 'leadName', title: 'Lead Name', sortable: true },
+                    { accessor: 'task', title: 'Task Type', sortable: true },
+                    { accessor: 'contact', title: 'Contact Name', sortable: true },
+                    { accessor: 'category', title: 'Category', sortable: true },
+                    { accessor: 'created_by', title: 'Created By', sortable: true },
+                    { accessor: 'date', title: 'Date', sortable: true },
+                    { accessor: 'description', title: 'Description', sortable: false },
+                    { accessor: 'assigned_to', title: 'Assigned To', sortable: false },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <div className="mx-auto flex w-max items-center gap-4">
+                                <button className="flex hover:text-primary" onClick={() => console.log('View task', row)}>
+                                    <IconEye />
+                                </button>
+                                <button className="flex hover:text-info" onClick={() => console.log('Edit task', row)}>
+                                    <IconEdit className="h-4.5 w-4.5" />
+                                </button>
+                            </div>
+                        ),
+                    },
+                ];
+                break
 
-        setState({ data: data });
+            case ROLE.BDM:
+                columns = [
+                    { accessor: 'leadName', title: 'Lead Name', sortable: true },
+                    { accessor: 'task', title: 'Task Type', sortable: true },
+                    { accessor: 'contact', title: 'Contact Name', sortable: true },
+                    { accessor: 'date', title: 'Date', sortable: true },
+                    { accessor: 'description', title: 'Description', sortable: false },
+                ];
+                break
+
+
+            case ROLE.BDE:
+                columns = [
+                    { accessor: 'task', title: 'Task Type', sortable: true },
+                    { accessor: 'contact', title: 'Contact Name', sortable: true },
+                    { accessor: 'date', title: 'Date', sortable: true },
+                ];
+                break
+
+            case ROLE.TM:
+                columns = [
+                    { accessor: 'leadName', title: 'Lead Name', sortable: true },
+                    { accessor: 'category', title: 'Category', sortable: true },
+                    { accessor: 'date', title: 'Date', sortable: true },
+                ];
+                break
+
+
+            case ROLE.DM:
+                columns = [
+                    { accessor: 'leadName', title: 'Lead Name', sortable: true },
+                    { accessor: 'assigned_to', title: 'Assigned To', sortable: false },
+                ];
+                break
+
+        }
+
+        setState({ data: data, columns:columns });
     };
+    console.log("state.columns: ", state.columns);
+
 
     const handleNextPage = () => {
         if (state.next) {
@@ -516,77 +588,7 @@ const Tasks = () => {
                             <DataTable
                                 className="table-responsive"
                                 records={state.data}
-                                columns={[
-                                    {
-                                        accessor: 'leadName',
-                                        title: 'Lead Name',
-                                        sortable: true,
-                                    },
-                                    ,
-                                    {
-                                        accessor: 'contact',
-                                        title: 'Contact Person',
-                                        sortable: true,
-                                    },
-                                    {
-                                        accessor: 'date',
-                                        sortable: true,
-                                    },
-
-                                    { accessor: 'assigned_to', title: 'Assigned to', sortable: true },
-                                    {
-                                        accessor: 'category',
-                                        sortable: true,
-
-                                        render: (row) => (
-                                            <div
-                                                className={`flex w-max gap-4 rounded-full px-2 py-1 ${
-                                                    row?.category === 'Owned Task' ? 'bg-green-200 text-green-800' : 'bg-purple-200 text-purple-800'
-                                                }`}
-                                            >
-                                                {row?.category}
-                                            </div>
-                                        ),
-                                    },
-                                    {
-                                        accessor: 'description',
-                                        render: (row: any) => (
-                                            <>
-                                                <Tippy content={row?.description} className="rounded-lg bg-white p-2 text-sm shadow-lg">
-                                                    <div>{row?.description?.length > 20 ? row?.description?.substring(0, 20) + '...' : row?.description}</div>
-                                                </Tippy>
-                                            </>
-                                        ),
-                                    },
-                                    {
-                                        accessor: 'actions',
-                                        title: 'Actions',
-                                        render: (row: any) => (
-                                            <>
-                                                <div className="mx-auto flex w-max items-center gap-4">
-                                                    <Tippy content="Assign To" className="rounded-lg bg-black p-1 text-sm text-white">
-                                                        <button type="button" className="flex hover:text-primary" onClick={() => setState({ isOpenAssign: true, taskId: row.id })}>
-                                                            <IconUserPlus />
-                                                        </button>
-                                                    </Tippy>
-                                                    <button
-                                                        type="button"
-                                                        className="flex hover:text-primary"
-                                                        onClick={() => {
-                                                            setState({ taskDetails: row, taskId: row?.id, isOpenViewTask: true });
-                                                        }}
-                                                    >
-                                                        <IconEye />
-                                                    </button>
-
-                                                    <button className="flex hover:text-info" onClick={() => editTaskData(row)}>
-                                                        <IconEdit className="h-4.5 w-4.5" />
-                                                    </button>
-                                                </div>
-                                            </>
-                                        ),
-                                    },
-                                ]}
+                                columns={state.columns}
                                 highlightOnHover
                                 totalRecords={state.data?.length}
                                 recordsPerPage={state.pageSize}

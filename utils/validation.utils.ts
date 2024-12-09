@@ -2,9 +2,12 @@ import * as Yup from 'yup';
 
 export const createLeadValidation = Yup.object().shape({
     name: Yup.string().required('Lead Name is required'),
-    lead_owner: Yup.string().required('Lead Owner is required'),
-    // company_email: Yup.string().email('Invalid email').required('Company Email is required'),
-    // company_website: Yup.string().url('Invalid URL'),
+    lead_owner: Yup.string().required('Lead Manager is required'),
+    company_email: Yup.string().email('Invalid email').required('Email is required'),
+    company_website: Yup.string().url('Invalid URL').required('Website is required'),
+    company_number: Yup.string().required('Number is required'),
+    // source_from: Yup.string().required('Source from is required'),
+    // source: Yup.string().required('Source is required'),
     // created_by: Yup.string().required('Created By is required'),
     // annual_revenue: Yup.number().nullable().required('Annual Revenue is required').typeError('Annual Revenue must be a number'),
     // tags: Yup.array().min(1, 'At least one tag is required'),
@@ -13,8 +16,9 @@ export const createLeadValidation = Yup.object().shape({
     country: Yup.string().required('Country is required'),
     state: Yup.string().required('State is required'),
     vertical: Yup.string().required('Vertical is required'),
-
-    
+    assigned_to: Yup.string().required('Assign To is required'),
+    lead_source: Yup.string().required('Lead Source is required'),
+    lead_source_from: Yup.string().required('Lead Source From is required')
 });
 
 export const createOppValidation = Yup.object().shape({
@@ -68,7 +72,7 @@ export const createContact = Yup.object().shape({
 export const createTask = Yup.object().shape({
     lead: Yup.string().required('Lead is required'),
     contact: Yup.string().required('Contact is required'),
-    task_date_time:Yup.string().required('Task date is required')
+    task_date_time: Yup.string().required('Task date is required'),
 });
 
 export const assignTask = Yup.object().shape({

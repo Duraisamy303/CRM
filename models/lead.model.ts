@@ -174,6 +174,45 @@ const lead = {
         return promise;
     },
 
+    sourceList: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `retrieve_lead_source/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+
+    sourceFromList: (sourceId) => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `retrieve_lead_source_from/${sourceId}/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
     focusIdBasedVericalList: (id) => {
         let promise = new Promise((resolve, reject) => {
             let url = `focus_segments/${id}/`;

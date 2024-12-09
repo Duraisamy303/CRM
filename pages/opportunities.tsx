@@ -31,6 +31,10 @@ import CustomYearSelect from '@/common_component/yearPicker';
 import { useDispatch } from 'react-redux';
 import { leadId, oppId } from '@/store/crmConfigSlice';
 import { ROLE } from '@/utils/constant.utils';
+import QuickEdit from '@/components/QuickEdit';
+import IconNotesEdit from '@/components/Icon/IconNotesEdit';
+import Tippy from '@tippyjs/react';
+import QuickEditOpp from '@/components/QuickEditOpp';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
     ssr: false,
@@ -86,7 +90,7 @@ const Opportunity = () => {
         recurring_value_per_year: '',
         columns: [],
         role: '',
-        subLoading:false
+        subLoading: false,
     });
 
     useEffect(() => {
@@ -360,22 +364,140 @@ const Opportunity = () => {
                 ];
                 break;
             case ROLE.BDM:
+                // columns = [
+                //     { accessor: 'name', sortable: true, title: 'Name' },
+                //     { accessor: 'opportunity_value', sortable: true, title: 'Opportunity', render: (row: any) => roundOff(row?.opportunity_value) },
+                //     { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
+                //     { accessor: 'stages', sortable: true, title: 'Stage' },
+                //     { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
+                //     {
+                //         accessor: 'actions',
+                //         title: 'Actions',
+                //         render: (row: any) => (
+                //             <div className="mx-auto flex w-max items-center gap-4">
+                //                 <button
+                //                     type="button"
+                //                     className="flex hover:text-primary"
+                //                     onClick={() => {
+                //                         dispatch(leadId(''));
+                //                         dispatch(oppId(row.id));
+                //                         router.push(`/viewOpportunity?id=${row.id}`);
+                //                     }}
+                //                 >
+                //                     <IconEye />
+                //                 </button>
+                //                 <button className="flex hover:text-info" onClick={() => editOppData(row)}>
+                //                     <IconEdit className="h-4.5 w-4.5" />
+                //                 </button>
+                //             </div>
+                //         ),
+                //     },
+                // ];
                 columns = [
-                    { accessor: 'name', sortable: true, title: 'Name' },
-                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity', render: (row: any) => roundOff(row?.opportunity_value) },
+                    {
+                        accessor: 'name',
+                        sortable: true,
+                        title: 'Lead',
+                    },
+                    {
+                        accessor: 'name',
+                        sortable: true,
+                        title: 'Contact Name',
+                    },
+                    {
+                        accessor: 'name',
+                        sortable: true,
+                        title: 'Opportunity Name',
+                    },
+                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value', render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
                     { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
+                    // { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value ', render: (row: any) => <div>{roundOff(row?.recurring_value_per_year)}</div> },
                     { accessor: 'stages', sortable: true, title: 'Stage' },
-                    { accessor: 'closing_date', sortable: true, title: 'Closing Date' },
+                    // { accessor: 'currency', sortable: true, title: 'Currency Type' },
+                    { accessor: 'closing_date', sortable: true, title: 'Closing Date', render: (row: any) => <div>{moment(row?.closing_date).format('DD-MM-YYYY')}</div> },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <>
+                                <div className="mx-auto flex w-max items-center gap-4">
+                                    <Tippy content="Quick Edit" className="rounded-lg bg-black p-1 text-sm text-white">
+                                        <button
+                                            type="button"
+                                            className="flex hover:text-primary"
+                                            onClick={() => {
+                                                // Toggle row expansion
+                                                state.expandedRow === row.id ? setState({ expandedRow: null }) : setState({ expandedRow: row.id });
+                                            }}
+                                        >
+                                            <IconNotesEdit />
+                                        </button>
+                                    </Tippy>
+                                    <button
+                                        type="button"
+                                        className="flex hover:text-danger"
+                                        onClick={() => {
+                                            dispatch(oppId(row?.id));
+                                            dispatch(leadId(row?.id));
+
+                                            router.push(`/viewOpportunity?id=${row.id}`);
+                                        }}
+                                    >
+                                        <IconEye />
+                                    </button>
+                                    <button className="flex hover:text-info" onClick={() => editOppData(row)}>
+                                        <IconEdit className="h-4.5 w-4.5" />
+                                    </button>
+                                </div>
+                            </>
+                        ),
+                    },
                 ];
                 break;
 
             case ROLE.BDE:
                 columns = [
-                    { accessor: 'name', sortable: true, title: 'Name' },
-                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity', render: (row: any) => roundOff(row?.opportunity_value) },
-                    { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value', render: (row: any) => roundOff(row?.recurring_value_per_year) },
+                    {
+                        accessor: 'name',
+                        sortable: true,
+                        title: 'Contact Name',
+                    },
+                    {
+                        accessor: 'name',
+                        sortable: true,
+                        title: 'Opportunity Name',
+                    },
+                    { accessor: 'opportunity_value', sortable: true, title: 'Opportunity Value', render: (row: any) => <div>{roundOff(row?.opportunity_value)}</div> },
+                    { accessor: 'probability_in_percentage', sortable: true, title: 'Probability (%)' },
+                    // { accessor: 'recurring_value_per_year', sortable: true, title: 'Recurring Value ', render: (row: any) => <div>{roundOff(row?.recurring_value_per_year)}</div> },
                     { accessor: 'stages', sortable: true, title: 'Stage' },
-                    { accessor: 'currency', sortable: true, title: 'Currency' },
+                    // { accessor: 'currency', sortable: true, title: 'Currency Type' },
+                    { accessor: 'closing_date', sortable: true, title: 'Closing Date', render: (row: any) => <div>{moment(row?.closing_date).format('DD-MM-YYYY')}</div> },
+                    {
+                        accessor: 'actions',
+                        title: 'Actions',
+                        render: (row: any) => (
+                            <>
+                                <div className="mx-auto flex w-max items-center gap-4">
+                                    <button
+                                        type="button"
+                                        className="flex hover:text-danger"
+                                        onClick={() => {
+                                            dispatch(oppId(row?.id));
+                                            dispatch(leadId(id));
+
+                                            router.push(`/viewOpportunity?id=${row.id}`);
+                                        }}
+                                    >
+                                        <IconEye />
+                                    </button>
+                                    <button className="flex hover:text-info" onClick={() => editOppData(row)}>
+                                        <IconEdit className="h-4.5 w-4.5" />
+                                    </button>
+                                </div>
+                            </>
+                        ),
+                    },
                 ];
                 break;
 
@@ -663,6 +785,20 @@ const Opportunity = () => {
                             page={null}
                             onPageChange={(p) => {}}
                             withBorder={true}
+                            rowExpansion={{
+                                collapseProps: {
+                                    transitionDuration: 500,
+                                    animateOpacity: false,
+                                    transitionTimingFunction: 'ease-out',
+                                },
+                                allowMultiple: false,
+                                content: ({ record, collapse }) =>
+                                    state.expandedRow === record.id ? (
+                                        <div>
+                                            <QuickEditOpp collapse={() => collapse()} />
+                                        </div>
+                                    ) : null,
+                            }}
                             paginationText={({ from, to, totalRecords }) => `Showing  ${from} to ${to} of ${totalRecords} entries`}
                         />
                         <div className="mt-5 flex justify-center gap-3">
@@ -801,6 +937,18 @@ const Opportunity = () => {
                             error={state.errors?.currency_type}
                         />
 
+                        {/* <CustomSelect
+                            title="Primary Contact"
+                            value={state.createlead}
+                            onChange={(e) => {
+                                // getLeadOwnerByLeadId(e);
+                                // setState({ createlead: e });
+                            }}
+                            placeholder={'Primary Contact'}
+                            options={state.leadList}
+                            // loadMore={() => leadListLoadMore()}
+                        /> */}
+
                         {/* <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>
                                 Cancel
@@ -824,10 +972,10 @@ const Opportunity = () => {
                     <div>
                         <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
                             <CustomSelect
-                                title="Lead Owner"
+                                title="Lead Manager"
                                 value={state.lead_owner}
                                 onChange={(e) => setState({ lead_owner: e })}
-                                placeholder={'Lead Owner'}
+                                placeholder={'Lead Manager'}
                                 options={state.ownerList}
                                 error={state.errors?.lead_owner}
                             />

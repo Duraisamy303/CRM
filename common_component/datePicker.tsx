@@ -30,7 +30,9 @@ const CustomeDatePicker = (props: any) => {
                     showTimeSelect
                     dateFormat="Pp"
                     name={name}
-                    customInput={<CustomInput />} 
+                    isClearable={value ? true : false}
+                    shouldCloseOnSelect={true}
+                    customInput={<CustomInput />}
                     required={required}
                     {...rest}
                 />

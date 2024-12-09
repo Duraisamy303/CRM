@@ -1,130 +1,127 @@
-import { Models, PrivateRouter, Validation } from '@/utils/imports.utils';
-import React, { useEffect } from 'react';
-import { Dropdown, Failure, Success, objIsEmpty, roundOff, useSetState } from '@/utils/functions.utils';
-import CommonLoader from './elements/commonLoader';
-import dynamic from 'next/dynamic';
-import { DataTable } from 'mantine-datatable';
-import IconEdit from '@/components/Icon/IconEdit';
-import IconEye from '@/components/Icon/IconEye';
-import { useRouter } from 'next/router';
-import CustomSelect from '@/components/Select';
-import IconArrowBackward from '@/components/Icon/IconArrowBackward';
-import IconArrowForward from '@/components/Icon/IconArrowForward';
-import useDebounce from '@/common_component/useDebounce';
-import SideMenu from '@/common_component/sideMenu';
-import InputRange from '../common_component/slider';
-import IconFilter from '@/components/Icon/IconFilter';
-import IconUser from '@/components/Icon/IconUser';
-import IconPlus from '@/components/Icon/IconPlus';
-import OppCard from '@/components/oppCard';
-import IconSearch from '@/components/Icon/IconSearch';
-import Header from '@/components/Layouts/Header';
-import Chip from '@/components/chip';
-import Tippy from '@tippyjs/react';
-import IconUserPlus from '@/components/Icon/IconUserPlus';
-import Modal from '@/common_component/modal';
-import TextArea from '@/components/TextArea';
-import IconLoader from '@/components/Icon/IconLoader';
-import moment from 'moment';
-import * as Yup from 'yup';
+import CustomFullCalendar from '@/common_component/fullCalender';
+import React, { useState } from 'react';
 
-const ReactApexChart = dynamic(() => import('react-apexcharts'), {
-    ssr: false,
-});
+export default function CalendarContainer() {
+    const now = new Date();
+    const getMonth = (dt: Date, add: number = 0) => {
+        let month = dt.getMonth() + 1 + add;
+        const str = (month < 10 ? '0' + month : month).toString();
+        return str;
+        // return dt.getMonth() < 10 ? '0' + month : month;
+    };
 
-const Index = () => {
-    const router = useRouter();
+    const [events, setEvents] = useState<any>([
+        {
+            id: 1,
+            title: 'All Day Event',
+            start: now.getFullYear() + '-' + getMonth(now) + '-01T14:30:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-02T14:30:00',
+            className: 'danger',
+            description: 'Aenean fermentum quam vel sapien rutrum cursus. Vestibulum imperdiet finibus odio, nec tincidunt felis facilisis eu.',
+        },
+        {
+            id: 2,
+            title: 'Site Visit',
+            start: now.getFullYear() + '-' + getMonth(now) + '-07T19:30:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-08T14:30:00',
+            className: 'primary',
+            description: 'Etiam a odio eget enim aliquet laoreet. Vivamus auctor nunc ultrices varius lobortis.',
+        },
+        {
+            id: 3,
+            title: 'Product Lunching Event',
+            start: now.getFullYear() + '-' + getMonth(now) + '-17T14:30:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-18T14:30:00',
+            className: 'info',
+            description: 'Proin et consectetur nibh. Mauris et mollis purus. Ut nec tincidunt lacus. Nam at rutrum justo, vitae egestas dolor.',
+        },
+        {
+            id: 4,
+            title: 'Meeting',
+            start: now.getFullYear() + '-' + getMonth(now) + '-12T10:30:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-13T10:30:00',
+            className: 'danger',
+            description: 'Mauris ut mauris aliquam, fringilla sapien et, dignissim nisl. Pellentesque ornare velit non mollis fringilla.',
+        },
+        {
+            id: 5,
+            title: 'Lunch',
+            start: now.getFullYear() + '-' + getMonth(now) + '-12T15:00:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-13T15:00:00',
+            className: 'info',
+            description: 'Integer fermentum bibendum elit in egestas. Interdum et malesuada fames ac ante ipsum primis in faucibus.',
+        },
+        {
+            id: 6,
+            title: 'Conference',
+            start: now.getFullYear() + '-' + getMonth(now) + '-12T21:30:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-13T21:30:00',
+            className: 'success',
+            description:
+                'Curabitur facilisis vel elit sed dapibus. Nunc sagittis ex nec ante facilisis, sed sodales purus rhoncus. Donec est sapien, porttitor et feugiat sed, eleifend quis sapien. Sed sit amet maximus dolor.',
+        },
+        {
+            id: 7,
+            title: 'Happy Hour',
+            start: now.getFullYear() + '-' + getMonth(now) + '-12T05:30:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-13T05:30:00',
+            className: 'info',
+            description: ' odio lectus, porttitor molestie scelerisque blandit, hendrerit sed ex. Aenean malesuada iaculis erat, vitae blandit nisl accumsan ut.',
+        },
+        {
+            id: 8,
+            title: 'Dinner',
+            start: now.getFullYear() + '-' + getMonth(now) + '-12T20:00:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-13T20:00:00',
+            className: 'danger',
+            description: 'Sed purus urna, aliquam et pharetra ut, efficitur id mi. Pellentesque ut convallis velit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        },
+        {
+            id: 9,
+            title: 'Birthday Party',
+            start: now.getFullYear() + '-' + getMonth(now) + '-27T20:00:00',
+            end: now.getFullYear() + '-' + getMonth(now) + '-28T20:00:00',
+            className: 'success',
+            description: 'Sed purus urna, aliquam et pharetra ut, efficitur id mi. Pellentesque ut convallis velit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        },
+        {
+            id: 10,
+            title: 'New Talent Event',
+            start: now.getFullYear() + '-' + getMonth(now, 1) + '-24T08:12:14',
+            end: now.getFullYear() + '-' + getMonth(now, 1) + '-27T22:20:20',
+            className: 'danger',
+            description: 'Sed purus urna, aliquam et pharetra ut, efficitur id mi. Pellentesque ut convallis velit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        },
+        {
+            id: 11,
+            title: 'Other new',
+            start: now.getFullYear() + '-' + getMonth(now, -1) + '-13T08:12:14',
+            end: now.getFullYear() + '-' + getMonth(now, -1) + '-16T22:20:20',
+            className: 'primary',
+            description: 'Pellentesque ut convallis velit. Sed purus urna, aliquam et pharetra ut, efficitur id mi. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        },
+        {
+            id: 13,
+            title: 'Upcoming Event',
+            start: now.getFullYear() + '-' + getMonth(now, 1) + '-15T08:12:14',
+            end: now.getFullYear() + '-' + getMonth(now, 1) + '-18T22:20:20',
+            className: 'primary',
+            description: 'Pellentesque ut convallis velit. Sed purus urna, aliquam et pharetra ut, efficitur id mi. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        },
+    ]);;
 
-    const [state, setState] = useSetState({
-        data: [], // Initial empty state for data
-        sortColumn: '', // Sorting column state
-        sortOrder: 'asc',
-    });
-
-    // Sample data array
-    const initialData = [
-        { name: 'Durai', id: 1 },
-        { name: 'Aurai', id: 2 },
-        { name: 'Surai', id: 3 },
-        { name: 'Vurai', id: 4 },
-        { name: 'Wurai', id: 5 },
-    ];
-
-    // Initialize state with data on component mount
-    useEffect(() => {
-        setState({ data: initialData });
-    }, []);
-
-    // Handle sorting
-    const handleSort = (column: string) => {
-        const newSortOrder = state.sortColumn === column && state.sortOrder === 'asc' ? 'desc' : 'asc';
-        setState({ sortColumn: column, sortOrder: newSortOrder });
-
-        // Sort data based on current sort column and order
-        const sortedData = [...state.data].sort((a, b) => {
-            if (a[column] < b[column]) return newSortOrder === 'asc' ? -1 : 1;
-            if (a[column] > b[column]) return newSortOrder === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        // Update state with sorted data
-        setState({ data: sortedData });
+    const selectDate = (selectInfo) => {
+        console.log('Date selected:', selectInfo);
     };
 
     return (
-        <>
-            <DataTable
-                className="table-responsive w-full overflow-x-auto" // Full width and scrollable on small screens
-                records={state.data} // Pass state data to records
-                columns={[
-                    {
-                        accessor: 'name',
-                        title: (
-                            <span
-                                onClick={() => handleSort('name')} // Trigger sorting by clicking the header
-                                className="cursor-pointer font-semibold md:font-normal" // Bold when active
-                                style={{
-                                    fontWeight: 'normal',
-                                    fontSize: '1rem', // Adjust font size for readability
-                                }}
-                            >
-                                Name {state.sortColumn === 'name' ? (state.sortOrder === 'asc' ? '↑' : '↓') : ''}
-                            </span>
-                        ),
-                        sortable: true,
-                        render: (row:any) => <span style={{ fontSize: '1rem' }}>{row.name}</span>,
-                    },
-                    {
-                        accessor: 'actions',
-                        title: 'Actions',
-                        render: (row) => (
-                            <div className="mx-auto flex w-max items-center gap-4">
-                                <Tippy content="Assign To" className="rounded-lg bg-black p-1 text-sm text-white">
-                                    <button type="button" className="flex p-1 hover:text-primary md:p-2" onClick={() => setState({ isOpenAssign: true, leadId: row.id })}>
-                                        <IconUserPlus />
-                                    </button>
-                                </Tippy>
-                                <button type="button" className="flex p-1 hover:text-primary md:p-2" onClick={() => router.push(`/viewLead?id=${row.id}`)}>
-                                    <IconEye />
-                                </button>
-                                <button className="flex p-1 hover:text-info md:p-2" onClick={() => router.push(`/updateLead?id=${row.id}`)}>
-                                    <IconEdit className="h-4 w-4" />
-                                </button>
-                            </div>
-                        ),
-                    },
-                ]}
-                highlightOnHover
-                totalRecords={state.data.length}
-                recordsPerPage={state.pageSize}
-                minHeight={200}
-                page={null}
-                onPageChange={() => {}}
-                withBorder={true}
-                paginationText={({ from, to, totalRecords }) => `Showing ${from} to ${to} of ${totalRecords} entries`}
+        <div>
+            <h1>Event Calendar</h1>
+            <CustomFullCalendar 
+                events={events} 
+                setEvents={setEvents} 
+                selectDate={selectDate} 
             />
-        </>
+        </div>
     );
-};
-
-export default PrivateRouter(Index);
+}

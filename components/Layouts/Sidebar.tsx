@@ -38,6 +38,7 @@ import IconOpportunity from '../Icon/IconOpportunity';
 import IconLeads from '../Icon/IconLead';
 import IconTask from '../Icon/IconTask';
 import Models from '@/imports/models.import';
+import { ROLE } from '@/utils/constant.utils';
 
 const Sidebar = () => {
     const router = useRouter();
@@ -159,6 +160,14 @@ const Sidebar = () => {
 
                             <li className="nav-item">
                                 <ul>
+                                <li className="nav-item">
+                                        <Link href="/dashboards" className="group">
+                                            <div className="flex items-center">
+                                                <IconMenuDashboard className="shrink-0 group-hover:!text-primary" />
+                                                <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('Dashboard')}</span>
+                                            </div>
+                                        </Link>
+                                    </li>
                                     <li className="nav-item">
                                         <Link href="/" className="group">
                                             <div className="flex items-center">
@@ -184,6 +193,7 @@ const Sidebar = () => {
                                         </Link>
                                     </li>
                                     {(role == 'BDM' || role == 'ADMIN') && (
+                                        <>
                                         <li className="nav-item">
                                             <Link href="/reports" className="group">
                                                 <div className="flex items-center">
@@ -192,6 +202,25 @@ const Sidebar = () => {
                                                 </div>
                                             </Link>
                                         </li>
+                                  
+                                        <li className="nav-item">
+                                            <Link href="/monthlyBudget" className="group">
+                                                <div className="flex items-center">
+                                                    <IconReport className="shrink-0 group-hover:!text-primary" />
+                                                    <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('SM Monthly Budget')}</span>
+                                                </div>
+                                            </Link>
+                                        </li>
+
+                                        <li className="nav-item">
+                                            <Link href="/pipeline" className="group">
+                                                <div className="flex items-center">
+                                                    <IconReport className="shrink-0 group-hover:!text-primary" />
+                                                    <span className="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">{t('Pipeline')}</span>
+                                                </div>
+                                            </Link>
+                                        </li>
+                                        </>
                                     )}
                                     {/* <li className="nav-item">
                                         <Link href="/settings" className="group">

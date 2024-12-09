@@ -81,9 +81,9 @@ const UpdateLead = () => {
                 tags: res.tags?.map((item) => ({ value: item.id, label: item?.tag })) || [],
                 is_active: res.is_active ?? false,
                 created_by: { value: res.created_by?.id, label: res.created_by?.username } || null,
-                vertical:{value:res.focus_segment?.vertical?.id,label:res.focus_segment?.vertical?.vertical}
+                vertical: { value: res.focus_segment?.vertical?.id, label: res.focus_segment?.vertical?.vertical },
             });
-            getFocusSegmentList({value:res.focus_segment?.vertical?.id})
+            getFocusSegmentList({ value: res.focus_segment?.vertical?.id });
             stateList({ value: res.country?.id });
         } catch (error) {
             setState({ loading: false });
@@ -92,7 +92,6 @@ const UpdateLead = () => {
         }
     };
 
- 
     const getMarketSegmentList = async () => {
         try {
             setState({ loading: true });
@@ -157,7 +156,7 @@ const UpdateLead = () => {
             console.log('error: ', error);
         }
     };
-    
+
     const verticalList = async () => {
         try {
             setState({ loading: true });
@@ -168,7 +167,6 @@ const UpdateLead = () => {
             setState({ loading: false });
         }
     };
-
 
     const createdByList = async () => {
         try {
@@ -204,7 +202,7 @@ const UpdateLead = () => {
                 annual_revenue: state.annual_revenue,
                 tags: tags,
                 market_segment: state.market_segment?.value,
-                is_active:true,
+                is_active: true,
                 vertical: state.vertical?.value,
             };
             await Validation.createLeadValidation.validate(body, { abortEarly: false });
@@ -231,7 +229,6 @@ const UpdateLead = () => {
         }
     };
 
-
     const getFocusSegmentList = async (verticalData: any) => {
         try {
             const res: any = await Models.lead.focusIdBasedVericalList(verticalData?.value);
@@ -250,12 +247,27 @@ const UpdateLead = () => {
         { label: 'Home', path: '/' },
         { label: 'Update Lead', path: '' },
     ];
+
+    const remainder = [
+        { label: 'Next Week', value: " 'Next Week" },
+        { label: 'Next Month', value: " 'Next Month" },
+        { label: 'After One Month', value: " 'After One Month" },
+        { label: 'After Two Month', value: " 'After Two Month" },
+        { label: 'After six Month', value: " 'After six Month" },
+    ];
+
+    const source = [
+        { label: 'Online(Web)', value: " 'Online(Web)" },
+        { label: 'Social Handles', value: " 'Social Handles" },
+        { label: 'References', value: " 'References" },
+        { label: 'Fair Directory', value: " 'Fair Directory" },
+    ];
+
     return state.loading ? (
         <CommonLoader />
     ) : (
         <div className="relative h-auto overflow-scroll bg-[#dbe7ff] bg-cover p-2">
             <Breadcrumb items={breadcrumbItems} />
-            
 
             <div className="panel  flex  gap-5 ">
                 <div className="flex items-center gap-2">
@@ -264,7 +276,7 @@ const UpdateLead = () => {
                     </div>
                     <div>
                         <h5 className="font-semibold " style={{ fontSize: '18px' }}>
-                        Update Lead
+                            Update Lead
                         </h5>
                         <div className="  " style={{ fontSize: '14px', color: 'grey' }}>
                             Your data journey starts here...
@@ -285,10 +297,10 @@ const UpdateLead = () => {
                         </div>
                         <TextInput title="Lead Name" value={state.name} onChange={(e) => setState({ name: e })} placeholder={'Lead Name'} error={state.errors?.name} required />
                         <CustomSelect
-                            title="Lead Owner"
+                            title="Lead Manager"
                             value={state.lead_owner}
                             onChange={(e) => setState({ lead_owner: e })}
-                            placeholder={'Lead Owner'}
+                            placeholder={'Lead Manager'}
                             options={state.ownerList}
                             error={state.errors?.lead_owner}
                             required
@@ -310,7 +322,7 @@ const UpdateLead = () => {
                     </div>
                 </div>
 
-                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl md:col-span-7 p-3">
+                <div className="panel col-span-12 flex flex-col gap-5 rounded-2xl p-3 md:col-span-7">
                     <div className="flex items-center gap-3">
                         <div className="flex h-[30px] w-[30px] items-center justify-center rounded-3xl  bg-[#ffefe4]">
                             <IconUser className="text-[#ffbb55]" />
@@ -334,7 +346,6 @@ const UpdateLead = () => {
                         </div>
                     </div>
 
-                   
                     <div className=" flex w-full gap-3">
                         <div className="flex w-[50%]">
                             <CustomSelect
@@ -371,17 +382,16 @@ const UpdateLead = () => {
                     </div>
 
                     <div className=" flex w-full gap-3">
-                    <div className="flex w-[50%]">
-
-                        <CustomSelect
-                            title="Market Segment"
-                            value={state.market_segment}
-                            onChange={(e) => setState({ market_segment: e })}
-                            placeholder={'Market Segment'}
-                            options={state.marketSegmentList}
-                            required
-                            error={state.errors?.market_segment}
-                        />
+                        <div className="flex w-[50%]">
+                            <CustomSelect
+                                title="Market Segment"
+                                value={state.market_segment}
+                                onChange={(e) => setState({ market_segment: e })}
+                                placeholder={'Market Segment'}
+                                options={state.marketSegmentList}
+                                required
+                                error={state.errors?.market_segment}
+                            />
                         </div>
 
                         <div className="flex w-[50%]">
@@ -427,13 +437,34 @@ const UpdateLead = () => {
                         </div>
                     </div>
 
+                    <div className=" flex w-full gap-3">
+                        <div className=" flex  w-[50%]">
+                            <CustomSelect
+                                title="Remainder"
+                                value={state.remainder}
+                                onChange={(e) => setState({ remainder: e })}
+                                placeholder={'Remainder'}
+                                options={remainder}
+                                error={state.errors?.country}
+                            />
+                        </div>
+                        <div className="flex w-[50%]">
+                            <CustomSelect title="Source" value={state.source} onChange={(e) => setState({ source: e })} placeholder={'Source'} options={source} error={state.errors?.state} />
+                        </div>
+                    </div>
+                    {state.source && (
+                        <div className=" flex w-full gap-3">
+                            <TextInput title="Source From" value={state.source_from} onChange={(e) => setState({ source_from: e })} placeholder={'Source From'} />
+                        </div>
+                    )}
+
                     {/* <div className="  w-full">
                         <div className="">
                             <label className="block text-sm font-medium text-gray-700">Status</label>
                             <CheckboxInput checked={state.is_active} label={'Active'} onChange={(e) => setState({ is_active: e })} />
                         </div>
                     </div> */}
-                    <div className="mt-20  flex items-center justify-end gap-3">
+                    <div className=" flex items-center justify-end gap-3">
                         <button type="button" className="btn btn-outline-danger border " onClick={() => router.replace('/')}>
                             Cancel
                         </button>
