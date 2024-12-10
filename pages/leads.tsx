@@ -20,8 +20,9 @@ import SideMenu from '@/common_component/sideMenu';
 import CustomeDatePicker from '@/common_component/datePicker';
 import Models from '@/imports/models.import';
 import { ROLE } from '@/utils/constant.utils';
+import { PrivateRouter } from '@/utils/imports.utils';
 
-export default function index() {
+const Index = () => {
     const ReactApexChart = dynamic(() => import('react-apexcharts'), {
         ssr: false,
     });
@@ -50,8 +51,8 @@ export default function index() {
 
     const getData = async () => {
         console.log('state.activeTab: ', state.activeTab);
-        const res=await Models.lead.list(1)
-        console.log("res: ", res);
+        const res = await Models.lead.list(1);
+        console.log('res: ', res);
 
         try {
             let res;
@@ -64,7 +65,7 @@ export default function index() {
             } else if (state.activeTab === 'Last 7 Days') {
                 res = filterByDates('Last 7 Days');
             }
-            console.log("res: ", res);
+            console.log('res: ', res);
 
             setState({ loading: true });
             const options = {
@@ -908,4 +909,5 @@ export default function index() {
             />
         </div>
     );
-}
+};
+export default PrivateRouter(Index);
