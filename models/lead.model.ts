@@ -176,7 +176,7 @@ const lead = {
 
     sourceList: () => {
         let promise = new Promise((resolve, reject) => {
-            let url = `retrieve_lead_source/`;
+            let url = `leads/lead_sources/`;
             instance()
                 .get(url)
                 .then((res) => {
@@ -196,7 +196,7 @@ const lead = {
 
     sourceFromList: (sourceId) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `retrieve_lead_source_from/${sourceId}/`;
+            let url = `leads/lead_sources_from/?lead_source_id=${sourceId}`;
             instance()
                 .get(url)
                 .then((res) => {

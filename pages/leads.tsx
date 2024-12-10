@@ -50,10 +50,7 @@ const Index = () => {
     }, [state.activeTab]);
 
     const getData = async () => {
-        console.log('state.activeTab: ', state.activeTab);
         const res = await Models.lead.list(1);
-        console.log('res: ', res);
-
         try {
             let res;
             if (state.activeTab === 'Year') {
