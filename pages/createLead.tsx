@@ -91,7 +91,6 @@ const CreateLead = () => {
             setState({ loading: false });
         }
     };
-    
     const  userList = async () => {
         try {
             setState({ loading: true });
@@ -122,6 +121,7 @@ const CreateLead = () => {
         try {
             setState({ loading: true });
             const res = await Models.lead.sourceList();
+            console.log("sourceList: ", res);
             const dropdownList = Dropdown(res, 'source');
             setState({ sourceList: dropdownList, loading: false });
         } catch (error) {
