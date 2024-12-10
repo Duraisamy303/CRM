@@ -380,7 +380,7 @@ export const getDateRange = (rangeType) => {
     return { start, end };
 };
 
-export const filterByDates = (filter: any, fromDate: any, toDate: any) => {
+export const filterByDates = (filter: any) => {
     let startDate: any, endDate: any;
 
     if (filter == 'Last 7 Days') {
@@ -402,8 +402,8 @@ export const filterByDates = (filter: any, fromDate: any, toDate: any) => {
         (startDate = start), (endDate = end);
     }
 
-    if (filter == 'Custome') {
-        (startDate = moment(fromDate).format('YYYY-MM-DD')), (endDate = moment(toDate).format('YYYY-MM-DD'));
-    }
+    // if (filter == 'Custome') {
+    //     (startDate = moment(fromDate).format('YYYY-MM-DD')), (endDate = moment(toDate).format('YYYY-MM-DD'));
+    // }
     return { startDate, endDate };
 };

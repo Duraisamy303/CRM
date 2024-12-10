@@ -2,7 +2,7 @@ import IconBitcoin from '@/components/Icon/IconBitcoin';
 import IconFilter from '@/components/Icon/IconFilter';
 import IconSearch from '@/components/Icon/IconSearch';
 import CustomSelect from '@/components/Select';
-import { useSetState } from '@/utils/functions.utils';
+import { filterByDates, getDateRange, objIsEmpty, useSetState } from '@/utils/functions.utils';
 import { SimpleGrid } from '@mantine/core';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
@@ -18,6 +18,8 @@ import IconArrowBackward from '@/components/Icon/IconArrowBackward';
 import IconArrowForward from '@/components/Icon/IconArrowForward';
 import SideMenu from '@/common_component/sideMenu';
 import CustomeDatePicker from '@/common_component/datePicker';
+import Models from '@/imports/models.import';
+import { ROLE } from '@/utils/constant.utils';
 
 export default function index() {
     const ReactApexChart = dynamic(() => import('react-apexcharts'), {
@@ -30,19 +32,40 @@ export default function index() {
         activeTab: 'This Month',
         loading: false,
         chartData: {},
+        role: '',
     });
 
     useEffect(() => {
         getData();
+        userData();
     }, []);
 
     useEffect(() => {
-        getData();
-    }, []);
-    
+        if (state.activeTab == 'Custom') {
+            filterData();
+        } else {
+            getData();
+        }
+    }, [state.activeTab]);
 
     const getData = async () => {
+        console.log('state.activeTab: ', state.activeTab);
+        const res=await Models.lead.list(1)
+        console.log("res: ", res);
+
         try {
+            let res;
+            if (state.activeTab === 'Year') {
+                res = filterByDates('Year');
+            } else if (state.activeTab === 'Last Month') {
+                res = filterByDates('Last Month');
+            } else if (state.activeTab === 'This Month') {
+                res = filterByDates('This Month');
+            } else if (state.activeTab === 'Last 7 Days') {
+                res = filterByDates('Last 7 Days');
+            }
+            console.log("res: ", res);
+
             setState({ loading: true });
             const options = {
                 series: [
@@ -106,6 +129,16 @@ export default function index() {
                 },
             };
             setState({ loading: false, chartData: options });
+        } catch (error) {
+            console.log('error: ', error);
+        }
+    };
+
+    const userData = async () => {
+        try {
+            setState({ loading: true });
+            const res: any = await Models.auth.userDetails();
+            setState({ loading: false, role: res?.designation });
         } catch (error) {
             console.log('error: ', error);
         }
@@ -290,37 +323,69 @@ export default function index() {
             isOpen: false,
             range: [0, state.maxPrice],
             tags: [],
+            activeTab: 'This Month',
         });
         getData();
     };
 
     const filterData = async (page = 1) => {
         try {
-            // setState({ loading: true });
-            // let body = bodyData();
-            // if (!objIsEmpty(body)) {
-            //     const response: any = await Models.lead.filter(body, page);
+            setState({ loading: true });
+            let body = bodyData();
+            if (!objIsEmpty(body)) {
+                const response: any = await Models.lead.filter(body, page);
 
-            //     tableData(response?.results, state.role);
+                // tableData(response?.results, state.role);
 
-            //     setState({
-            //         loading: false,
-            //         totalRecords: response.count,
-            //         next: response.next,
-            //         previous: response.previous,
-            //         isOpen: false,
-            //     });
-            // } else {
-            //     getData();
-            //     setState({
-            //         loading: false,
+                setState({
+                    loading: false,
+                    totalRecords: response.count,
+                    next: response.next,
+                    previous: response.previous,
+                    isOpen: false,
+                });
+            } else {
+                getData();
+                setState({
+                    loading: false,
 
-            //         isOpen: false,
-            //     });
-            // }
+                    isOpen: false,
+                });
+            }
         } catch (error) {
             setState({ loading: false });
         }
+    };
+
+    const bodyData = () => {
+        let body: any = {};
+
+        if (state.search) {
+            body.key = state.search;
+        }
+        if (state.vertical) {
+            body.vertical_id = [state.vertical?.value];
+        }
+        if (state.focus) {
+            body.focus_segment = [state.focus?.value];
+        }
+        if (state.market) {
+            body.market_segment = [state.market?.value];
+        }
+        if (state.country) {
+            body.country_id = [state.country?.value];
+        }
+        if (state.state) {
+            body.state_id = [state.state?.value];
+        }
+        if (state.range[0] > 0 || state.range[1] != state.maxPrice) {
+            (body.min_revenue = state.range[0]), (body.max_revenue = state.range[1]);
+        }
+        if (state.tags?.length > 0) {
+            body.tags = state.tags?.map((item) => item?.value);
+        }
+
+        return body;
     };
 
     return (
@@ -386,12 +451,16 @@ export default function index() {
                         </button>
                     </div>
                 </div>
-
+                <button type="button" className="btn btn-primary font-white w-full md:mb-0 md:w-auto" onClick={() => clearFilter()}>
+                    Clear
+                </button>
                 {/* <button className="btn btn-primary w-full lg:mt-0 lg:w-auto" onClick={() => setState({ isOpen: true })}>
                     <IconFilter />
                 </button> */}
             </div>
-            <div className="chart-container panel mb-2 mt-2">{!state.loading && <ReactApexChart series={state.chartData.series} options={state.chartData.options} type="bar" height={400} width={'100%'} />}</div>
+            <div className="chart-container panel mb-2 mt-2">
+                {!state.loading && <ReactApexChart series={state.chartData.series} options={state.chartData.options} type="bar" height={400} width={'100%'} />}
+            </div>
 
             <div className="panel mt-2 flex flex-col items-center justify-between gap-5 lg:flex-row">
                 <div className="relative flex w-full max-w-lg rounded-full border border-gray-300 dark:border-white-dark/30 lg:w-1/3">
@@ -407,32 +476,37 @@ export default function index() {
                     />
                 </div>
                 <div className="flex w-full flex-col gap-4 lg:w-2/3 lg:flex-row">
-                    {/* <CustomSelect
+                    {ROLE.ADMIN == state.role && (
+                        <>
+                            <CustomSelect
                                 options={state.marketList}
-                                value={state.market}
-                                onChange={(e) => setState({ market: e })}
+                                value={state.bdm}
+                                onChange={(e) => setState({ bdm: e })}
                                 isMulti={false}
-                                placeholder="Owner"
-                                //    className="w-full lg:w-1/3"
-                            /> */}
+                                placeholder="BDM"
+                                // className="w-full lg:w-1/3"
+                            />
+                            <CustomSelect
+                                options={state.marketList}
+                                value={state.bde}
+                                onChange={(e) => setState({ bde: e })}
+                                isMulti={false}
+                                placeholder="BDE"
+                                // className="w-full lg:w-1/3"
+                            />
+                        </>
+                    )}
+                    {ROLE.BDM == state.role && (
+                        <CustomSelect
+                            options={state.marketList}
+                            value={state.bde}
+                            onChange={(e) => setState({ bde: e })}
+                            isMulti={false}
+                            placeholder="BDE"
+                            // className="w-full lg:w-1/3"
+                        />
+                    )}
 
-                    {/* <CustomSelect
-                        options={state.marketList}
-                        value={state.market}
-                        onChange={(e) => setState({ market: e })}
-                        isMulti={false}
-                        placeholder="BDM"
-                        // className="w-full lg:w-1/3"
-                    /> */}
-
-                    {/* <CustomSelect
-                        options={state.marketList}
-                        value={state.market}
-                        onChange={(e) => setState({ market: e })}
-                        isMulti={false}
-                        placeholder="BDE"
-                        // className="w-full lg:w-1/3"
-                    /> */}
                     <CustomSelect
                         options={state.marketList}
                         value={state.market}
@@ -442,12 +516,12 @@ export default function index() {
                         // className="w-full lg:w-1/3"
                     />
                     <CustomeDatePicker
-                                    error={state.errors?.closing_date}
-                                    value={state.opp_closing_date}
-                                    placeholder="Date"
-                                    // title="Date"
-                                    onChange={(e) => setState({ opp_closing_date: e })}
-                                />
+                        error={state.errors?.closing_date}
+                        value={state.opp_closing_date}
+                        placeholder="Date"
+                        // title="Date"
+                        onChange={(e) => setState({ opp_closing_date: e })}
+                    />
                     {/* <CustomeDatePicker value={state.start_date} placeholder="Owner" onChange={(e) => setState({ start_date: e, to_date: null })} className="w-full lg:w-1/3" />
                             <CustomeDatePicker value={state.end_date} placeholder="BDM"  onChange={(e) => setState({ end_date: e })} className="w-full lg:w-1/3" />
                             <CustomeDatePicker value={state.end_date} placeholder="BDE"  onChange={(e) => setState({ end_date: e })} className="w-full lg:w-1/3" /> */}
@@ -593,7 +667,6 @@ export default function index() {
                                     </button>
                                 </div>
                             ),
-                         
                         },
 
                         // {
@@ -775,42 +848,36 @@ export default function index() {
                 </button>
             </div>
             <SideMenu
-                    title="Filter"
-                    open={state.isOpen}
-                    close={() => setState({ isOpen: false })}
-                    cancelOnClick={() => clearFilter()}
-                    submitOnClick={() => filterData(state.currentPage)}
-                    submitLoading={state.loading}
-                    canceTitle="Reset"
-                    renderComponent={() => (
-                        <div>
-                            <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
-                                <CustomeDatePicker
-                                    error={state.errors?.closing_date}
-                                    value={state.opp_closing_date}
-                                    placeholder="Date"
-                                    title="Date"
-                                    onChange={(e) => setState({ opp_closing_date: e })}
-                                />
-                                <CustomSelect
-                                    title="Opportunity"
-                                    value={state.tags}
-                                    isMulti={true}
-                                    onChange={(e) => setState({ tags: e })}
-                                    placeholder={'Opportunity'}
-                                    options={state.tagList}
-                                    error={state.errors?.tags}
-                                />
-                                <CustomSelect
-                                    title="Status"
-                                    value={state.tags}
-                                    isMulti={true}
-                                    onChange={(e) => setState({ tags: e })}
-                                    placeholder={'Status'}
-                                    options={state.tagList}
-                                    error={state.errors?.tags}
-                                />
-                                {/* <CustomSelect
+                title="Filter"
+                open={state.isOpen}
+                close={() => setState({ isOpen: false })}
+                cancelOnClick={() => clearFilter()}
+                submitOnClick={() => filterData(state.currentPage)}
+                submitLoading={state.loading}
+                canceTitle="Reset"
+                renderComponent={() => (
+                    <div>
+                        <div className=" mb-5 mt-5 flex flex-col gap-4 md:mt-0  md:justify-between">
+                            <CustomeDatePicker error={state.errors?.closing_date} value={state.opp_closing_date} placeholder="Date" title="Date" onChange={(e) => setState({ opp_closing_date: e })} />
+                            <CustomSelect
+                                title="Opportunity"
+                                value={state.tags}
+                                isMulti={true}
+                                onChange={(e) => setState({ tags: e })}
+                                placeholder={'Opportunity'}
+                                options={state.tagList}
+                                error={state.errors?.tags}
+                            />
+                            <CustomSelect
+                                title="Status"
+                                value={state.tags}
+                                isMulti={true}
+                                onChange={(e) => setState({ tags: e })}
+                                placeholder={'Status'}
+                                options={state.tagList}
+                                error={state.errors?.tags}
+                            />
+                            {/* <CustomSelect
                                     options={state.countryList}
                                     value={state.country}
                                     onChange={(e) => {
@@ -825,7 +892,7 @@ export default function index() {
                                 />
 
                                 <CustomSelect options={state.stateList} value={state.state} onChange={(e) => setState({ state: e })} isMulti={false} placeholder={'State'} title={'State'} /> */}
-                                {/* <div id="" className="">
+                            {/* <div id="" className="">
                                     <label className="text-md mb-2 block font-bold text-gray-700">Annual Revenue</label>
                                     <div id="" className="p-2">
                                         <InputRange STEP={1} MIN={0} MAX={state.maxPrice} values={state.range} handleChanges={(data) => setState({ range: data })} />
@@ -835,12 +902,10 @@ export default function index() {
                                         <span className="">{state?.range[1] ? roundOff(state?.range[1]) : roundOff(state.maxPrice)}</span>
                                     </div>
                                 </div> */}
-                            </div>
                         </div>
-                    )}
-                />
+                    </div>
+                )}
+            />
         </div>
-
-        
     );
 }

@@ -3,7 +3,7 @@ import instance from '@/utils/axios.utils';
 const lead = {
     list: (page) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leaddetails/?page=${page}`;
+            let url = `leads/lead/?page=${page}`;
             instance()
                 .get(url)
                 .then((res) => {

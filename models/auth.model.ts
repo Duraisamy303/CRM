@@ -3,7 +3,7 @@ import instance from '@/utils/axios.utils';
 const auth = {
     login: (data) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `login/`;
+            let url = `accounts/login/`;
             instance()
                 .post(url, data)
                 .then((res) => {

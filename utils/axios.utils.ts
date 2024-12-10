@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const instance = () => {
   const data = axios.create({
-    baseURL: 'http://121.200.52.133:8000/lead/',
+    baseURL: 'http://121.200.52.133:8000/api/',
   });
 
   data.interceptors.request.use(async function (config) {
