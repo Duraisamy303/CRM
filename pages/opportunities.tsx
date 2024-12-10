@@ -316,18 +316,21 @@ const Opportunity = () => {
     };
 
     const tableData = (res: any, role: string) => {
+        console.log('res: ', res);
         const data = res?.map((item) => {
             return {
                 ...item,
                 name: item?.name,
-                opportunity_value: item.opportunity_value,
-                probability_in_percentage: item.probability_in_percentage,
-                recurring_value_per_year: item?.recurring_value_per_year,
-                stages: item.stage.stage,
-                currency: item.currency_type.currency_short,
-                closing_date: item.closing_date,
+                // opportunity_value: item.opportunity_value,
+                // probability_in_percentage: item.probability_in_percentage,
+                // recurring_value_per_year: item?.recurring_value_per_year,
+                stages: item?.stage && item?.stage?.stage,
+                // currency: item.currency_type.currency_short,
+                // closing_date: item.closing_date,
             };
         });
+        console.log('data: ', data);
+
         let columns = [];
 
         setState({ data: data, columns });

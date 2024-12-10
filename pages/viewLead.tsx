@@ -180,8 +180,8 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.opportunity.listByLeadId(id);
-            if (res.length > 0) {
-                tableData(res);
+            if (res.results?.length > 0) {
+                tableData(res?.results);
             } else {
                 setState({ opportunityList: [], loading: false });
             }
@@ -191,7 +191,7 @@ export default function ViewLead() {
     };
 
     const tableData = (res: any) => {
-        const data = res?.results?.map((item) => {
+        const data = res?.map((item) => {
             return {
                 ...item,
                 name: item?.name,
@@ -647,7 +647,7 @@ export default function ViewLead() {
                             // { maxWidth: 576, cols: 1 },
                         ]
                     }
-                    className="gap-0 flex-wrap overflow-hidden "
+                    className="flex-wrap gap-0 overflow-hidden "
                 >
                     <div className="flex flex-col p-2 ">
                         <div className="text-md text-gray-600">Lead Manager</div>
@@ -697,7 +697,7 @@ export default function ViewLead() {
                         </div>
                     )}
                     {state.data?.company_website && (
-                        <div className="flex flex-col p-2 flex-wrap">
+                        <div className="flex flex-col flex-wrap p-2">
                             <div className="text-md text-gray-600">Company Website</div>
                             <div className="text-[18px] text-blue-600 underline">
                                 <Link href={state.data.company_website} target="_blank" rel="noopener noreferrer">

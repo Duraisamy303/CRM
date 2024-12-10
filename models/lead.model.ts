@@ -119,7 +119,7 @@ const lead = {
 
     details: (id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leaddetails/${id}/`;
+            let url = `leads/lead/${id}/`;
             instance()
                 .get(url)
                 .then((res) => {

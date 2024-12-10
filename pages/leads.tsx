@@ -2,7 +2,7 @@ import IconBitcoin from '@/components/Icon/IconBitcoin';
 import IconFilter from '@/components/Icon/IconFilter';
 import IconSearch from '@/components/Icon/IconSearch';
 import CustomSelect from '@/components/Select';
-import { filterByDates, getDateRange, objIsEmpty, useSetState } from '@/utils/functions.utils';
+import { Dropdown, filterByDates, getDateRange, objIsEmpty, useSetState } from '@/utils/functions.utils';
 import { SimpleGrid } from '@mantine/core';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
@@ -43,7 +43,7 @@ const Index = () => {
 
     useEffect(() => {
         if (state.activeTab == 'Custom') {
-            filterData();
+            // filterData();
         } else {
             getData();
         }
@@ -137,9 +137,9 @@ const Index = () => {
 
     const userData = async () => {
         try {
-            setState({ loading: true });
+            // setState({ loading: true });
             const res: any = await Models.auth.userDetails();
-            setState({ loading: false, role: res?.designation });
+            setState({ role: res?.designation });
         } catch (error) {
             console.log('error: ', error);
         }

@@ -64,7 +64,7 @@ const CreateLead = () => {
         assignList: [],
         sourceList: [],
         sourceFromList: [],
-        leadTypeList:[]
+        leadTypeList: [],
     });
 
     useEffect(() => {
@@ -91,7 +91,7 @@ const CreateLead = () => {
             setState({ loading: false });
         }
     };
-    const  userList = async () => {
+    const userList = async () => {
         try {
             setState({ loading: true });
             const res = await Models.lead.dropdowns('assigned_to');
@@ -121,7 +121,6 @@ const CreateLead = () => {
         try {
             setState({ loading: true });
             const res = await Models.lead.sourceList();
-            console.log("sourceList: ", res);
             const dropdownList = Dropdown(res, 'source');
             setState({ sourceList: dropdownList, loading: false });
         } catch (error) {
@@ -522,6 +521,25 @@ const CreateLead = () => {
                                 />
                             </div>
                         )}
+                    </div>
+
+                    <div className=" flex w-full items-center  gap-3 ">
+                        <div className="flex w-[50%] ">
+                            <CustomSelect
+                                title="Department"
+                                value={state.lead_source}
+                                onChange={(e) => {
+                                    if (e) {
+                                        sourceFromList(e);
+                                    }
+                                    setState({ lead_source: e, lead_source_from: '' });
+                                }}
+                                placeholder={'Department'}
+                                options={state.sourceList}
+                                error={state.errors?.lead_source}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div className=" flex items-center justify-end gap-3">

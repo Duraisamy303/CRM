@@ -1,16 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import CustomSelect from './Select';
-import { useSetState } from '@/utils/functions.utils';
+import { Dropdown, useSetState } from '@/utils/functions.utils';
 import IconLoader from './Icon/IconLoader';
 import NumberInput from './NumberInput';
 import CustomeDatePicker from '@/common_component/datePicker';
+import Models from '@/imports/models.import';
 
 export default function QuickEdit(props) {
     const { collapse } = props;
-    const [state, setState] = useSetState({});
+    const [state, setState] = useSetState({
+        assignList: [],
+    });
+
+    useEffect(() => {
+        userList();
+    }, []);
+
+    const userList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('assigned_to');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ assignList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
     return (
         <>
-           <h2 className='font-bold underline pb-3'>QUICK EDIT</h2>
+            <h2 className="pb-3 font-bold underline">QUICK EDIT</h2>
             <div>
                 <div className="flex  gap-3 ">
                     <CustomSelect
@@ -54,8 +75,7 @@ export default function QuickEdit(props) {
                             }
                         }}
                         placeholder={'Assigned'}
-                        options={state.verticalList}
-                        error={state.errors?.vertical}
+                        options={state.assignList}
                     />
 
                     <NumberInput title="Value" value={state.fax} onChange={(e) => setState({ fax: e })} placeholder={'Value'} />
@@ -83,6 +103,6 @@ export default function QuickEdit(props) {
                     </button>
                 </div>
             </div>
-            </>
+        </>
     );
 }

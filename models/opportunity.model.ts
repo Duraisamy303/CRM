@@ -22,7 +22,7 @@ const opportunity = {
 
     allList: (page) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leads/opportunity/?page=${page}`;
+            let url = `opportunity/?page=${page}`;
             instance()
                 .get(url)
                 .then((res) => {
@@ -41,7 +41,7 @@ const opportunity = {
 
     listByLeadId: (id) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `opportunity/lead_id/${id}`;
+            let url = `opportunity/lead_id/${id}/`;
             instance()
                 .get(url)
                 .then((res) => {
