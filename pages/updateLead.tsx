@@ -63,10 +63,11 @@ const UpdateLead = () => {
         getMarketSegmentList();
         countryList();
         tagList();
-        ownerList();
-        createdByList();
         sourceList();
-        userList();
+        assignList();
+        leadManagerList();
+        departmentList();
+        statusList()
     }, [id]);
 
     const getDate = async () => {
@@ -90,6 +91,8 @@ const UpdateLead = () => {
                 lead_source: { value: res.lead_source?.id, label: res.lead_source?.source },
                 lead_source_from: { value: res.lead_source_from?.id, label: res.lead_source_from?.source_from },
                 assigned_to: { value: res.assigned_to?.id, label: res.assigned_to?.username },
+                department: { value: res.department?.id, label: res.department?.department },
+                status: { value: res.lead_status?.id, label: res.lead_status?.name },
             });
             getFocusSegmentList({ value: res.focus_segment?.vertical?.id });
             stateList({ value: res.country?.id });
@@ -152,11 +155,11 @@ const UpdateLead = () => {
         }
     };
 
-    const userList = async () => {
+    const assignList = async () => {
         try {
             setState({ loading: true });
-            const res = await Models.lead.dropdowns('assigned_to');
-            const dropdownList = Dropdown(res, 'username');
+            const res = await Models.lead.bdmAndBDE();
+            const dropdownList = Dropdown(res, 'full_name');
             setState({ assignList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
@@ -165,12 +168,40 @@ const UpdateLead = () => {
         }
     };
 
-    const ownerList = async () => {
+    const departmentList = async () => {
         try {
             setState({ loading: true });
-            const res = await Models.lead.dropdowns('owner');
-            const dropdownList = Dropdown(res, 'username');
-            setState({ ownerList: dropdownList, loading: false });
+            const res = await Models.lead.departmentList();
+            console.log('res: ', res);
+            const dropdownList = Dropdown(res, 'department');
+            setState({ departmentList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+
+    const statusList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.statusList();
+            const dropdownList = Dropdown(res, 'name');
+            setState({ statusList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const leadManagerList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.leadManager();
+            const dropdownList = Dropdown(res, 'full_name');
+            setState({ leadManagerList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -199,19 +230,6 @@ const UpdateLead = () => {
             setState({ verticalList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
-        }
-    };
-
-    const createdByList = async () => {
-        try {
-            setState({ loading: true });
-            const res = await Models.lead.dropdowns('created_by');
-            const dropdownList = Dropdown(res, 'username');
-            setState({ createdByList: dropdownList, loading: false });
-        } catch (error) {
-            setState({ loading: false });
-
-            console.log('error: ', error);
         }
     };
 
@@ -255,11 +273,14 @@ const UpdateLead = () => {
                 assigned_to: state.assigned_to?.value,
                 lead_source: state.lead_source?.value,
                 lead_source_from: state.lead_source_from?.value,
+                department: state.department?.value,
+                status: state.status?.value,
             };
 
             await Validation.createLeadValidation.validate(body, { abortEarly: false });
 
             const res: any = await Models.lead.update(body, id);
+            console.log("res: ", res);
             setState({ submitLoad: false });
             Success(res?.message);
             if (typeof window !== 'undefined') {
@@ -353,7 +374,7 @@ const UpdateLead = () => {
                             value={state.lead_owner}
                             onChange={(e) => setState({ lead_owner: e })}
                             placeholder={'Lead Manager'}
-                            options={state.ownerList}
+                            options={state.leadManagerList}
                             error={state.errors?.lead_owner}
                             required
                         />
@@ -491,6 +512,31 @@ const UpdateLead = () => {
                         </div>
                     </div>
 
+                    <div className=" flex w-full items-center  gap-3 ">
+                        <div className="flex w-[50%] ">
+                            <CustomSelect
+                                title="Department"
+                                value={state.department}
+                                onChange={(e) => setState({ department: e })}
+                                placeholder={'Department'}
+                                options={state.departmentList}
+                                error={state.errors?.department}
+                                required
+                            />
+                        </div>
+                        <div className="flex w-[50%] ">
+                            <CustomSelect
+                                title="Status"
+                                value={state.status}
+                                onChange={(e) => setState({ status: e })}
+                                placeholder={'Status'}
+                                options={state.statusList}
+                                error={state.errors?.status}
+                                required
+                            />
+                        </div>
+                    </div>
+
                     <div className=" flex w-full gap-3">
                         <div className=" flex  w-[50%]">
                             <CustomSelect
@@ -520,7 +566,6 @@ const UpdateLead = () => {
                             />
                         </div>
                     </div>
-
                     <div className=" flex w-full items-center  gap-3 ">
                         <div className="flex w-[50%] ">
                             <CustomSelect

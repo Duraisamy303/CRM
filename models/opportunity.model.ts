@@ -79,7 +79,7 @@ const opportunity = {
 
     create: (data: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `opportunity/`;
+            let url = `leads/opportunity/`;
             instance()
                 .post(url, data, {
                     headers: {
@@ -197,7 +197,7 @@ const opportunity = {
 
     update: (data: any, id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `/opportunity/${id}/`;
+            let url = `leads/opportunity/${id}/`;
 
             instance()
                 .put(url, data, {

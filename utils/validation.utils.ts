@@ -4,10 +4,12 @@ export const createLeadValidation = Yup.object().shape({
     name: Yup.string().required('Lead Name is required'),
     lead_owner: Yup.string().required('Lead Manager is required'),
     company_email: Yup.string().email('Invalid email').required('Email is required'),
-    company_website: Yup.string().url('Invalid URL').required('Website is required'),
+    company_website: Yup.string().required('Website is required'),
     company_number: Yup.string().required('Number is required'),
-    // source_from: Yup.string().required('Source from is required'),
-    // source: Yup.string().required('Source is required'),
+    department: Yup.string().required('Department is required'),
+    status: Yup.string().required('Status is required'),
+
+    lead_type: Yup.string().required('Lead Type is required'),
     // created_by: Yup.string().required('Created By is required'),
     // annual_revenue: Yup.number().nullable().required('Annual Revenue is required').typeError('Annual Revenue must be a number'),
     // tags: Yup.array().min(1, 'At least one tag is required'),
@@ -18,7 +20,7 @@ export const createLeadValidation = Yup.object().shape({
     vertical: Yup.string().required('Vertical is required'),
     assigned_to: Yup.string().required('Assign To is required'),
     lead_source: Yup.string().required('Lead Source is required'),
-    lead_source_from: Yup.string().required('Lead Source From is required')
+    lead_source_from: Yup.string().required('Lead Source From is required'),
 });
 
 export const createOppValidation = Yup.object().shape({
@@ -77,4 +79,19 @@ export const createTask = Yup.object().shape({
 
 export const assignTask = Yup.object().shape({
     assigned_to: Yup.string().required('Select assigned user'),
+});
+
+export const createLeadLog = Yup.object().shape({
+    logType: Yup.string().required('Select log type'),
+    logStage: Yup.string().required('Select log stage type'),
+    focus_segment: Yup.string().required('Select focus segment'),
+    primary_contact: Yup.string().required('Select primary contact'),
+});
+export const createLeadsLog = Yup.object().shape({
+    assigned_to: Yup.string().required('Select assign user'),
+    taskType: Yup.string().required('Select task type'),
+    logStage: Yup.string().required('Select log stage type'),
+    logType: Yup.string().required('Select log type'),
+    focus_segment: Yup.string().required('Select focus segment'),
+    primary_contact: Yup.string().required('Select primary contact'),
 });

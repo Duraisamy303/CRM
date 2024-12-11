@@ -95,6 +95,10 @@ export default function ViewLead() {
         logType: null,
         taskType: null,
         isLogOpen: false,
+        primary_contact_list: [],
+        primary_contact: null,
+        stageList: [],
+        assignToList: [],
     });
 
     useEffect(() => {
@@ -109,6 +113,9 @@ export default function ViewLead() {
         stageList();
         ownerList();
         getLeadOwnerByLeadId();
+        getLogStageList();
+        userList();
+        focusSegmentList();
     }, [id]);
 
     const getDate = async () => {
@@ -116,9 +123,11 @@ export default function ViewLead() {
             setState({ loading: true });
             const res: any = await Models.lead.details(id);
             console.log('res: ', res);
+            const primary = res?.primary_contact;
             setState({
                 loading: false,
                 data: res,
+                primary_contact: { value: primary.id, label: primary.name },
             });
         } catch (error) {
             setState({ loading: false });
@@ -128,10 +137,36 @@ export default function ViewLead() {
     const stageList = async () => {
         try {
             setState({ loading: true });
-            const token = localStorage.getItem('crmToken');
-            const res: any = await Models.opportunity.oppDropdowns('stage');
+            const res: any = await Models.lead.stageList();
+            console.log("res: ", res);
             const dropdownList = Dropdown(res, 'stage');
             setState({ stageList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const focusSegmentList = async () => {
+        try {
+            setState({ loading: true });
+            const res: any = await Models.lead.dropdowns('focus_segment');
+            const dropdownList = Dropdown(res, 'focus_segment');
+            setState({ focusSegmentList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+    const userList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.dropdowns('assigned_to');
+            const dropdownList = Dropdown(res, 'username');
+            setState({ assignToList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -143,6 +178,7 @@ export default function ViewLead() {
         try {
             setState({ loading: true });
             const res: any = await Models.opportunity.oppDropdowns('currency_type');
+            console.log("res: ", res);
 
             const dropdownList = Dropdown(res, 'currency_short');
             setState({ currencyList: dropdownList, loading: false });
@@ -211,6 +247,17 @@ export default function ViewLead() {
             setState({ loading: true });
             const res: any = await Models.lead.logList(id);
             setState({ logList: res?.results, loading: false, logCount: res.count });
+        } catch (error) {
+            setState({ loading: false });
+        }
+    };
+
+    const getLogStageList = async () => {
+        try {
+            setState({ loading: true });
+            const res: any = await Models.lead.stageList();
+            const dropdownList = Dropdown(res.results, 'stage');
+            setState({ stageList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
         }
@@ -523,6 +570,103 @@ export default function ViewLead() {
                 setState({ probability_in_percentage: '' });
             }
         } catch (error) {}
+    };
+
+    const createAndUpdateLog = async () => {
+        try {
+            setState({ logLoad: true });
+            let validateField;
+            if (state.follow_up_date_time) {
+                validateField = {
+                    logStage: state.logStage?.value,
+                    logType: state.logType?.value,
+                    follow_up_date_time: state.follow_up_date_time,
+                    taskType: state.taskType?.value,
+                    assigned_to: state.assigned_to?.value,
+                    details: state.details,
+                    focus_segment: state.focus_segment?.value,
+                    primary_contact: state.primary_contact?.value,
+                };
+                await Validation.createLeadsLog.validate(validateField, { abortEarly: false });
+            } else {
+                validateField = {
+                    logStage: state.logStage?.value,
+                    logType: state.logType?.value,
+                    focus_segment: state.focus_segment?.value,
+                    primary_contact: state.primary_contact?.value,
+                };
+                await Validation.createLeadLog.validate(validateField, { abortEarly: false });
+            }
+
+            let body;
+
+            if (state.follow_up_date_time) {
+                body = {
+                    contact: state.primary_contact?.value,
+                    lead: id,
+                    opportunity: null,
+                    focus_segment: state.focus_segment?.value,
+                    follow_up_date_time: state.follow_up_date_time,
+                    log_stage: state.logStage?.value,
+                    details: state.details,
+                    logtype: state.logType?.value,
+                    task_assignment: {
+                        assigned_to: state.assigned_to?.value,
+                    },
+                };
+            } else {
+                body = {
+                    contact: state.primary_contact?.value,
+                    lead: id,
+                    opportunity: null,
+                    focus_segment: state.focus_segment?.value,
+                    follow_up_date_time: null,
+                    log_stage: state.logStage?.value,
+                    details: state.details,
+                    logtype: state.logType?.value,
+                };
+            }
+
+            if (state.logId) {
+                await Models.log.update(body, id);
+                Success('Log updated successfully');
+            } else {
+                await Models.log.create(body);
+                Success('Log created successfully');
+            }
+            clearLogData();
+            getLogList();
+        } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                const validationErrors = {};
+                error.inner.forEach((err) => {
+                    validationErrors[err.path] = err?.message;
+                });
+                console.log('validationErrors: ', validationErrors);
+
+                setState({ errors: validationErrors });
+                setState({ logLoad: false });
+            } else {
+                console.log('Error: ', error?.message);
+                setState({ logLoad: false });
+            }
+            setState({ logLoad: false });
+        }
+    };
+
+    const clearLogData = () => {
+        setState({
+            isOpenLog: false,
+            logCreatedBy: '',
+            logId: '',
+            logStage: '',
+            focus_segment: '',
+            follow_up_date_time: '',
+            details: '',
+            errors: '',
+            logLoad: false,
+            file: null,
+        });
     };
 
     const breadcrumbItems = [
@@ -1115,7 +1259,7 @@ export default function ViewLead() {
                 title={state.logId ? 'Update Log' : 'Create Log'}
                 open={state.isLogOpen}
                 cancelOnClick={() => setState({ isLogOpen: false })}
-                submitOnClick={() => setState({ isLogOpen: false })}
+                submitOnClick={() => createAndUpdateLog()}
                 submitLoading={state.oppLoading}
                 close={() => setState({ isLogOpen: false })}
                 renderComponent={() => (
@@ -1128,22 +1272,22 @@ export default function ViewLead() {
                             options={[
                                 {
                                     label: 'Call',
-                                    value: 'call',
+                                    value: 'Call',
                                 },
                                 {
                                     label: 'Meeting',
-                                    value: 'meeting',
+                                    value: 'Meeting',
                                 },
                                 {
                                     label: 'Email',
-                                    value: 'email',
+                                    value: 'Email',
                                 },
                                 {
                                     label: 'Others',
-                                    value: 'others',
+                                    value: 'Others',
                                 },
                             ]}
-                            error={state.errors?.logStage}
+                            error={state.errors?.logType}
                             required
                         />
                         <CustomSelect
@@ -1151,10 +1295,20 @@ export default function ViewLead() {
                             value={state.logStage}
                             onChange={(e) => setState({ logStage: e })}
                             placeholder={'Log Stage'}
-                            options={state.logStageList}
+                            options={state.stageList}
                             error={state.errors?.logStage}
                             required
                         />
+                        <CustomSelect
+                            title="Focus Segment"
+                            value={state.focus_segment}
+                            onChange={(e) => setState({ focus_segment: e })}
+                            placeholder={'Focus Segment'}
+                            options={state.focusSegmentList}
+                            error={state.errors?.focus_segment}
+                            required
+                        />
+
                         <CustomeDatePicker value={state.follow_up_date_time} title="Follow Up" onChange={(e) => setState({ follow_up_date_time: e })} />
                         {state.follow_up_date_time && (
                             <>
@@ -1165,16 +1319,12 @@ export default function ViewLead() {
                                     placeholder={'Task Type'}
                                     options={[
                                         {
-                                            label: 'Call',
-                                            value: 'call',
+                                            label: 'Manual',
+                                            value: 'Manual',
                                         },
                                         {
-                                            label: 'Appoinment',
-                                            value: 'appoinment',
-                                        },
-                                        {
-                                            label: 'Followup',
-                                            value: 'followup',
+                                            label: 'Automatic',
+                                            value: 'Automatic',
                                         },
                                     ]}
                                     error={state.errors?.logStage}
@@ -1182,17 +1332,25 @@ export default function ViewLead() {
                                 />
                                 <CustomSelect
                                     title="Assign To"
-                                    value={state.logStage}
-                                    onChange={(e) => setState({ logStage: e })}
+                                    value={state.assigned_to}
+                                    onChange={(e) => setState({ assigned_to: e })}
                                     placeholder={'Assign To'}
-                                    options={state.logStageList}
-                                    error={state.errors?.logStage}
+                                    options={state.assignToList}
+                                    error={state.errors?.assigned_to}
                                     required
                                 />
                             </>
                         )}
+                        <CustomSelect
+                            title="Primary Contact"
+                            value={state.primary_contact}
+                            onChange={(e) => setState({ primary_contact: e })}
+                            placeholder={'Primary Contact'}
+                            options={state.primary_contact_list}
+                            // loadMore={() => leadListLoadMore()}
+                        />
                         <TextArea height="150px" value={state.details} onChange={(e) => setState({ details: e })} placeholder={'Details'} title={'Details'} />
-                        <FileUpload
+                        {/* <FileUpload
                             onFileSelect={(file) => setState({ file })}
                             buttonText="Upload Document"
                             iconSrc="/assets/images/fileUplaod.jpg"
@@ -1204,10 +1362,10 @@ export default function ViewLead() {
                             <button type="button" className="btn btn-outline-danger border " onClick={() => setState({ isLogOpen: false })}>
                                 Cancel
                             </button>
-                            <button type="button" className="btn btn-primary" onClick={() => setState({ isLogOpen: false })}>
+                            <button type="button" className="btn btn-primary" onClick={() => createAndUpdateLog()}>
                                 {state.logLoad ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             />
@@ -1304,6 +1462,14 @@ export default function ViewLead() {
                             required
                             error={state.errors?.created_by}
                         /> */}
+                        <CustomSelect
+                            title="Primary Contact"
+                            value={state.primary_contact}
+                            onChange={(e) => setState({ primary_contact: e })}
+                            placeholder={'Primary Contact'}
+                            options={state.primary_contact_list}
+                            // loadMore={() => leadListLoadMore()}
+                        />
                         <CustomeDatePicker
                             error={state.errors?.closing_date}
                             value={state.opp_closing_date}
@@ -1321,17 +1487,6 @@ export default function ViewLead() {
                             required
                             error={state.errors?.currency_type}
                         />
-                        {/* <CustomSelect
-                            title="Primary Contact"
-                            value={state.createlead}
-                            onChange={(e) => {
-                                // getLeadOwnerByLeadId(e);
-                                // setState({ createlead: e });
-                            }}
-                            placeholder={'Primary Contact'}
-                            options={state.leadList}
-                            // loadMore={() => leadListLoadMore()}
-                        /> */}
 
                         {/* <div className="mt-3 flex items-center justify-end gap-3">
                             <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>

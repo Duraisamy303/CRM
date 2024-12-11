@@ -22,7 +22,7 @@ const lead = {
 
     logList: (id) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `leadlog/${id}`;
+            let url = `leads/log/${id}/`;
             instance()
                 .get(url)
                 .then((res) => {
@@ -39,7 +39,26 @@ const lead = {
         return promise;
     },
 
-    filter: (data: any,page) => {
+    stageList: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `leads/log-stage/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    filter: (data: any, page) => {
         let promise = new Promise((resolve, reject) => {
             let url = `filter_lead/?page=${page}`;
             instance()
@@ -79,10 +98,10 @@ const lead = {
 
     update: (data: any, id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `/leaddetails/${id}/`;
+            let url = `leads/lead/${id}/`;
 
             instance()
-                .put(url, data)
+                .patch(url, data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -136,11 +155,11 @@ const lead = {
         return promise;
     },
 
-    leadAssign: (leadId: any,data:any) => {
+    leadAssign: (leadId: any, data: any) => {
         let promise = new Promise((resolve, reject) => {
             let url = `lead/${leadId}/assign/`;
             instance()
-                .post(url,data)
+                .post(url, data)
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -158,6 +177,63 @@ const lead = {
     dropdowns: (type) => {
         let promise = new Promise((resolve, reject) => {
             let url = `dropdown/?type=${type}`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    bdmAndBDE: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `accounts/users_for_lead/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    departmentList: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `leads/departments/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    leadManager: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `accounts/get_lead_owner/`;
             instance()
                 .get(url)
                 .then((res) => {
@@ -193,6 +269,26 @@ const lead = {
         return promise;
     },
 
+    statusList: () => {
+        let promise = new Promise((resolve, reject) => {
+            let url = `leads/lead_statuses/`;
+            instance()
+                .get(url)
+                .then((res) => {
+                    resolve(res.data);
+                })
+                .catch((error) => {
+                    if (error.response) {
+                        reject(error.response.data.message);
+                    } else {
+                        reject(error);
+                    }
+                });
+        });
+        return promise;
+    },
+
+    
 
     sourceFromList: (sourceId) => {
         let promise = new Promise((resolve, reject) => {

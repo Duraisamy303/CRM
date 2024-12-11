@@ -58,9 +58,9 @@ const log = {
         return promise;
     },
 
-    create: (data: any, id: any) => {
+    create: (data: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `log/${id}/`;
+            let url = `leads/log/`;
             instance()
                 .post(url, data)
                 .then((res) => {
@@ -79,7 +79,7 @@ const log = {
 
     update: (data: any, id: any) => {
         let promise = new Promise((resolve, reject) => {
-            let url = `/log/${id}/`;
+            let url = `eads/log/${id}/`;
 
             instance()
                 .put(url, data)

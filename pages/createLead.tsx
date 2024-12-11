@@ -65,6 +65,7 @@ const CreateLead = () => {
         sourceList: [],
         sourceFromList: [],
         leadTypeList: [],
+        leadManagerList: [],
     });
 
     useEffect(() => {
@@ -72,10 +73,11 @@ const CreateLead = () => {
         getMarketSegmentList();
         countryList();
         tagList();
-        ownerList();
-        createdByList();
-        userList();
+        assignList();
+        leadManagerList();
         sourceList();
+        departmentList();
+        statusList()
     }, []);
 
     const getFocusSegmentList = async (verticalData: any) => {
@@ -91,12 +93,12 @@ const CreateLead = () => {
             setState({ loading: false });
         }
     };
-    const userList = async () => {
+    const leadManagerList = async () => {
         try {
             setState({ loading: true });
-            const res = await Models.lead.dropdowns('assigned_to');
-            const dropdownList = Dropdown(res, 'username');
-            setState({ assignList: dropdownList, loading: false });
+            const res = await Models.lead.leadManager();
+            const dropdownList = Dropdown(res, 'full_name');
+            setState({ leadManagerList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -123,6 +125,20 @@ const CreateLead = () => {
             const res = await Models.lead.sourceList();
             const dropdownList = Dropdown(res, 'source');
             setState({ sourceList: dropdownList, loading: false });
+        } catch (error) {
+            setState({ loading: false });
+
+            console.log('error: ', error);
+        }
+    };
+
+
+    const statusList = async () => {
+        try {
+            setState({ loading: true });
+            const res = await Models.lead.statusList();
+            const dropdownList = Dropdown(res, 'name');
+            setState({ statusList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -181,12 +197,12 @@ const CreateLead = () => {
         }
     };
 
-    const ownerList = async () => {
+    const assignList = async () => {
         try {
             setState({ loading: true });
-            const res = await Models.lead.dropdowns('owner');
-            const dropdownList = Dropdown(res, 'username');
-            setState({ ownerList: dropdownList, loading: false });
+            const res = await Models.lead.bdmAndBDE();
+            const dropdownList = Dropdown(res, 'full_name');
+            setState({ assignList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
@@ -194,18 +210,21 @@ const CreateLead = () => {
         }
     };
 
-    const createdByList = async () => {
+    const departmentList = async () => {
         try {
             setState({ loading: true });
-            const res = await Models.lead.dropdowns('created_by');
-            const dropdownList = Dropdown(res, 'username');
-            setState({ createdByList: dropdownList, loading: false });
+            const res = await Models.lead.departmentList();
+            console.log('res: ', res);
+            const dropdownList = Dropdown(res, 'department');
+            setState({ departmentList: dropdownList, loading: false });
         } catch (error) {
             setState({ loading: false });
 
             console.log('error: ', error);
         }
     };
+
+  
 
     const handleSubmit = async () => {
         try {
@@ -237,6 +256,8 @@ const CreateLead = () => {
                 assigned_to: state.assigned_to?.value,
                 lead_source: state.lead_source?.value,
                 lead_source_from: state.lead_source_from?.value,
+                department: state.department?.value,
+                status: state.status?.value,
             };
 
             await Validation.createLeadValidation.validate(body, { abortEarly: false });
@@ -323,7 +344,7 @@ const CreateLead = () => {
                             value={state.lead_owner}
                             onChange={(e) => setState({ lead_owner: e })}
                             placeholder={'Lead Manager'}
-                            options={state.ownerList}
+                            options={state.leadManagerList}
                             error={state.errors?.lead_owner}
                             required
                         />
@@ -461,6 +482,31 @@ const CreateLead = () => {
                         </div>
                     </div>
 
+                    <div className=" flex w-full items-center  gap-3 ">
+                        <div className="flex w-[50%] ">
+                            <CustomSelect
+                                title="Department"
+                                value={state.department}
+                                onChange={(e) => setState({ department: e })}
+                                placeholder={'Department'}
+                                options={state.departmentList}
+                                error={state.errors?.department}
+                                required
+                            />
+                        </div>
+                        <div className="flex w-[50%] ">
+                            <CustomSelect
+                                title="Status"
+                                value={state.status}
+                                onChange={(e) => setState({ status: e })}
+                                placeholder={'Status'}
+                                options={state.statusList}
+                                error={state.errors?.status}
+                                required
+                            />
+                        </div>
+                    </div>
+
                     <div className=" flex w-full gap-3">
                         <div className=" flex  w-[50%]">
                             <CustomSelect
@@ -490,7 +536,6 @@ const CreateLead = () => {
                             />
                         </div>
                     </div>
-
                     <div className=" flex w-full items-center  gap-3 ">
                         <div className="flex w-[50%] ">
                             <CustomSelect
@@ -523,25 +568,6 @@ const CreateLead = () => {
                         )}
                     </div>
 
-                    <div className=" flex w-full items-center  gap-3 ">
-                        <div className="flex w-[50%] ">
-                            <CustomSelect
-                                title="Department"
-                                value={state.lead_source}
-                                onChange={(e) => {
-                                    if (e) {
-                                        sourceFromList(e);
-                                    }
-                                    setState({ lead_source: e, lead_source_from: '' });
-                                }}
-                                placeholder={'Department'}
-                                options={state.sourceList}
-                                error={state.errors?.lead_source}
-                                required
-                            />
-                        </div>
-                    </div>
-
                     <div className=" flex items-center justify-end gap-3">
                         {/* <CheckboxInput checked={state.remainder} onChange={() => setState({ isOpenTask: !state.isOpenTask, remainder: !state.remainder })} label="Remainder" /> */}
 
@@ -557,210 +583,6 @@ const CreateLead = () => {
                     </div>
                 </div>
             </div>
-
-            <SideMenu
-                title={'Add Opportunity'}
-                open={state.isOpen}
-                width={450}
-                close={() => setState({ isOpen: false })}
-                cancelOnClick={() => setState({ isOpen: false })}
-                submitOnClick={() => setState({ isOpen: false })}
-                submitLoading={state.oppLoading}
-                renderComponent={() => (
-                    <div className="flex flex-col gap-3">
-                        <FileUpload
-                            onFileSelect={(file) => setState({ file })}
-                            buttonText="Upload Document"
-                            iconSrc="/assets/images/fileUplaod.jpg"
-                            accept=".pdf,.doc,.docx,.txt"
-                            isImageAllowed={false} // Only allow non-image files
-                            value={state.file}
-                        />
-                        <CustomSelect
-                            title="Lead "
-                            value={state.createlead}
-                            onChange={(e) => {
-                                // getLeadOwnerByLeadId(e);
-                                // setState({ createlead: e });
-                            }}
-                            placeholder={'Lead '}
-                            options={state.leadList}
-                            // loadMore={() => leadListLoadMore()}
-                        />
-                        <TextInput title="Name" value={state.opp_name} onChange={(e) => setState({ opp_name: e })} placeholder={'Name'} error={state.errors?.opp_name} required />
-                        <CustomSelect
-                            title="Opportunity Owner"
-                            value={state.owner}
-                            onChange={(e) => setState({ owner: e })}
-                            placeholder={'Opportunity Owner'}
-                            options={state.ownerList}
-                            error={state.errors?.owner}
-                            required
-                        />
-                        <NumberInput
-                            error={state.errors?.opportunity_value}
-                            title="Opportunity Value"
-                            value={state.opportunity_value}
-                            onChange={(e) => setState({ opportunity_value: e })}
-                            placeholder={'Opportunity Value'}
-                            required
-                        />
-                        {/* <YearPicker
-                            required
-                            error={state.errors?.recurring_value_per_year}
-                            title="Recurring Value Per Year"
-                            value={state.recurring_value_per_year}
-                            onChange={(year) => {
-                                setState({ recurring_value_per_year: year });
-                            }}
-                        /> */}
-                        {/* <CustomYearSelect
-                            title="Recurring Value Per Year"
-                            value={state.recurring_value_per_year}
-                            onChange={(e) => setState({ recurring_value_per_year: e })}
-                            placeholder={'Recurring Value Per Year'}
-                            error={state.errors?.recurring_value_per_year}
-                            required
-                        />  */}
-
-                        <NumberInput
-                            title="Recurring Value Per Year"
-                            value={state.recurring_value_per_year}
-                            onChange={(e) => setState({ recurring_value_per_year: e })}
-                            placeholder={'Recurring Value Per Year'}
-                            error={state.errors?.recurring_value_per_year}
-                            required
-                        />
-                        <CustomSelect
-                            title="Stage"
-                            value={state.opp_stage}
-                            onChange={(e) => {
-                                // setState({ opp_stage: e });
-                                // getProbabilityPercentage(e);
-                            }}
-                            placeholder={'Stage'}
-                            options={state.stageList}
-                            required
-                            error={state.errors?.opp_stage}
-                        />
-                        <NumberInput
-                            title="Probability In Percentage"
-                            value={state.probability_in_percentage}
-                            onChange={(e) => {
-                                setState({ probability_in_percentage: e });
-                            }}
-                            placeholder={'Probability In Percentage'}
-                            error={state.errors?.probability_in_percentage}
-                            max={100}
-                            required
-                        />
-
-                        {/* <CustomSelect
-                            title="Created By"
-                            value={state.opp_created_by}
-                            onChange={(e) => setState({ opp_created_by: e })}
-                            placeholder={'Created By'}
-                            options={state.createdByList}
-                            required
-                            error={state.errors?.created_by}
-                        /> */}
-                        <CustomeDatePicker
-                            error={state.errors?.closing_date}
-                            value={state.opp_closing_date}
-                            placeholder="Closing Date"
-                            title="Closing Date"
-                            onChange={(e) => setState({ opp_closing_date: e })}
-                            required
-                        />
-                        <CustomSelect
-                            title="Currency Type"
-                            value={state.currency_type}
-                            onChange={(e) => setState({ currency_type: e })}
-                            placeholder={'Currency Type'}
-                            options={state.currencyList}
-                            required
-                            error={state.errors?.currency_type}
-                        />
-
-                        {/* <CustomSelect
-                            title="Primary Contact"
-                            value={state.createlead}
-                            onChange={(e) => {
-                                // getLeadOwnerByLeadId(e);
-                                // setState({ createlead: e });
-                            }}
-                            placeholder={'Primary Contact'}
-                            options={state.leadList}
-                            // loadMore={() => leadListLoadMore()}
-                        /> */}
-
-                        {/* <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => clearOppData()}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => createAndUpdateOpportunity()}>
-                                {state.oppLoading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div> */}
-                    </div>
-                )}
-            />
-
-            <Modal
-                open={state.isOpenTask}
-                addHeader={'Create Task'}
-                close={() => setState({ isOpenTask: false })}
-                renderComponent={() => (
-                    <div className="flex flex-col gap-5 p-5">
-                        {/* <div className="flex flex-col gap-5 ">
-                            <CustomSelect
-                                title="Lead "
-                                value={state.lead}
-                                onChange={(e) => {
-                                    if (e) {
-                                    }
-                                    setState({ lead: e, contact: '' });
-                                }}
-                                placeholder={'Lead '}
-                                options={state.leadList}
-                                error={state.errors?.lead}
-                                required
-                                // loadMore={() => leadListLoadMore()}
-                            />
-
-                            <CustomSelect
-                                title="Contact"
-                                value={state.contact}
-                                onChange={(e) => setState({ contact: e })}
-                                placeholder={'Contact '}
-                                options={state.contactList}
-                                error={state.errors?.contact}
-                                required
-                            />
-                        </div> */}
-
-                        <CustomeDatePicker
-                            value={state.task_date_time}
-                            placeholder="Task Date"
-                            title="Task Date"
-                            required
-                            onChange={(e) => setState({ task_date_time: e })}
-                            error={state.errors?.task_date_time}
-                        />
-
-                        <TextArea height="150px" value={state.details} onChange={(e) => setState({ details: e })} placeholder={'Details'} title={'Details'} />
-
-                        <div className="mt-3 flex items-center justify-end gap-3">
-                            <button type="button" className="btn btn-outline-danger border " onClick={() => setState({ isOpenTask: false })}>
-                                Cancel
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={() => setState({ isOpenTask: false })}>
-                                {state.taskLoading ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : 'Submit'}
-                            </button>
-                        </div>
-                    </div>
-                )}
-            />
         </div>
     );
 };
