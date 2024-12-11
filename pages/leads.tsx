@@ -30,13 +30,22 @@ const Index = () => {
     const router = useRouter();
 
     const [state, setState] = useSetState({
+        state: [],
         activeTab: 'This Month',
         loading: false,
         chartData: {},
         role: '',
+        currentPage: 1,
+        totalRecords: 0,
+        next: null,
+        previous: null,
+        search: '',
     });
 
     useEffect(() => {
+        getAllData(state.currentPage)
+        console.log(state.currentPage);
+        
         getData();
         userData();
     }, []);
@@ -46,11 +55,57 @@ const Index = () => {
             // filterData();
         } else {
             getData();
+            // getAllData(state.currentPage)
         }
     }, [state.activeTab]);
 
+    const getAllData = async (page = 1) => {
+        try {
+            console.log(page);
+            
+            setState({ loading: true });
+            const response: any = await Models.lead.list(page);
+            setState({ range: [0, response.max_revenue], maxPrice: response.max_revenue });
+            tableData(response?.results);
+            console.log(response.results);
+            setState({
+                loading: false,
+                totalRecords: response.count,
+                next: response.next,
+                previous: response.previous,
+            });
+        } catch (error) {
+            setState({ loading: false });
+        }
+    };
+
+
+
+    
+
+
+    const tableData = (res) => {
+        const data = res?.map((item) => {
+            return {
+                ...item,
+                name: item.name,
+                opportunity: item.opportunities?.[0]?.name ,
+                created_on: item.created_on,
+                created_by: item.created_by?.username || 'Unknown',
+                assigned: item.assigned_to?.username || 'Unassigned',
+                lastStatus: item.lead_status?.name || 'No Status',
+                leadSource: item.lead_source?.source || 'Unknown',
+                followUp: item.created_on,
+            };
+        });
+
+        setState({ data: data });
+    };
+
+
+
     const getData = async () => {
-        const res = await Models.lead.list(1);
+        // const res = await Models.lead.list(1);
         try {
             let res;
             if (state.activeTab === 'Year') {
@@ -221,80 +276,11 @@ const Index = () => {
         },
     };
 
-    const sampleData = [
-        {
-            id: 1,
-            name: 'John Smith',
-            opportunity: 'Opportunity A',
-            created_on: '11-12-2015',
-            created_by: 'John Doe',
-            lastStatus: 'New',
-            assigned: 'Alice',
-            value: '5,000',
-        },
-        {
-            id: 2,
-            name: 'Emma Johnson',
-            opportunity: 'Opportunity B',
-            created_on: '10-12-2016',
-            created_by: 'Jane Smith',
-            lastStatus: 'Contacted',
-            assigned: 'Bob',
-            value: '3,200',
-        },
-        {
-            id: 3,
-            name: 'Noah Wilson',
-            opportunity: 'Opportunity C',
-            created_on: '11-12-2015',
-            created_by: 'Emily Johnson',
-            lastStatus: 'Qualified',
-            assigned: 'Charlie',
-            value: '7,800',
-        },
-        {
-            id: 4,
-            name: 'Olivia Lee',
-            opportunity: 'Opportunity D',
-            created_on: '10-12-2016',
-            created_by: 'Michael Brown',
-            lastStatus: 'Disqualified',
-            assigned: 'David',
-            value: '2,500',
-        },
-        {
-            id: 5,
-            name: 'Ethan Brown',
-            opportunity: 'Opportunity E',
-            created_on: '11-12-2014',
-            created_by: 'Sarah Davis',
-            lastStatus: 'Follow-Up',
-            assigned: 'Ella',
-            value: '6,200',
-        },
-        {
-            id: 6,
-            name: 'Sophia Miller',
-            opportunity: 'Opportunity F',
-            created_on: '11-12-2015',
-            created_by: 'Chris Lee',
-            lastStatus: 'Converted',
-            assigned: 'Frank',
-            value: '10,000',
-        },
-        {
-            id: 7,
-            name: 'Browny',
-            opportunity: 'Opportunity G',
-            created_on: '11-12-2015',
-            created_by: 'Laura White',
-            lastStatus: 'New',
-            assigned: 'Grace',
-            value: '4,500',
-        },
-    ];
+
 
     const handleNextPage = () => {
+        console.log(state.next);
+        
         if (state.next) {
             setState({ currentPage: state.currentPage + 1 });
         }
@@ -428,7 +414,7 @@ const Index = () => {
                                 id="dateTimeCreated"
                                 name="dateTimeCreated"
                                 className="form-input"
-                                // min={mintDateTime(state.orderStartDate)}
+                            // min={mintDateTime(state.orderStartDate)}
                             />
                         </div>
                         <div className="">
@@ -441,7 +427,7 @@ const Index = () => {
                                 id="dateTimeCreated"
                                 name="dateTimeCreated"
                                 className="form-input"
-                                // min={mintDateTime(state.orderStartDate)}
+                            // min={mintDateTime(state.orderStartDate)}
                             />
                         </div>
                         <button type="button" className="btn btn-primary font-white w-full md:mb-0 md:w-auto" onClick={() => router.push('/createLead')}>
@@ -482,7 +468,7 @@ const Index = () => {
                                 onChange={(e) => setState({ bdm: e })}
                                 isMulti={false}
                                 placeholder="BDM"
-                                // className="w-full lg:w-1/3"
+                            // className="w-full lg:w-1/3"
                             />
                             <CustomSelect
                                 options={state.marketList}
@@ -490,7 +476,7 @@ const Index = () => {
                                 onChange={(e) => setState({ bde: e })}
                                 isMulti={false}
                                 placeholder="BDE"
-                                // className="w-full lg:w-1/3"
+                            // className="w-full lg:w-1/3"
                             />
                         </>
                     )}
@@ -501,7 +487,7 @@ const Index = () => {
                             onChange={(e) => setState({ bde: e })}
                             isMulti={false}
                             placeholder="BDE"
-                            // className="w-full lg:w-1/3"
+                        // className="w-full lg:w-1/3"
                         />
                     )}
 
@@ -511,7 +497,7 @@ const Index = () => {
                         onChange={(e) => setState({ market: e })}
                         isMulti={false}
                         placeholder="Status"
-                        // className="w-full lg:w-1/3"
+                    // className="w-full lg:w-1/3"
                     />
                     <CustomeDatePicker
                         error={state.errors?.closing_date}
@@ -571,72 +557,131 @@ const Index = () => {
             <div>
                 <DataTable
                     className="table-responsive"
-                    records={sampleData}
+                    records={state.data}
                     columns={[
-                        {
-                            accessor: 'name',
-                            width: 170,
-                            sortable: true,
-                            title: 'Lead',
-                            render: (row, index) => (
-                                <>
-                                    <div className="">{row.name}</div>
-                                </>
-                            ),
-                        },
 
-                        { accessor: 'opportunity', title: 'Opportunity', sortable: true },
+                        ...(state.role !== "TM" ? [
+                            {
+                                accessor: 'name',
+                                width: 170,
+                                sortable: true,
+                                title: 'Lead',
+                                render: (row, index) => (
+                                    <>
+                                        <div className="">{row.name}</div>
+                                    </>
+                                ),
+                            }] : []),
+
+                        ...(state.role === "TM"
+                            ? [
+                                {
+                                    accessor: 'name',
+                                    sortable: true,
+                                    title: 'Company',
+                                    render: (row, index) => (
+                                        <>
+                                            <div className="">{row.name}</div>
+                                        </>
+                                    ),
+                                },
+                            ]
+                            : []),
+
+                        ...(state.role !== "TM"
+                            ? [
+                                { accessor: 'opportunity', title: 'Opportunity', sortable: true }
+                            ] : []),
+
                         { accessor: 'created_on', title: 'Date', sortable: true },
+
                         {
                             accessor: 'created_by',
                             title: 'Contact Person',
                             sortable: true,
-                            render: (row: any) => (
-                                <div className="flex items-center gap-2 ">
-                                    <Tippy content={'9876543210'} className="rounded-lg bg-black p-1 text-sm text-white">
-                                        <button type="button" className="flex hover:text-primary">
-                                            <span className="font-medium text-gray-800 dark:text-white">{row.created_by}</span>
-                                            <IconMobile />
-                                        </button>
-                                    </Tippy>
+                            render: (row: any) => {
+                                console.log("createdby...", row.created_by);
 
-                                    {/* <a
-                                  href={`tel:${row.phone}`}
-                                  className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-                                  onClick={(e) => e.stopPropagation()} // Prevents table row click if applicable
-                              >
-                                  ({9876543210})
-                              </a> */}
-                                </div>
-                            ),
+                                return (
+                                    <div className="flex items-center gap-2 ">
+                                        <Tippy content={'9876543210'} className="rounded-lg bg-black p-1 text-sm text-white">
+                                            <button type="button" className="flex hover:text-primary">
+                                                <span className="font-medium text-gray-800 dark:text-white">
+                                                    {row.created_by}
+                                                </span>
+                                                <IconMobile />
+                                            </button>
+                                        </Tippy>
+
+                                        {/* Example of an alternative way to display the phone number */}
+                                        {/* <a
+                                    href={`tel:${row.phone}`}
+                                    className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                                    onClick={(e) => e.stopPropagation()} // Prevents table row click if applicable
+                                  >
+                                    ({9876543210})
+                                  </a> */}
+                                    </div>
+                                );
+                            },
                         },
+
+                        ...(state.role === "TM"
+                            ? [
+                                {
+                                    accessor: 'leadSource',
+                                    title: 'Source',
+                                    sortable: true,
+                                    render: (row, index) => (
+                                        <>
+                                            <div className="">{row.lead_source}</div>
+                                        </>
+                                    ),
+                                },
+                            ]
+                            : []),
+
                         {
                             accessor: 'lastStatus',
                             title: 'Last Status',
                             sortable: true,
                             render: (row) => (
                                 <div
-                                    className={`flex w-max gap-4 rounded-full px-2 py-1 ${
-                                        row?.lastStatus === 'New'
-                                            ? 'bg-blue-100 text-blue-800' // Light blue for new entries
-                                            : row?.lastStatus === 'Contacted'
-                                            ? 'bg-yellow-100 text-yellow-800' // Yellow for contacted entries
+                                    className={`flex w-max gap-4 rounded-full px-2 py-1 ${row?.lastStatus === 'New'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : row?.lastStatus === 'Contacted'
+                                            ? 'bg-yellow-100 text-yellow-800'
                                             : row?.lastStatus === 'Qualified'
-                                            ? 'bg-green-100 text-green-800' // Green for qualified entries
-                                            : row?.lastStatus === 'Disqualified'
-                                            ? 'bg-red-100 text-red-800' // Red for disqualified entries
-                                            : row?.lastStatus === 'Follow-Up'
-                                            ? 'bg-orange-100 text-orange-800' // Orange for follow-ups
-                                            : row?.lastStatus === 'Converted'
-                                            ? 'bg-teal-100 text-teal-800' // Teal for converted entries
-                                            : 'bg-gray-100 text-gray-800'
-                                    }`}
+                                                ? 'bg-green-100 text-green-800'
+                                                : row?.lastStatus === 'Disqualified'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : row?.lastStatus === 'Follow-Up'
+                                                        ? 'bg-orange-100 text-orange-800'
+                                                        : row?.lastStatus === 'Converted'
+                                                            ? 'bg-teal-100 text-teal-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                        }`}
                                 >
-                                    {row?.lastStatus}
+                                    {row?.lastStatus || 'Unknown'}
                                 </div>
                             ),
                         },
-                        { accessor: 'created_on', title: 'Follow up  ', sortable: true },
+
+
+                        ...(state.role === "DM" || state.role === "ADMIN" || state.role === "BDE"
+                            ? [
+                                { accessor: 'statusDate', title: 'Status Date', sortable: true },
+                            ] :
+                            []),
+
+                        ...(state.role === "TM" || state.role === "BDM" || state.role === "BDE"
+                            ? [
+                                { accessor: 'followUp', title: 'Follow up  ', sortable: true },
+                            ] :
+                            []),
+
+
+                        // { accessor: 'created_on', title: 'Follow up  ', sortable: true },
                         { accessor: 'assigned', title: 'Assigned To', sortable: true },
                         // { accessor: 'value', title: 'Value ', sortable: true },
                         {
@@ -666,154 +711,18 @@ const Index = () => {
                                 </div>
                             ),
                         },
-
-                        // {
                         //     accessor: 'tags',
-                        //     width: 150,
-                        //     sortable: true,
-                        //     render: (row, index) => (
-                        //         <>
-                        //             {row.tags?.length > 0 && (
-                        //                 <Tippy
-                        //                     content={
-                        //                         <div className="rounded-lg bg-white p-2 text-sm shadow-lg">
-                        //                             {row.tags.map((item, index) => (
-                        //                                 <div key={index} className="p-0.5">
-                        //                                     <Chip label={item.tag} />
-                        //                                 </div>
-                        //                             ))}
-                        //                         </div>
-                        //                     }
-                        //                 >
-                        //                     <div className="flex gap-2 p-0.5">{row.tags[0]?.tag}</div>
-                        //                 </Tippy>
-                        //             )}
-                        //         </>
-                        //     ),
-                        // },
-                        // { accessor: 'annual_revenue', title: 'Annual Revenue', sortable: true },
-                        // { accessor: 'lead_owner', title: 'Lead Owner', sortable: true },
-                        // { accessor: 'country', width: '120px', sortable: true },
-                        // { accessor: 'state', title: 'State', sortable: true },
+
                     ]}
                     // sortStatus={sortStatus}
 
-                    // columns={[
-                    //     {
-                    //         accessor: 'name',
-                    //         sortable: true,
-                    //         title: 'Company',
-                    //         render: (row, index) => (
-                    //             <>
-                    //                 <div className="">{row.name}</div>
-                    //             </>
-                    //         ),
-                    //     },
 
-                    //     {
-                    //         accessor: 'created_by',
-                    //         title: 'Contact',
-                    //         width: '140px',
-                    //         sortable: true,
-                    //         render: (row: any) => (
-                    //             <div className="flex  gap-2 ">
-                    //                 <Tippy content={'9876543210'} className="rounded-lg bg-black p-1 text-sm text-white">
-                    //                     <button type="button" className="flex hover:text-primary">
-                    //                         <span className="font-medium text-gray-800 dark:text-white">{row.created_by}</span>
-                    //                         <IconMobile />
-                    //                     </button>
-                    //                 </Tippy>
-
-                    //                 {/* <a
-                    //                           href={`tel:${row.phone}`}
-                    //                           className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-                    //                           onClick={(e) => e.stopPropagation()} // Prevents table row click if applicable
-                    //                       >
-                    //                           ({9876543210})
-                    //                       </a> */}
-                    //             </div>
-                    //         ),
-                    //     },
-                    //     { accessor: 'opportunity', title: 'Communication', sortable: true },
-
-                    //     { accessor: 'domain', title: 'Domain', sortable: true,render: (row, index) => (
-                    //         <>
-                    //             <div className="">Web</div>
-                    //         </>
-                    //     ), },
-
-                    //     { accessor: 'created_on', title: 'Date', sortable: true, width: 120 },
-                    //     {
-                    //         accessor: 'lastStatus',
-                    //         title: 'Last Status',
-                    //         sortable: true,
-                    //         render: (row) => (
-                    //             <div
-                    //                 className={`flex w-max gap-4 rounded-full px-2 py-1 ${
-                    //                     row?.lastStatus === 'New'
-                    //                         ? 'bg-blue-100 text-blue-800' // Light blue for new entries
-                    //                         : row?.lastStatus === 'Contacted'
-                    //                         ? 'bg-yellow-100 text-yellow-800' // Yellow for contacted entries
-                    //                         : row?.lastStatus === 'Qualified'
-                    //                         ? 'bg-green-100 text-green-800' // Green for qualified entries
-                    //                         : row?.lastStatus === 'Disqualified'
-                    //                         ? 'bg-red-100 text-red-800' // Red for disqualified entries
-                    //                         : row?.lastStatus === 'Follow-Up'
-                    //                         ? 'bg-orange-100 text-orange-800' // Orange for follow-ups
-                    //                         : row?.lastStatus === 'Converted'
-                    //                         ? 'bg-teal-100 text-teal-800' // Teal for converted entries
-                    //                         : 'bg-gray-100 text-gray-800'
-                    //                 }`}
-                    //             >
-                    //                 {row?.lastStatus}
-                    //             </div>
-                    //         ),
-                    //     },
-                    //     { accessor: 'created_on', title: 'Follow up ', sortable: true, width: 120 },
-                    //     { accessor: 'assigned', title: 'Assigned to', sortable: true },
-                    //     { accessor: 'value', title: 'Value', sortable: true },
-
-                    //     {
-                    //         accessor: 'actions',
-                    //         title: 'Actions',
-                    //         render: (row: any) => (
-                    //             <div className="mx-auto flex w-max items-center gap-4">
-                    //                 <Tippy content="Quick Edit" className="rounded-lg bg-black p-1 text-sm text-white">
-                    //                     <button
-                    //                         type="button"
-                    //                         className="flex hover:text-primary"
-                    //                         onClick={() => {
-                    //                             // Toggle row expansion
-                    //                             state.expandedRow === row.id ? setState({ expandedRow: null }) : setState({ expandedRow: row.id });
-                    //                         }}
-                    //                     >
-                    //                         <IconNotesEdit />
-                    //                     </button>
-                    //                 </Tippy>
-
-                    //                 <button type="button" className="flex hover:text-primary" onClick={() => router.push(`/viewLead?id=${row.id}`)}>
-                    //                     <IconEye />
-                    //                 </button>
-                    //                 <button className="flex hover:text-info" onClick={() => router.push(`/updateLead?id=${row.id}`)}>
-                    //                     <IconEdit className="h-4.5 w-4.5" />
-                    //                 </button>
-                    //             </div>
-                    //         ),
-
-                    //         style: {
-                    //             position: 'sticky', // Sticky position
-                    //             right: 0, // Fix to the right side
-                    //             background: '#fff', // Background color for better visibility
-                    //             zIndex: 2, // Ensure it's above other elements
-                    //         },
-                    //     },
-                    // ]}
                     highlightOnHover
                     totalRecords={state.data?.length}
                     recordsPerPage={state.pageSize}
                     minHeight={200}
                     page={null}
-                    onPageChange={(p) => {}}
+                    onPageChange={(p) => { }}
                     withBorder={true}
                     styles={{
                         root: {
@@ -875,31 +784,9 @@ const Index = () => {
                                 options={state.tagList}
                                 error={state.errors?.tags}
                             />
-                            {/* <CustomSelect
-                                    options={state.countryList}
-                                    value={state.country}
-                                    onChange={(e) => {
-                                        if (e) {
-                                            stateList(e);
-                                        }
-                                        setState({ country: e, state: '' });
-                                    }}
-                                    isMulti={false}
-                                    placeholder={'Country'}
-                                    title={'Country'}
-                                />
 
-                                <CustomSelect options={state.stateList} value={state.state} onChange={(e) => setState({ state: e })} isMulti={false} placeholder={'State'} title={'State'} /> */}
-                            {/* <div id="" className="">
-                                    <label className="text-md mb-2 block font-bold text-gray-700">Annual Revenue</label>
-                                    <div id="" className="p-2">
-                                        <InputRange STEP={1} MIN={0} MAX={state.maxPrice} values={state.range} handleChanges={(data) => setState({ range: data })} />
-                                    </div>
-                                    <div className="mt-2 flex w-full items-center justify-between">
-                                        <span className="">{state?.range[0] ? roundOff(state?.range[0]) : 0}</span>
-                                        <span className="">{state?.range[1] ? roundOff(state?.range[1]) : roundOff(state.maxPrice)}</span>
-                                    </div>
-                                </div> */}
+                            {/*CustomSelect  */}
+
                         </div>
                     </div>
                 )}
@@ -908,3 +795,8 @@ const Index = () => {
     );
 };
 export default PrivateRouter(Index);
+
+
+
+
+
