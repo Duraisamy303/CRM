@@ -315,18 +315,21 @@ const Opportunity = () => {
         }
     };
 
+    // ...table
     const tableData = (res: any, role: string) => {
         console.log('res: ', res);
         const data = res?.map((item) => {
             return {
-                ...item,
-                name: item?.name,
-                // opportunity_value: item.opportunity_value,
-                // probability_in_percentage: item.probability_in_percentage,
+                // ...item,
+                name: item?.lead?.name,
+                contactName: item?.owner?.username,
+                opportunityName: item?.name,
+                opportunity_value: item.opportunity_value,
+                probability_in_percentage: item.probability_in_percentage,
                 // recurring_value_per_year: item?.recurring_value_per_year,
-                stages: item?.stage && item?.stage?.stage,
+                stages: item?.stage,
                 // currency: item.currency_type.currency_short,
-                // closing_date: item.closing_date,
+                closing_date: item.closing_date,
             };
         });
         console.log('data: ', data);
@@ -589,6 +592,8 @@ const Opportunity = () => {
                                 {state.currentPage}-{Math.min(state.currentPage * 10, state.totalRecords)} of {state.totalRecords}
                             </div>
                         </div>
+
+                        {/* ...table */}
                         <DataTable
                             className="table-responsive"
                             records={state.data}
@@ -599,12 +604,12 @@ const Opportunity = () => {
                                     title: 'Lead',
                                 },
                                 {
-                                    accessor: 'name',
+                                    accessor: 'contactName',
                                     sortable: true,
                                     title: 'Contact Name',
                                 },
                                 {
-                                    accessor: 'name',
+                                    accessor: 'opportunityName',
                                     sortable: true,
                                     title: 'Opportunity Name',
                                 },
